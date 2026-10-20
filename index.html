@@ -278,7 +278,8 @@ function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
   else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify to take part</a>`}}
 function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. It takes one check, and your votes can never be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
 function renderHeader(){verChip();
-  document.getElementById("chip-district").textContent=P.district;
+  const vd=VER&&VER.districts&&!VER.example?VER.districts:null;
+  document.getElementById("chip-district").textContent=vd&&P.key==="state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
   document.getElementById("chip-session").textContent=P.session;
   document.getElementById("footnote").textContent=P.footnote;
   const jb=document.getElementById("juris");jb.innerHTML="";
