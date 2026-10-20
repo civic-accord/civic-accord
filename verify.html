@@ -207,8 +207,9 @@ async function render(){bar();const p=$("p");
    <p class="meta">${esc(vs.method)}</p>
    <div class="record"><div class="recrow${vs.verified?"":" silent"}"><b>${law?"Based on state law":"Not yet in the registry"}</b><span>${esc(vs.summary)}</span>
      <span class="meta">${vs.verified?"✓ Checked by a reviewer":"! Not yet confirmed in this state's legal review"}${vs.citations.length?" · "+vs.citations.map(c=>`<a href="${esc(c[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c[1])}</a>`).join(" · "):""}</span></div></div>
+   ${vs.tiers?`<details><summary>How the check works against the official voter list</summary><div class="record" style="margin-top:8px">${vs.tiers.map(t=>`<div class="recrow"><b>${esc(t.name)} · ${esc(t.strength)}</b><span>${esc(t.how)}</span><span class="meta">Needs: ${esc(t.needs)}</span></div>`).join("")}</div></details>`:""}
    ${law?`<div class="addr"><label for="vname" class="meta">Your name as it appears on your voter registration</label><input type="text" id="vname" autocomplete="name"></div>
-   <p class="privacy">Your name is used once for this match, then deleted. Only the result is kept: registered, preregistered, or not registered.</p>`:""}
+   <p class="privacy">Your name is used once for this match, then deleted. Only the result is kept: registered, preregistered, or not registered. Each voter record can be claimed by only one person.</p>`:""}
    <p class="meta">${law?"In this prototype there's no real match. Choose what the check would find:":"Choose your status. It will be labeled self-reported."}</p>
    <form id="vs" style="display:grid;gap:8px">${vals.map((v,i)=>`<label class="choice"><input type="radio" name="vs" value="${v}" ${i===0?"checked":""}><span><b>${esc(vs.statuses[i])}</b></span></label>`).join("")}</form>
    <span class="toast" id="msg" aria-live="polite"></span>

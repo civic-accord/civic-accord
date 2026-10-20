@@ -223,7 +223,7 @@ function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
   return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
 const all=()=>[...P.S,...st.added];
 
-let VIEW="all";
+let VIEW="registered";
 const myStatus=()=>VER&&VER.voterStatus||null;
 function tally(s){
   const reg=VIEW==="registered", src=reg&&s.rv?s.rv:s;
@@ -395,8 +395,8 @@ function ground(){
 }
 function viewToggle(){const r=P.participation&&P.participation.registered;if(!r)return "";
   return `<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span>
-    <button type="button" id="view-all" aria-pressed="${VIEW==="all"}">All participants · ${P.participation.open.count+(st.submitted?1:0)}</button>
-    <button type="button" id="view-reg" aria-pressed="${VIEW==="registered"}">Registered voters · ${r.count+(st.submitted&&myStatus()==="registered"?1:0)}</button></div>
+    <button type="button" id="view-reg" aria-pressed="${VIEW==="registered"}">Registered voters · ${r.count+(st.submitted&&myStatus()==="registered"?1:0)}</button>
+    <button type="button" id="view-all" aria-pressed="${VIEW==="all"}">All participants · ${P.participation.open.count+(st.submitted?1:0)}</button></div>
     ${VIEW==="registered"?`<p class="meta">${esc(r.how)}</p>`:""}`}
 function participationBox(){const pt=P.participation;if(!pt)return "";
   const dims=pt.makeup&&pt.makeup.dimensions||[];

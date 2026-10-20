@@ -189,7 +189,7 @@
   "ageBasis": "host policy",
   "ageNote": "Taking part is advisory, not voting, so no law sets a minimum age. The host set it at 16, the age Hawaiʻi allows people to preregister to vote.",
   "voterStatus": {
-   "method": "Match the name and district a resident gives against the public part of the state voter list: name, district or precinct, and voter status.",
+   "method": "Match your name and the address you confirmed against the official voter list, so each voter record can be claimed by only one verified resident.",
    "statuses": [
     "Registered voter",
     "Preregistered (16 or 17)",
@@ -197,7 +197,7 @@
    ],
    "basis": "law",
    "verified": false,
-   "summary": "Hawaiʻi makes a voter's name, district or precinct, and voter status public for any purpose. Everything else on the registration record is limited to election or government purposes, so Civic Accord never uses it.",
+   "summary": "Hawaiʻi makes a voter's name, district or precinct, and voter status public for any purpose. Matching on the residence address is stronger but uses non-public data, which state law limits to election or government purposes. Before launch, legal review decides which of three ways Civic Accord may use: the Office of Elections runs the match and answers only yes or no; a county voter list used under the clerk's affidavit; or the public fields alone.",
    "citations": [
     [
      "https://www.capitol.hawaii.gov/hrscurrent/Vol01_Ch0001-0042F/HRS0011/HRS_0011-0097.htm",
@@ -210,9 +210,33 @@
     [
      "https://ncsl.org/research/elections-and-campaigns/preregistration-for-young-voters.aspx",
      "NCSL: preregistration at 16 (HRS § 11-12(b))"
+    ],
+    [
+     "https://www.mauicounty.gov/DocumentCenter/View/136272/Affidavit-on-Application-for-Voter-Registration-Data-2021",
+     "Maui County Clerk: affidavit for voter registration data"
     ]
    ],
-   "registerUrl": "https://elections.hawaii.gov/"
+   "registerUrl": "https://elections.hawaii.gov/",
+   "tiers": [
+    {
+     "name": "Official match",
+     "how": "The Office of Elections or county clerk checks name and address in its own system and answers only registered, preregistered, or not registered. No list is copied.",
+     "strength": "strongest",
+     "needs": "An agreement with the Office of Elections or county clerks"
+    },
+    {
+     "name": "County voter list",
+     "how": "Civic Accord holds the county list under the clerk's sworn affidavit, matches name and residence address, and refreshes it each election cycle.",
+     "strength": "strong",
+     "needs": "Legal review finding this is an allowed election or government purpose"
+    },
+    {
+     "name": "Public fields only",
+     "how": "Matches name and district. Can't tell two people with the same name apart, so it's flagged as weaker.",
+     "strength": "weaker",
+     "needs": "Nothing beyond public data"
+    }
+   ]
   }
  }
 }

@@ -198,7 +198,7 @@ const officeJ=()=>{const k=packsFor(office)[0];return k?PK[k].jurisdiction:null}
 const office$=()=>OFFICES.find(o=>o.key===office);
 const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?" · approved by "+r.approver:""}`;
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
-let IVIEW="all";
+let IVIEW="registered";
 function analyze(d){
   const st=d.issue.statements.map(s=>{const src=IVIEW==="registered"&&s.registered?s.registered:s;const pa=pct(src.a),pb=pct(src.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:src.a.concat(src.b).reduce((x,y)=>x+y,0)}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
@@ -272,7 +272,7 @@ function renderDetail(){
   const pn=pt?pt.panel.count:0;
   m.innerHTML=`<section class="panel">
     <div><div class="eyebrow">Package · ${esc(j.name)}</div><h2>${esc(d.issue.title)}</h2></div>
-    ${pt&&pt.registered?`<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span><button type="button" id="iv-all" aria-pressed="${IVIEW==="all"}">All participants · ${pt.open.count}</button><button type="button" id="iv-reg" aria-pressed="${IVIEW==="registered"}">Registered voters · ${pt.registered.count}</button></div>`:""}
+    ${pt&&pt.registered?`<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span><button type="button" id="iv-reg" aria-pressed="${IVIEW==="registered"}">Registered voters · ${pt.registered.count}</button><button type="button" id="iv-all" aria-pressed="${IVIEW==="all"}">All participants · ${pt.open.count}</button></div>`:""}
     <div class="stat">
       <div><strong>${IVIEW==="registered"&&pt&&pt.registered?pt.registered.count:(pt?pt.open.count:92)}</strong><span>${IVIEW==="registered"?"registered voters":"verified constituents"}</span></div>
       ${pt?`<div><strong>${pn}</strong><span>citizen panelists</span></div>`:""}
