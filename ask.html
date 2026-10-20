@@ -166,7 +166,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <header>
     <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · ask for it</div>
     <h1>Ask Your Representatives</h1>
-    <p class="lede">Ask every office that represents you to offer a public, verifiable way for residents to work with them. It takes about two minutes. You review the message and send it yourself.</p>
+    <p class="lede">Ask every office that represents you to offer a public way for residents to work with them, where anyone can check the results. It takes about two minutes. You review the message and send it yourself.</p>
   </header>
   <section class="panel" id="s1">
     <div><div class="eyebrow">Step 1</div><h2>Your address</h2></div>
@@ -180,9 +180,9 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <section class="panel" id="s3" hidden></section>
   <section class="panel" id="s4">
     <div><div class="eyebrow">Pass it on</div><h2>Share so others can ask theirs</h2></div>
-    <p>Each person who opens your link writes to their own representatives, so the more it's shared, the more offices hear it directly. Nothing is tracked.</p>
+    <p>Each person who opens your link writes to their own representatives. So the more it's shared, the more offices hear it directly. This site doesn't track you. Sharing sites have their own policies.</p>
     <div class="share" id="share"></div>
-    <p class="meta">Want to add your voice to an open deliberation on the idea itself? <a href="app.html?pack=federal/civic-channel" style="color:var(--koa)">Weigh in</a>.</p>
+    <p class="meta">Curious how a deliberation on the idea itself would look? <a href="app.html?pack=federal/civic-channel" style="color:var(--koa)">Try the sample</a>. It uses example votes.</p>
   </section>
   <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Messages are sent by you, from your own email or the office's contact form.</span></footer>
 </div>
@@ -192,7 +192,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const SHARE_URL="https://civicaccord.org/ask.html";
-const SHARE_TEXT="I asked my representatives for a public, verifiable way to work with them. You can ask yours in two minutes: ";
+const SHARE_TEXT="I asked my representatives for a public way to work with them, where anyone can check the results. You can ask yours in two minutes: ";
 function shareBar(el){
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
   el.innerHTML=`${navigator.share?`<button type="button" id="sh-native">Share…</button>`:""}
@@ -209,13 +209,13 @@ function shareBar(el){
 
 shareBar($("share"));
 let GEO=null, OFFICES=[];
-const STANDARDS=["Only verified residents take part: one person, one voice.","Votes are counted by open-source code anyone can check, with a receipt for each person.","AI may summarize and draft, but never counts votes or decides anything.","Every summary links to the votes behind it, and disagreements are shown, not hidden.","Costs are shown with how they were estimated.","The office answers publicly, with its reasons."];
+const STANDARDS=["Only verified residents take part: one person, one voice.","Votes are counted by simple code anyone can read and re-run, with a private receipt for each person.","AI may summarize and draft, but never counts votes or decides anything.","Every summary links to the votes behind it, and disagreements are shown, not hidden.","Costs are shown with how they were estimated.","The office is asked to answer publicly, with its reasons."];
 function letter(o,name,town){
   return `Dear ${o.salutation},
 
-I'm a constituent${GEO&&o.districtText?` in ${o.districtText}`:""}. I'm writing to ask your office to offer residents a public, verifiable way to talk through issues together, send you proposals, and get a public answer.
+I'm a constituent${GEO&&o.districtText?` in ${o.districtText}`:""}. I'm writing to ask your office to offer residents a public way to talk through issues together and send you proposals. Anyone should be able to check the results, and your office would answer in public.
 
-A working example is at civicaccord.org. It is open source and nonpartisan. Your office could use it, or any tool that meets these standards:
+An early example, using sample data, is at civicaccord.org. It isn't ready for real use yet, but it shows what's possible. It is nonpartisan, and anyone can read its code. Your office could adopt a tool like it, or any tool that meets these standards:
 ${STANDARDS.map(x=>"- "+x).join("\n")}
 
 Would your office be willing to pilot a tool like this, or support making one available to residents?
@@ -243,7 +243,7 @@ async function find(){
   $("s2").innerHTML=`<div><div class="eyebrow">Step 2</div><h2>Who represents you</h2></div>
    <p class="meta">${esc(GEO.matched)}</p>
    ${OFFICES.map((o,i)=>`<div class="off"><b>${esc(o.title)}</b>${o.who?`<span>${esc(o.who)}</span>`:""}
-     <span class="meta">${o.url?"":o.local?"Contact details for local offices are still being added to the open registry. Your county or city website lists them.":"Contact details for this office aren't in the registry yet."}</span></div>`).join("")}
+     <span class="meta">${o.url?"":o.local?"Contact details for local offices are still being added. Search for “"+esc(o.title.split(":")[0])+" contact” to find their page.":"Contact details for this office aren't in the registry yet."}</span></div>`).join("")}
    <p class="meta">Members of Congress come from the public-domain congress-legislators data. Districts come from the U.S. Census Bureau. Party is never shown.</p>`;
   $("s3").hidden=false;
   $("s3").innerHTML=`<div><div class="eyebrow">Step 3</div><h2>Your message</h2></div>
@@ -257,7 +257,7 @@ async function find(){
      ${o.url?`<a href="${esc(o.url)}" target="_blank" rel="noopener" data-sent="${i}">${esc(o.urlLabel||"Open contact page")}</a>`:""}
      ${o.phone?`<a href="tel:${esc(o.phone.replace(/[^0-9+]/g,""))}">Call ${esc(o.phone)}</a>`:""}
      <span class="toast" id="cm-${i}" aria-live="polite"></span></div></div>`).join("")}
-   <p class="meta">Civic Accord never sends anything for you and keeps no copy of your message.</p>`;
+   <p class="meta">Civic Accord never sends anything for you and keeps no copy of your message. Offices may reply to you directly.</p>`;
     $("lt").value=letter({salutation:"[Office]",districtText:null},"","");
   let edited=false;$("lt").oninput=()=>edited=true;
   const regen=()=>{if(!edited)$("lt").value=letter({salutation:"[Office]",districtText:null},$("nm").value.trim(),$("tw").value.trim())};
