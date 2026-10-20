@@ -23,9 +23,24 @@
   "generalFundTradeoff": "the general fund, where it competes with schools, health care, housing, and everything else the state pays for",
   "representativeTitle": "legislator",
   "handoffTitle": "Hand off to your legislators",
-  "handoffText": "The package goes to the state representative and senator for this district. They decide whether to introduce it. The public record stays open either way.",
+  "handoffText": "The package goes to the offices of the state representative and state senator for this district. They decide whether to introduce it. The public record stays open either way.",
   "timing": "The 2027 session opens January 20. Bills are introduced in the first week or two, so packages should reach legislators by early January.",
-  "receiptPrefix": "HI"
+  "receiptPrefix": "HI",
+  "elections": [
+   {
+    "name": "Primary election",
+    "date": "2026-08-08"
+   },
+   {
+    "name": "General election",
+    "date": "2026-11-03"
+   }
+  ],
+  "electionsSource": {
+   "url": "https://elections.hawaii.gov/?p=20785",
+   "label": "Hawaiʻi Office of Elections, 2026 proclamation"
+  },
+  "quietPeriodDays": 60
  },
  "issue": {
   "key": "invasive",

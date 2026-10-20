@@ -42,6 +42,9 @@ The core reads every pack the same way. Pack text is always shown as plain text,
 | `representativeTitle` | For example "legislator", "council member" |
 | `handoffTitle`, `handoffText`, `timing` | Hand-off step wording |
 | `receiptPrefix` | Two letters on vote receipts, for example `HI` |
+| `elections` | Upcoming elections for this body: list of `{ "name", "date" }` (YYYY-MM-DD) |
+| `electionsSource` | `{ "url", "label" }` for those dates |
+| `quietPeriodDays` | Days before each election when offices can't start new deliberations (default 60). Residents can still deliberate and offices can still respond |
 
 ### issue
 

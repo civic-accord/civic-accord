@@ -1,6 +1,11 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Civic Accord Prototype</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><style>
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
+.timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+</style></head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
   --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
@@ -194,7 +199,7 @@ function compilePack(d,opts={}){
     participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
     billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
     secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
-    handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix
+    handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, packId:d.id, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix
   };
 }
 let PACKS={};
@@ -495,6 +500,19 @@ function draft(){
   <button class="btn" id="go4">Prepare the hand-off</button>
   </section>`;
 }
+function followThrough(){
+  let rec={};try{rec=JSON.parse(localStorage.getItem("civicaccord-office")||"{}")}catch(e){}
+  const r=(rec.responses||{})[P.packId], ups=(rec.updates||{})[P.packId]||[];
+  return `<div class="grp"><h3>Follow it</h3>
+    <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. You're notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
+    <ol class="timeline">
+      <li><b>Package sent to the office</b><span class="meta">${st.submitted?"Your votes are included":"Submit your votes in Step 2 to be included"}</span></li>
+      ${r?`<li><b>${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
+        ${r.changes?`<li class="wait"><b>The office asked for changes</b><span class="meta">${esc(r.changes)} Residents weigh in on the revised version once the host reviews it.</span></li>`:""}`
+       :`<li class="wait"><b>Waiting for the office's response</b><span class="meta">If there's none after 30 days, the public record says "no response yet."</span></li>`}
+      ${ups.map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)}</span></li>`).join("")}
+    </ol></div>`;
+}
 function handoff(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
@@ -518,7 +536,8 @@ function handoff(){
     <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
   </div>
   <div class="row"><button class="btn" id="copy">Copy summary</button><span class="toast" id="copymsg" aria-live="polite"></span></div>
-  <p class="meta"><a href="inbox.html" style="color:var(--koa)">See what your representative receives →</a></p>
+  ${followThrough()}
+  <p class="meta"><a href="inbox.html" style="color:var(--koa)">See what the office receives →</a></p>
   <textarea id="summarytext" rows="6" readonly hidden></textarea>
   </section>`;
 }

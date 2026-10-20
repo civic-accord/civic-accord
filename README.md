@@ -37,6 +37,16 @@ The easiest way is the builder at [`new.html`](https://civicaccord.org/new.html)
 
 Every statement can also carry citizen panel results (`panel: [agree, disagree, pass]`) from a randomly selected, demographically balanced group, shown next to the open results so representatives can see whether self-selected participants match the wider public.
 
+## The office, not the person
+
+The two-way conversation is between residents and an **office** (a seat), not an individual politician. The office inbox (`inbox.html`) belongs to the seat: responses are signed by the office and name who approved them, and when the officeholder changes, every open package, request, and past response passes to the next one.
+
+- **Offices can ask.** An office can request a deliberation on a pending bill or a trade-off. A neutral host reviews it before it opens, and the request is public.
+- **Counter-drafts.** An office can answer "I will introduce it with changes" and say what would need to change. Residents weigh in on the revised version.
+- **Follow-through.** The office reports each step (introduced, heard, amended, voted, enacted, stalled) with its reasoning. Residents see the same timeline in the hand-off step.
+- **Election quiet period.** Offices can't start new deliberations in the days before an election (`quietPeriodDays`, default 60), modeled on the limits on official mass mailings before elections. Residents can still deliberate, and offices can still respond.
+- **No campaign use.** No party branding, campaign links, photos, fundraising, or ratings of officials.
+
 ## Trust rules
 
 - AI never touches the vote count.

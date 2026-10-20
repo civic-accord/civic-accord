@@ -23,9 +23,24 @@
   "generalFundTradeoff": "federal general funds, where it competes with every other federal program or adds to borrowing",
   "representativeTitle": "member of Congress",
   "handoffTitle": "Hand off to your members of Congress",
-  "handoffText": "The package goes to your U.S. representative and both of your state's senators. They decide whether to introduce it. The public record stays open either way.",
+  "handoffText": "The package goes to the offices of your U.S. representative and both of your state's senators. They decide whether to introduce it. The public record stays open either way.",
   "timing": "The 120th Congress convenes January 3, 2027. Bills can be introduced at any time in the two-year Congress, but early introduction gives more time for hearings.",
-  "receiptPrefix": "US"
+  "receiptPrefix": "US",
+  "elections": [
+   {
+    "name": "Primary election",
+    "date": "2026-08-08"
+   },
+   {
+    "name": "General election",
+    "date": "2026-11-03"
+   }
+  ],
+  "electionsSource": {
+   "url": "https://elections.hawaii.gov/?p=20785",
+   "label": "Hawaiʻi Office of Elections, 2026 proclamation"
+  },
+  "quietPeriodDays": 60
  },
  "issue": {
   "key": "invasive",
