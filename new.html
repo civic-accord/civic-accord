@@ -393,6 +393,10 @@ $("copy").onclick=()=>{const txt=JSON.stringify(buildPack(),null,1);const fb=()=
 (async()=>{
   try{const raw=localStorage.getItem(KEY);B=raw?JSON.parse(raw):empty()}catch(e){B=empty()}
   try{const idx=await (await fetch("packs/index.json")).json();for(const e of idx.packs){const d=await (await fetch(e.file)).json();if(!templates[d.jurisdiction.key])templates[d.jurisdiction.key]=d}}catch(e){}
+  const qp=new URLSearchParams(location.search);
+  if(qp.get("title")){const t=qp.get("title").slice(0,140),u=qp.get("url")||"",src=qp.get("from")||"official source";
+    B=empty();B.title=t;B.name=t.replace(/^[A-Z.]+\s*\d+:\s*/,"").split(/[;:,(]/)[0].slice(0,60);
+    B.facts=[{label:"What's open",text:`${t} (from the ${src}).`,url:/^https:\/\//.test(u)?u:""},{label:"",text:"",url:""}];save();}
   renderAll();
 })();
 </script>
