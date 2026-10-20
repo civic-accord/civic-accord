@@ -1,0 +1,294 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>How It Works</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
+.timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+.viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+</style></head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#8a5d00; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+.wrap>*,.panel>*{min-width:0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:inherit}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.chip:empty{display:none}
+.issues{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.vote button:disabled{cursor:not-allowed;opacity:.5}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.hero{display:grid;gap:14px;padding:10px 0 4px}
+.hero h1{font-size:clamp(2rem,6vw,3.1rem);line-height:1.08;margin:0}
+.hero .lede{font-size:1.1rem;max-width:44em}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.cta a{text-decoration:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:6px;background:var(--surface);align-content:start}
+.card h3{margin:0;font-size:1rem}
+.card .check{font-size:.85rem;color:var(--koa)}
+.card .where{font-size:.8rem;color:var(--muted)}
+.steps6{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.steps6 li{counter-increment:s;display:grid;grid-template-columns:2.2em 1fr;gap:10px;align-items:start}
+.steps6 li::before{content:counter(s);font-family:var(--mono);background:var(--koa);color:var(--surface);border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;font-size:.85rem}
+.big{font-size:1.15rem;line-height:1.5}
+.stat1{font-family:var(--serif,inherit);font-size:2.4rem;font-weight:700;color:var(--koa);line-height:1}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.share{display:flex;flex-wrap:wrap;gap:8px}
+.share a,.share button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.off{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;background:var(--surface)}
+.off .acts{display:flex;flex-wrap:wrap;gap:8px}
+.off .acts a,.off .acts button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;text-decoration:none}
+.off .acts .primary{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);color:var(--ink);line-height:1.5}
+.addr input[type=text],.addr2 input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.privacy{font-size:.85rem;background:var(--koa-soft);border-radius:8px;padding:10px 12px}
+</style>
+<style>
+.toc{columns:2 220px;gap:20px;font-size:.92rem}
+.toc a{color:var(--koa)}
+.doc h2{scroll-margin-top:12px}
+.doc table{border-collapse:collapse;width:100%;font-size:.9rem}
+.doc th,.doc td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.doc .k{font-family:var(--mono);font-size:.85rem}
+.tbl{overflow-x:auto}
+</style>
+<div class="wrap doc">
+  <header>
+    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · documentation</div>
+    <h1>How It Works</h1>
+    <p class="lede">Everything about how Civic Accord works, in plain language: what it does, where its information comes from, how votes are counted, what AI does and doesn't do, and how it's kept secure. If something here is unclear or wrong, please <a href="https://github.com/liebeskind8301/civic-accord/issues" style="color:var(--koa)">tell us</a>.</p>
+    <p class="note"><b>An early example.</b> Civic Accord uses sample votes today. This page describes both what works now and what still has to be built before real use. Each section says which is which.</p>
+  </header>
+
+  <nav class="panel" aria-label="Contents"><h2 style="margin-top:0">Contents</h2><ol class="toc">
+    <li><a href="#what">What it is</a></li><li><a href="#steps">The six steps</a></li><li><a href="#who">Who can take part</a></li>
+    <li><a href="#privacy">Your privacy</a></li><li><a href="#count">How votes are counted</a></li><li><a href="#ground">How common ground is found</a></li>
+    <li><a href="#costs">How costs are shown</a></li><li><a href="#ai">What AI does and doesn't do</a></li><li><a href="#office">The office, not the person</a></li>
+    <li><a href="#open">Open Now: where items come from</a></li><li><a href="#contact">Contacting your representatives</a></li><li><a href="#lookup">Finding your governments</a></li>
+    <li><a href="#law">Rules come from law</a></li><li><a href="#security">Security</a></li><li><a href="#status">What's real today</a></li>
+    <li><a href="#govern">Who runs it</a></li><li><a href="#open-code">Open code and data</a></li></ol></nav>
+
+  <section class="panel" id="what"><h2>What it is</h2>
+    <p>Civic Accord is a free, nonpartisan tool for a two-way relationship between residents and their governments. It shows what your governments have open for public input. It lets verified residents talk an issue through, finds where people with different views agree, shows what each choice would cost, and sends the result to the office that represents them. The office is asked to answer in public.</p>
+    <p>It works for any U.S. address and every level of government: federal, state, county, city or town, and school district. It is advisory. It doesn't replace voting or elections, and it doesn't make laws.</p></section>
+
+  <section class="panel" id="steps"><h2>The six steps</h2><ol>
+    <li><b>Learn.</b> Everyone reads the same short facts. Every fact links to its source.</li>
+    <li><b>Weigh in.</b> Verified residents agree, disagree, or pass on short statements, and can add their own. There's no reply button, so no one can pile on. Votes count only after you press Submit, and you get a receipt.</li>
+    <li><b>Common ground.</b> The tool shows what people with different views agree on, and where they split.</li>
+    <li><b>Weigh costs.</b> Each option shows its total cost, its cost per resident, and how the estimate was made. You can turn options on and off and see the total change.</li>
+    <li><b>Draft.</b> AI writes a starting bill from the common ground. Ideas that divide people are flagged, not hidden.</li>
+    <li><b>Hand off.</b> The package goes to the office. You can follow what happens next on a public timeline.</li></ol></section>
+
+  <section class="panel" id="who"><h2>Who can take part</h2>
+    <p>Anyone 16 or older who lives in the district. Sixteen is the host's choice, because taking part is advisory and no law sets an age for it. It matches the age many states let people preregister to vote.</p>
+    <p><b>Proving you live there.</b> You enter your address, then confirm it by a code mailed to that address, or with a quick check at a public library. In this example, the code is shown on screen instead of mailed.</p>
+    <p><b>Voter registration status.</b> Your status (registered, preregistered, or not registered) is checked using only what your state's law allows. In Hawaiʻi, for example, a voter's name, district, and status are public, so only those are matched. The strongest method is an official yes-or-no answer from the state election office. Where a state's rules haven't been confirmed yet, status is self-reported and labeled that way. In this example, no real match is made.</p>
+    <p><b>Two views of every result.</b> Results show registered voters first, with everyone who took part one click away. Offices receive both.</p></section>
+
+  <section class="panel" id="privacy"><h2>Your privacy</h2><ul class="plain">
+    <li><b>Your address never reaches Civic Accord's servers.</b> Your browser sends it straight to the U.S. Census Bureau's free lookup to find your districts. Only your districts are kept.</li>
+    <li><b>Your identity is kept apart from your votes.</b> In the live version, the residency check gives your device a sealed voting key. The vote record sees only that key, never your name. Even the host can't link the two.</li>
+    <li><b>Messages to your representatives come from you.</b> Email opens in your own email app. Civic Accord never sees or keeps what you send.</li>
+    <li><b>Looking up your legislators sends only district numbers</b>, never an address.</li>
+    <li><b>Today, everything you do stays on your own device</b> (your districts, reactions, and sample verification). Nothing is sent back to Civic Accord.</li>
+    <li><b>No tracking.</b> The site has no ads or analytics trackers. Sharing sites like Facebook have their own policies if you use their share buttons.</li></ul></section>
+
+  <section class="panel" id="count"><h2>How votes are counted</h2>
+    <p>In the live version, votes go into a public record that can be added to but never quietly changed. Simple code that anyone can read does the counting, so anyone can download the record and recount it. Your private receipt lets you find your own votes in it without revealing who you are. The plan is to use established, open methods for this, such as Microsoft's open-source <a href="https://github.com/microsoft/electionguard-python" style="color:var(--koa)">ElectionGuard</a>, rather than inventing new ones.</p>
+    <p>Each voter record can be claimed by only one verified person. Before a package goes to an office, voter status is checked again against the current list.</p>
+    <p class="meta">Today: the example uses sample votes, and receipts are generated on your device to show how they would work.</p></section>
+
+  <section class="panel" id="ground"><h2>How common ground is found</h2>
+    <p>Participants are sorted into groups by how similarly they vote. The live version will use the open method from <a href="https://www.nesta.org.uk/six-pioneers-digital-democracy/vtaiwan" style="color:var(--koa)">Pol.is</a>, which Taiwan's vTaiwan process uses. In the example, the groups come with the sample data. Each statement is then labeled with these exact rules:</p>
+    <div class="tbl"><table><tr><th>Label</th><th>Rule</th></tr>
+      <tr><td>Common ground</td><td>At least 70% of <i>both</i> groups agree.</td></tr>
+      <tr><td>Divides groups</td><td>At least 70% of one group agrees, and under 50% of the other does.</td></tr>
+      <tr><td>Still forming</td><td>Anything else, or fewer than 10 votes so far.</td></tr></table></div>
+    <p><b>Citizen panels.</b> A randomly chosen panel, balanced to match the district by age and area, votes too. Its result is shown beside the open results, using these rules: the panel <i>agrees</i> at 70% or more, is <i>divided</i> at 40 to 69%, and <i>disagrees</i> under 40%. When the panel and the open group differ, the tool says so. A table shows who took part compared with the district.</p></section>
+
+  <section class="panel" id="costs"><h2>How costs are shown</h2>
+    <p>Every option shows how much, times the cost of each unit, equals the total. For example: 12 inspectors × $85,000 = $1.02 million a year. It also shows the cost per resident, using the official population figure. Every estimate says how it was made and links to its source. Yearly and one-time costs are kept separate. Fees and fines that could pay for it are subtracted only when there's a reliable estimate. Anything that can't be estimated is shown as "not yet estimated," never guessed.</p></section>
+
+  <section class="panel" id="ai"><h2>What AI does and doesn't do</h2><div class="tbl"><table>
+    <tr><th>AI may</th><th>AI never</th></tr>
+    <tr><td>Draft a starting bill from the common ground</td><td>Counts votes, or touches the vote record</td></tr>
+    <tr><td>Help organize and summarize</td><td>Checks residency or voter status</td></tr>
+    <tr><td>Help write issue packs, which a person then reviews</td><td>Writes or frames the items on Open Now, which come straight from official sources</td></tr>
+    <tr><td></td><td>Decides anything. People decide, and the office decides whether to act.</td></tr></table></div>
+    <p>Every AI summary links to the votes behind it, so you don't have to take it on trust.</p></section>
+
+  <section class="panel" id="office"><h2>The office, not the person</h2>
+    <p>The conversation is with an office (a seat), not an individual politician. Responses are signed by the office and name who approved them. When someone new is elected, every open package, request, and past response passes to them. Offices answer publicly with a reason. They can ask for changes, which residents then weigh in on, and they report each step: introduced, heard, voted. Offices can also ask their district to deliberate, through a neutral host. There's no party branding, no campaign use, and no ratings of officials.</p></section>
+
+  <section class="panel" id="open"><h2>Open Now: where items come from</h2>
+    <p>Open Now lists what your governments have open for public input. It comes straight from these sources, with no AI involved, and refreshes every few hours:</p>
+    <div class="tbl"><table><tr><th>What</th><th>Source</th></tr>
+      <tr><td>Proposed federal rules open for public comment</td><td><a href="https://www.federalregister.gov/developers/documentation/api/v1" style="color:var(--koa)">Federal Register</a> (no key needed)</td></tr>
+      <tr><td>Recently active bills in Congress</td><td><a href="https://api.congress.gov/" style="color:var(--koa)">Congress.gov</a></td></tr>
+      <tr><td>Bills still moving in your state legislature</td><td><a href="https://open.pluralpolicy.com/" style="color:var(--koa)">Open States</a>. Shown only while the legislature is in session. Bills already signed, vetoed, or finished are left out.</td></tr>
+      <tr><td>City, county, and school board agendas</td><td>Coming as local hosts connect their governments' public feeds</td></tr></table></div>
+    <p>Each item shows its source and when it was fetched, and links to the official text and the government's own comment channel.</p></section>
+
+  <section class="panel" id="contact"><h2>Contacting your representatives</h2>
+    <p>On any item, you can choose Support, Oppose, or Unsure, add your own words, and Civic Accord writes a short message to the right offices. State legislators' published emails come from Open States. Email opens in your own email app. Members of Congress don't publish email addresses, so the tool copies the message and opens their official contact form. For proposed rules, the official comment to the agency is what counts, so that comes first. The "Ask your representatives" page works the same way, asking offices to adopt a tool like this one.</p>
+    <p class="meta">Today: reactions stay on your device. In the live version, verified residents' reactions would be counted in the public record.</p></section>
+
+  <section class="panel" id="lookup"><h2>Finding your governments</h2>
+    <p>Google shut down its free Representatives API in 2025. Civic Accord's open replacement works like this:</p><ol>
+      <li>The U.S. Census Bureau's free geocoder turns your address into districts: congressional, state house and senate, county, city or town, and school district.</li>
+      <li>An open registry describes each office: its branch, how it's chosen, and whether it can receive proposals. It covers all 50 states and D.C., including special cases like Nebraska's one-chamber legislature, D.C. and territories, independent cities, and states without county governments.</li>
+      <li>Names of members of Congress come from the public-domain <a href="https://github.com/unitedstates/congress-legislators" style="color:var(--koa)">congress-legislators</a> data. State legislators come from Open States. Party is never shown.</li></ol>
+    <p class="meta">Special districts (water, fire, transit) aren't in the Census data yet. Local hosts can add them.</p></section>
+
+  <section class="panel" id="law"><h2>Rules come from law</h2>
+    <p>Every rule the tool applies comes from that government's own law or chamber rules, with the source shown. Examples are the limits on official mass communications before elections, and what voter-list information may be used. Where no law applies, the tool adds no rule of its own. Rules not yet confirmed are labeled. Legal review happens in two layers: law that's the same everywhere is reviewed once by the host's lawyer, and each state's rules are reviewed by local experts, such as a law school clinic, before launch and each election cycle.</p></section>
+
+  <section class="panel" id="security"><h2>Security</h2>
+    <p>No single test proves a system secure. Civic Accord is checked in layers, and the most important is a design where the public can check results even if part of the system is attacked.</p><ul class="plain">
+      <li><b>Checkable by design:</b> a public record anyone can recount, private receipts, identity kept apart from votes, and AI that never counts.</li>
+      <li><b>Open code</b> that anyone can inspect.</li>
+      <li><b>Automatic checks</b> on every change.</li>
+      <li><b>Independent review before launch:</b> a security review and break-in test against the <a href="https://owasp.org/www-project-ASVS/" style="color:var(--koa)">OWASP ASVS</a> standard, by experts with no stake in the project. Code written with AI help gets the same scrutiny.</li>
+      <li><b>Private problem reporting</b> (<a href="https://github.com/liebeskind8301/civic-accord/blob/main/SECURITY.md" style="color:var(--koa)">security policy</a>), and later a bug bounty.</li>
+      <li><b>Recurring audits</b> with public reports.</li></ul>
+    <p class="meta">Today: the site sends strict security headers, its two data functions only read public data, and their keys are stored as secrets. No real votes or identities are collected.</p></section>
+
+  <section class="panel" id="status"><h2>What's real today</h2><div class="tbl"><table>
+    <tr><th>Works now</th><th>Still to be built before real use</th></tr>
+    <tr><td>Address lookup for every U.S. government<br>Open Now with live federal rules and bills in Congress and state legislatures<br>Emailing or contacting your representatives<br>The six steps, with sample votes<br>The office inbox, with sample responses<br>Building a deliberation for any issue</td>
+        <td>The real vote record and receipts<br>Mailed residency codes and library checks<br>Official voter-status matching<br>Public counts of reactions<br>A neutral host, legal review in each state, and independent security audits</td></tr></table></div></section>
+
+  <section class="panel" id="govern"><h2>Who runs it</h2>
+    <p>Civic Accord was started by a resident acting as a convener, not an owner. The goal is for a neutral university or nonpartisan nonprofit to host and run it, with the convener in an advisory role. Each deliberation pack is reviewed by a second person before it opens, and every change is kept in the public history.</p></section>
+
+  <section class="panel" id="open-code"><h2>Open code and data</h2><ul class="plain">
+    <li><a href="https://github.com/liebeskind8301/civic-accord" style="color:var(--koa)">All the code</a> (GitHub)</li>
+    <li><a href="https://github.com/liebeskind8301/civic-accord/blob/main/packs/SPEC.md" style="color:var(--koa)">How deliberation packs are written</a>: facts, statements, costs, and each government's rules</li>
+    <li><a href="https://github.com/liebeskind8301/civic-accord/blob/main/registry/README.md" style="color:var(--koa)">The open registry of governments and offices</a></li>
+    <li><a href="https://github.com/liebeskind8301/civic-accord/blob/main/SECURITY.md" style="color:var(--koa)">Security policy and how to report a problem</a></li>
+    <li><a href="https://github.com/liebeskind8301/civic-accord/commits/main" style="color:var(--koa)">Every change ever made</a></li></ul></section>
+
+  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="/" style="color:inherit">Home</a></span></footer>
+</div>
+</body></html>
