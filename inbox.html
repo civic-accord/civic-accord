@@ -17,6 +17,7 @@
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 .wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+.wrap>*,.panel>*{min-width:0}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
 h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
 h2{font-size:1.35rem}
@@ -29,7 +30,7 @@ header{display:grid;gap:10px}
 .who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
 .chip.ok{border-color:var(--koa);color:var(--koa)}
-.issues{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.issues{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px}
 .issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
 .issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
 .issue small{display:block;color:var(--muted);font-size:.75rem}
