@@ -191,6 +191,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <div class="filters">
       <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search</label><input id="q" type="search" placeholder="Search, for example: water, schools, farms">
       <label for="lvl" style="position:absolute;left:-9999px">Show</label><select id="lvl"><option value="">All governments</option><option value="federal">Federal</option><option value="state">State</option></select>
+      <label for="kind" style="position:absolute;left:-9999px">Type</label><select id="kind"><option value="">All types</option></select>
       <label for="st" style="position:absolute;left:-9999px">State</label><select id="st"></select>
     </div>
     <p class="meta" id="count" aria-live="polite">Loading what's open…</p>
@@ -236,10 +237,10 @@ function card(it){
   </article>`;
 }
 function render(){
-  const q=$("q").value.trim().toLowerCase(), lvl=$("lvl").value;
-  const items=(DATA.items||[]).filter(it=>(!lvl||it.level===lvl)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
+  const q=$("q").value.trim().toLowerCase(), lvl=$("lvl").value, kd=$("kind").value;
+  const items=(DATA.items||[]).filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
     .sort((a,b)=>(a.closes||"9999").localeCompare(b.closes||"9999"));
-  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${q?` matching "${$("q").value.trim()}"`:""}. Closing soonest first.`;
+  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${q?` matching "${$("q").value.trim()}"`:""}. ${kd||!items.some(i=>!i.closes)?"":" Comment deadlines first, then bills."}`;
   $("list").innerHTML=items.slice(0,shown).map(card).join("")||`<p class="meta">Nothing matches. Try another word.</p>`;
   $("more").hidden=items.length<=shown;
   document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}render()});
@@ -251,12 +252,14 @@ async function load(){
   $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");
   $("notconn").innerHTML=DATA.notConnected.length?`<h3>Not connected yet</h3><ul class="plain">${DATA.notConnected.map(n=>`<li>${esc(n.label)}. ${esc(n.how)} (<a href="${esc(safe(n.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">get one</a>), added by the site's host.</li>`).join("")}</ul>`:"";
   $("fetched").textContent="Fetched "+new Date(DATA.fetchedAt).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"});
+  const kinds=[...new Set(DATA.items.map(i=>i.kind))], cur=$("kind").value;
+  $("kind").innerHTML=`<option value="">All types</option>`+kinds.map(k=>`<option ${k===cur?"selected":""}>${esc(k)}</option>`).join("");
   shown=20;render();
 }
 $("st").innerHTML=STATES.map(s=>`<option value="${s}">${s?s:"Choose your state"}</option>`).join("");
 const vs=VER&&VER.districts&&VER.districts.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
 $("where").innerHTML=vs?`Showing federal items and items for your state. Reactions here are a prototype and stay on this device.`:`Showing federal items. Choose your state, or <a href="verify.html" style="color:var(--koa)">verify</a> to see your own governments. Reactions here are a prototype and stay on this device.`;
-$("q").oninput=()=>{shown=20;render()};$("lvl").onchange=()=>{shown=20;render()};$("st").onchange=load;$("more").onclick=()=>{shown+=20;render()};
+$("q").oninput=()=>{shown=20;render()};$("lvl").onchange=()=>{shown=20;render()};$("kind").onchange=()=>{shown=20;render()};$("st").onchange=load;$("more").onclick=()=>{shown+=20;render()};
 load();
 </script>
 </body></html>
