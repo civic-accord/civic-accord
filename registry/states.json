@@ -1,0 +1,1059 @@
+{
+ "format": 1,
+ "asOf": "2026-10-20",
+ "note": "Facts come from the listed sources. Laws change; check the state election office before relying on any field.",
+ "sources": [
+  [
+   "https://www.ncsl.org/resources/details/number-of-legislators-and-length-of-terms-in-years",
+   "NCSL: Number of legislators and length of terms in years"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/List_of_U.S._state_legislatures",
+   "Wikipedia: List of U.S. state legislatures (legislature and chamber names)"
+  ],
+  [
+   "https://news.ballotpedia.org/2023/02/15/how-state-senates-determine-term-lengths-after-redistricting/",
+   "Ballotpedia News: How state senates set term lengths after redistricting (2-4-4 cycles)"
+  ],
+  [
+   "https://ncsl.org/research/elections-and-campaigns/preregistration-for-young-voters.aspx",
+   "NCSL: Preregistration for young voters (updated February 26, 2025)"
+  ],
+  [
+   "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx",
+   "NCSL: Access to and use of voter registration lists"
+  ],
+  [
+   "https://www.fec.gov/introduction-campaign-finance/how-to-research-public-records/state-election-offices",
+   "FEC: State election offices"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/County_(United_States)",
+   "Wikipedia: County (United States) (local government structure)"
+  ],
+  [
+   "https://files.hawaii.gov/dbedt/economic/databook/2022-individual/09/narr09.pdf",
+   "State of Hawaii Data Book: \"Separate municipal governments do not exist\""
+  ]
+ ],
+ "states": {
+  "AK": {
+   "name": "Alaska",
+   "legislature": "Alaska Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "Uses boroughs instead of counties. Nearly half the state is an unorganized borough run by the state.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": null,
+   "preregistrationNote": "May register within 90 days before turning 18.",
+   "voterList": {
+    "publicFields": "Available to anyone. Includes name, address, and party. Birth date, ID numbers, and signature are withheld.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.elections.alaska.gov/"
+  },
+  "AL": {
+   "name": "Alabama",
+   "legislature": "Alabama Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "4-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Parties get the state list and legislators their district list. Others may buy it. Includes 10 elections of voting history.",
+    "allowedUse": "Electioneering, campaign, or election purposes. Not for sale, publication, or commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.alabama.gov/alabama-votes"
+  },
+  "AR": {
+   "name": "Arkansas",
+   "legislature": "Arkansas General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Includes name, address, and precinct.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.arkansas.gov/elections"
+  },
+  "AZ": {
+   "name": "Arizona",
+   "legislature": "Arizona State Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Given to political parties. Also open for local public inspection. Includes name, address, phone, birth year, and voting history.",
+    "allowedUse": "Political, campaign, election, or redistricting purposes. Not commercial. No posting online.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://azsos.gov/elections"
+  },
+  "CA": {
+   "name": "California",
+   "legislature": "California State Legislature",
+   "lower": {
+    "name": "State Assembly",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to candidates, parties, ballot measure committees, and others with an allowed purpose.",
+    "allowedUse": "Election, scholarly, journalistic, political, or government purposes. Not commercial. No harassment or reposting.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.ca.gov/elections"
+  },
+  "CO": {
+   "name": "Colorado",
+   "legislature": "Colorado General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 15,
+   "preregistrationNote": "Age 15 since January 1, 2025; it was 16 before.",
+   "voterList": {
+    "publicFields": "Available to anyone on request. Includes name, address, birth year, party, and voting history.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.state.co.us/pubs/elections/main.html"
+  },
+  "CT": {
+   "name": "Connecticut",
+   "legislature": "Connecticut General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Counties have no government. Towns and cities provide local government.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open for public inspection. Copies are available from town registrars.",
+    "allowedUse": "Election, scholarly, journalistic, political, or government purposes. Not personal or commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://portal.ct.gov/en/SOTS/Common-Elements/V5-Template---Redesign/Elections--Voting--Home-Page"
+  },
+  "DC": {
+   "name": "District of Columbia",
+   "legislature": "Council of the District of Columbia",
+   "lower": null,
+   "upper": {
+    "name": "Council",
+    "term": "4-year term"
+   },
+   "localNote": "DC is a federal district, not a state. It has no counties.",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to anyone on request. Includes party, ward, precinct, and voting history.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.dcboe.org/"
+  },
+  "DE": {
+   "name": "Delaware",
+   "legislature": "Delaware General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Free to parties, candidates, and governments. Others may buy it. Includes name, address, party, and voting history.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://elections.delaware.gov/"
+  },
+  "FL": {
+   "name": "Florida",
+   "legislature": "Florida Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to anyone. Includes public voter data. ID numbers, signatures, and preregistrant data are withheld.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://dos.myflorida.com/elections/"
+  },
+  "GA": {
+   "name": "Georgia",
+   "legislature": "Georgia General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": 17.5,
+   "preregistrationNote": "Age 17 and a half.",
+   "voterList": {
+    "publicFields": "Available to anyone. Includes birth year and other non-confidential data.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.ga.gov/elections"
+  },
+  "HI": {
+   "name": "Hawaii",
+   "legislature": "Hawaii State Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "There are no separate city governments. The counties are the local governments.",
+   "localNoteSource": "https://files.hawaii.gov/dbedt/economic/databook/2022-individual/09/narr09.pdf",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Name, address, district or precinct, and voter status are public. Other data is confidential.",
+    "allowedUse": "Other data only for election or government purposes.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://elections.hawaii.gov/"
+  },
+  "IA": {
+   "name": "Iowa",
+   "legislature": "Iowa General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 17,
+   "voterList": {
+    "publicFields": "Available to anyone who pays the cost. The buyer chooses fields.",
+    "allowedUse": "Voting-related, political, official, or political research purposes. Not commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.iowa.gov/"
+  },
+  "ID": {
+   "name": "Idaho",
+   "legislature": "Idaho Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone. Includes name, address, and precinct.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.idaho.gov/elections-division/"
+  },
+  "IL": {
+   "name": "Illinois",
+   "legislature": "Illinois General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Sold to state political committees and governments. The public may view it on screen only.",
+    "allowedUse": "Not commercial. Public viewers may not print, copy, or alter it.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.elections.il.gov/"
+  },
+  "IN": {
+   "name": "Indiana",
+   "legislature": "Indiana General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Only to parties, independent candidates, media, courts for juries, and legislative leaders.",
+    "allowedUse": "Political activities only. Not commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.in.gov/sos/elections/"
+  },
+  "KS": {
+   "name": "Kansas",
+   "legislature": "Kansas Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Anyone may inspect it or request a copy. ID numbers are removed.",
+    "allowedUse": "Not commercial. Campaign and election use is allowed.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.ks.gov/"
+  },
+  "KY": {
+   "name": "Kentucky",
+   "legislature": "Kentucky General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Citizens may inspect and copy records. Precinct lists go to candidates and committees at cost.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://elect.ky.gov/Pages/default.aspx"
+  },
+  "LA": {
+   "name": "Louisiana",
+   "legislature": "Louisiana State Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "4-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "localNote": "Uses parishes instead of counties.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Open for local inspection. A group of 25 or more voters may request a copy.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.la.gov/ElectionsAndVoting/Pages/default.aspx"
+  },
+  "MA": {
+   "name": "Massachusetts",
+   "legislature": "Massachusetts General Court",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Most counties no longer have governments. Cities and towns provide most local government.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Given to parties, statewide candidates and committees, and certain officials. Includes names and addresses.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sec.state.ma.us/ele/eleidx.htm"
+  },
+  "MD": {
+   "name": "Maryland",
+   "legislature": "Maryland General Assembly",
+   "lower": {
+    "name": "House of Delegates",
+    "term": "4-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "Baltimore is an independent city, not part of any county.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to Maryland registered voters. Requesters choose fields such as name, address, party, and voting history.",
+    "allowedUse": "No further use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.elections.maryland.gov/"
+  },
+  "ME": {
+   "name": "Maine",
+   "legislature": "Maine Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Towns and cities hold most local authority.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Only to parties, get-out-the-vote groups, officeholders, governments, and law enforcement.",
+    "allowedUse": "Party, get-out-the-vote, or campaign purposes.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.maine.gov/sos/cec/elec/index.html"
+  },
+  "MI": {
+   "name": "Michigan",
+   "legislature": "Michigan Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to anyone. Includes name, address, and birth year.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.michigan.gov/sos/elections"
+  },
+  "MN": {
+   "name": "Minnesota",
+   "legislature": "Minnesota Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Any Minnesota registered voter may get a copy. Includes name, address, birth year, and voting history.",
+    "allowedUse": "Elections, political activities, or law enforcement only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.state.mn.us/elections-voting/"
+  },
+  "MO": {
+   "name": "Missouri",
+   "legislature": "Missouri General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "St. Louis is an independent city, not part of any county.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 17.5,
+   "preregistrationNote": "Age 17 and a half.",
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Includes name, birth date, address, and voting history.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.mo.gov/elections/"
+  },
+  "MS": {
+   "name": "Mississippi",
+   "legislature": "Mississippi Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "4-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone under the public records law. Includes name, address, and voting history.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.ms.gov/index.php/elections-voting"
+  },
+  "MT": {
+   "name": "Montana",
+   "legislature": "Montana Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Fields can be chosen.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sosmt.gov/elections/"
+  },
+  "NC": {
+   "name": "North Carolina",
+   "legislature": "North Carolina General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to anyone. Includes name, address, sex, race, age, party, and voting history.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.ncsbe.gov/"
+  },
+  "ND": {
+   "name": "North Dakota",
+   "legislature": "North Dakota Legislative Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "4-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No voter registration. Voters must be 18 on Election Day.",
+   "voterList": {
+    "publicFields": "North Dakota has no voter registration. Its central voter file goes to candidates, parties, and committees.",
+    "allowedUse": "Election-related purposes only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "http://sos.nd.gov/elections"
+  },
+  "NE": {
+   "name": "Nebraska",
+   "legislature": "Nebraska Legislature",
+   "lower": null,
+   "upper": {
+    "name": "Legislature (one chamber, nonpartisan)",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Includes address, birth year, party, and voting history.",
+    "allowedUse": "Elections, political activity, voter registration, law enforcement, or jury selection only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.nebraska.gov/index"
+  },
+  "NH": {
+   "name": "New Hampshire",
+   "legislature": "New Hampshire General Court",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Towns and cities hold most local authority.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "One free copy to parties, committees, and candidates. Others may view it in person only.",
+    "allowedUse": "Not commercial. Viewers may not print, copy, or alter it.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.nh.gov/"
+  },
+  "NJ": {
+   "name": "New Jersey",
+   "legislature": "New Jersey Legislature",
+   "lower": {
+    "name": "General Assembly",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 17,
+   "voterList": {
+    "publicFields": "Available to any voter for a fee. Free to parties.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.state.nj.us/state/elections/index.shtml"
+  },
+  "NM": {
+   "name": "New Mexico",
+   "legislature": "New Mexico Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available by written request.",
+    "allowedUse": "Government, election, or campaign purposes only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.state.nm.us/"
+  },
+  "NV": {
+   "name": "Nevada",
+   "legislature": "Nevada Legislature",
+   "lower": {
+    "name": "Assembly",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "Carson City is an independent city, not part of any county.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 17,
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Free to political parties.",
+    "allowedUse": "Must relate to an election. Not commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.nvsos.gov/sos/elections"
+  },
+  "NY": {
+   "name": "New York",
+   "legislature": "New York State Legislature",
+   "lower": {
+    "name": "State Assembly",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Open for public inspection. Copies may be bought. Includes name, address, and party.",
+    "allowedUse": "Election purposes only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.elections.ny.gov/"
+  },
+  "OH": {
+   "name": "Ohio",
+   "legislature": "Ohio General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open for public inspection. Includes name, address, precinct, and voting history.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.state.oh.us/elections/"
+  },
+  "OK": {
+   "name": "Oklahoma",
+   "legislature": "Oklahoma Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 17.5,
+   "preregistrationNote": "Age 17 and a half.",
+   "voterList": {
+    "publicFields": "Available to residents, party representatives, candidates, and others allowed by law. Includes name, address, and party.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://oklahoma.gov/elections.html"
+  },
+  "OR": {
+   "name": "Oregon",
+   "legislature": "Oregon Legislative Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Free to parties. Includes name, party, address, and phone.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.oregon.gov/voting-elections/Pages/default.aspx"
+  },
+  "PA": {
+   "name": "Pennsylvania",
+   "legislature": "Pennsylvania General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open for inspection. Street lists go to parties and candidates. Registered voters may buy copies.",
+    "allowedUse": "Election, political, or law enforcement purposes only. Not commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.pa.gov/agencies/vote"
+  },
+  "RI": {
+   "name": "Rhode Island",
+   "legislature": "Rhode Island General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Counties have no government. Cities and towns provide local government.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Given to candidates and parties. Includes name, party, address, and districts.",
+    "allowedUse": "Political purposes or candidacy only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://vote.sos.ri.gov/"
+  },
+  "SC": {
+   "name": "South Carolina",
+   "legislature": "South Carolina General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open for inspection. Any qualified South Carolina voter may request it.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.scvotes.gov/"
+  },
+  "SD": {
+   "name": "South Dakota",
+   "legislature": "South Dakota Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open for public inspection at the county office.",
+    "allowedUse": "Election purposes only. No sale, commercial use, or open posting online.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sdsos.gov/elections-voting/default.aspx"
+  },
+  "TN": {
+   "name": "Tennessee",
+   "legislature": "Tennessee General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Available to anyone who certifies political use, for a fee. Includes voting history.",
+    "allowedUse": "Political purposes only.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.tn.gov/elections"
+  },
+  "TX": {
+   "name": "Texas",
+   "legislature": "Texas Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 17.83,
+   "preregistrationNote": "Age 17 years and 10 months.",
+   "voterList": {
+    "publicFields": "Available to anyone. Includes name, birth date, registration number, and address.",
+    "allowedUse": "Not for commercial use.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.state.tx.us/elections/index.shtml"
+  },
+  "UT": {
+   "name": "Utah",
+   "legislature": "Utah State Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Only to qualified groups, such as governments, parties, and others who agree to confidentiality.",
+    "allowedUse": "Birth month and year may be used only for political purposes.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://vote.utah.gov/"
+  },
+  "VA": {
+   "name": "Virginia",
+   "legislature": "Virginia General Assembly",
+   "lower": {
+    "name": "House of Delegates",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "localNote": "All cities are independent and are not part of any county.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Sold to candidates, parties, PACs, and officeholders. Also to groups promoting voter participation.",
+    "allowedUse": "Campaign and political purposes, reports to constituents, and voter participation mailings.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.elections.virginia.gov/"
+  },
+  "VT": {
+   "name": "Vermont",
+   "legislature": "Vermont General Assembly",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "2-year term"
+   },
+   "localNote": "Towns and cities hold most local authority. Counties mainly serve as court and sheriff districts.",
+   "localNoteSource": "https://en.wikipedia.org/wiki/County_(United_States)",
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Town clerks give copies to party chairs and anyone else, at cost.",
+    "allowedUse": "Not commercial. No public posting or database matching.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.vermont.gov/elections/"
+  },
+  "WA": {
+   "name": "Washington",
+   "legislature": "Washington State Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "State Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 16,
+   "voterList": {
+    "publicFields": "Available to any person through a public records request.",
+    "allowedUse": "Political use allowed. Not commercial. Misuse is a felony.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://www.sos.wa.gov/elections/"
+  },
+  "WI": {
+   "name": "Wisconsin",
+   "legislature": "Wisconsin State Legislature",
+   "lower": {
+    "name": "State Assembly",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Open to public inspection and electronic access. Includes name, address, and voting history.",
+    "allowedUse": "No use limits stated in the source.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://elections.wi.gov/"
+  },
+  "WV": {
+   "name": "West Virginia",
+   "legislature": "West Virginia Legislature",
+   "lower": {
+    "name": "House of Delegates",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": 17,
+   "voterList": {
+    "publicFields": "Available to anyone for a fee. Includes name, address, party, and status.",
+    "allowedUse": "Not commercial. No solicitation, advertising, or resale.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.wv.gov/elections/Pages/default.aspx"
+  },
+  "WY": {
+   "name": "Wyoming",
+   "legislature": "Wyoming Legislature",
+   "lower": {
+    "name": "House of Representatives",
+    "term": "2-year term"
+   },
+   "upper": {
+    "name": "Senate",
+    "term": "4-year term"
+   },
+   "preregistrationAge": null,
+   "preregistrationNote": "No preregistration age. You may register if you will be 18 by the next election.",
+   "voterList": {
+    "publicFields": "Only to candidates, parties, campaign committees, officials, PACs, and voter participation groups.",
+    "allowedUse": "Political purposes only. Not commercial.",
+    "source": "https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx"
+   },
+   "electionOffice": "https://sos.wyo.gov/Elections/Default.aspx"
+  }
+ }
+}
