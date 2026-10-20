@@ -124,7 +124,8 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 .pkgcard.empty{cursor:default;border-style:dashed;color:var(--muted)}
 .cmp{display:grid;grid-template-columns:110px 1fr 1fr;gap:6px 10px;align-items:center;font-size:.82rem;font-variant-numeric:tabular-nums}
 .cmp .h{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-.mini{display:flex;align-items:center;gap:6px}
+.mini{display:flex;align-items:center;gap:6px;min-width:0}
+@media (max-width:480px){.mini .track{display:none}}
 .mini .track{flex:1}
 .choices{display:grid;gap:8px}
 .choice{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer}
@@ -283,7 +284,7 @@ function renderDetail(){
     </div>
     <h3>Who took part</h3>
     <p class="meta">Open participants and the randomly selected citizen panel, compared with the district's adult population.${pt&&pt.example?" Example figures.":""}</p>
-    <div class="cmp" style="grid-template-columns:110px 1fr 1fr 1fr"><span></span>${pt?pt.makeup.columns.map(c=>`<span class="h">${esc(c)}</span>`).join(""):""}
+    <div class="cmp" style="grid-template-columns:minmax(70px,100px) repeat(3,minmax(0,1fr))"><span></span>${pt?pt.makeup.columns.map(c=>`<span class="h">${esc(c)}</span>`).join(""):""}
       ${dims.map(dm=>`<span class="h">${esc(dm.name)}</span><span></span><span></span><span></span>${dm.rows.map(r=>`<span>${esc(r[0])}</span>${bar(r[1])}${bar(r[2])}${bar(r[3])}`).join("")}`).join("")}
     </div>
     ${skew?`<p class="flag">Open participants don't match the district on every measure. The citizen panel does, so where the two agree, the common ground is more likely to reflect your constituents.</p>`:""}
