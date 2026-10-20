@@ -21,7 +21,9 @@ AI organizes and drafts. People decide. A legislator decides whether to introduc
 - **Issue packs:** shared facts, current law, seed statements, cost options for one topic.
 - **Jurisdiction packs:** districts, committees, calendar, bill format, budget figures for one government.
 
-Pilot: invasive species, Hawaiʻi State Legislature, 2027 session.
+Live packs:
+- **Hawaiʻi State Legislature** (pilot): invasive species, 2027 session.
+- **U.S. Congress**: the same issue at the federal level, with federal facts, cost options, per-U.S.-resident costs, congressional bill format, and hand-off to a member's representative and senators.
 
 ## Trust rules
 

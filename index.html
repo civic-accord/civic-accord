@@ -116,13 +116,13 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Civic deliberation · working prototype · Hawaiʻi pilot</div>
+    <div class="eyebrow">Civic deliberation · working prototype</div>
     <h1>Civic Accord</h1>
-    <p class="lede">Residents talk an issue through, the tool finds where they actually agree, and the result goes to their state legislator as a proposed bill with the full public record behind it.</p>
+    <p class="lede">Residents talk an issue through, the tool finds where they actually agree, and the result goes to their representatives as a proposed bill with the full public record behind it.</p>
     <div class="who">
       <span class="chip ok">✓ Verified resident</span>
-      <span class="chip">Maui · House District (example)</span>
-      <span class="chip">2027 session opens Jan 20</span>
+      <span class="chip" id="chip-district"></span>
+      <span class="chip" id="chip-session"></span>
     </div>
     <p class="note"><b>Example data.</b> Every vote, comment, and participant here is invented to show how the tool works. Nothing is sent anywhere.</p>
   </header>
@@ -142,69 +142,129 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 
   <footer>
     <span>Prototype by Jeffrey Wise with Claude · October 2026</span>
-    <span>AI organizes and drafts. People decide. The Legislative Reference Bureau drafts the final bill text for any legislator who introduces it.</span>
+    <span id="footnote"></span>
   </footer>
 </div>
 
+
 <script>
-const ISSUES=[
-  {id:"invasive",name:"Invasive species",sub:"Pilot issue",live:true},
-  {id:"food",name:"Food self-sufficiency",sub:"Issue pack later"},
-  {id:"wildfire",name:"Wildfire resilience",sub:"Issue pack later"},
-  {id:"housing",name:"Housing",sub:"Issue pack later"},
-  {id:"water",name:"Water",sub:"Issue pack later"}
-];
-const JURIS=[
-  {name:"Hawaiʻi State Legislature",sub:"Pilot",live:true},
-  {name:"Maui County Council",sub:"Jurisdiction pack later"},
-  {name:"Another state",sub:"Jurisdiction pack later"},
-  {name:"U.S. Congress",sub:"Jurisdiction pack later"}
-];
+// ---------- Shared formatting ----------
+const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
+const unitMoney=v=>v>=1e6?`$${+(v/1e6).toFixed(2)}M`:v>=1000?`$${+(v/1000).toFixed(1)}K`:`$${v}`;
+const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const words=n=>n.toLocaleString();
+
+// ---------- Jurisdiction packs ----------
+// Each pack adapts the same core to one government: its facts, statements, cost options, bill format, and hand-off.
+const PACKS={
+state:{
+  name:"Hawaiʻi State Legislature", short:"State",
+  district:"Maui · State House District (example)", session:"2027 session opens Jan 20",
+  footnote:"AI organizes and drafts. People decide. The Legislative Reference Bureau drafts the final bill text for any legislator who introduces it.",
+  residents:1432820, resLabel:"Hawaiʻi resident", resNote:"Hawaiʻi's 1,432,820 residents (2025 estimate)",
+  popSource:{href:"https://census.hawaii.gov/?p=11686",label:"2025 Hawaiʻi population estimate"},
+  base:{amt:4780378,label:"the Invasive Species Council's current base budget of $4.78M (FY26)"},
+  fee:{label:"Visitor biosecurity fee",perUnit:9640000,unitText:"Per visitor, based on about 9.64 million visitor arrivals in 2025. Paid by visitors, not residents.",max:10,step:0.5,statement:7},
+  fines:{label:"Raise fines for moving infested material",amt:100000,statement:4},
+  issueTitle:"Invasive species in Hawaiʻi",
+  facts:[["Lead agency","Department of Agriculture &amp; Biosecurity, renamed from the Department of Agriculture by Act 236 (2025)."],["New powers","The department and governor can now declare a biosecurity emergency to stop a pest from spreading."],["Coming Jan 1, 2027","A new deputy for biosecurity takes charge of inspections and pest control programs."],["Recent funding","$8.5 million over two years for the Hawaiʻi Invasive Species Council, plus $500,000 each for the Hawaiʻi Ant Lab and the coconut rhinoceros beetle response."]],
+  lists:[["Pests people report most",["Little fire ant","Coconut rhinoceros beetle","Coquí frog","Two-lined spittlebug"]],["Where bills go",["House Committee on Agriculture &amp; Food Systems","Senate Committee on Agriculture and Environment","Money bills also pass through House Finance and Senate Ways and Means"]]],
+  sources:[["https://dab.hawaii.gov/?p=13137","Dept. of Agriculture &amp; Biosecurity, July 2025"],["https://www.mikegabbard.com/in-print/eft3shqdr2xjriuub2u5fqiz2v6t7g","Hawaiʻi Public Radio, June 2025"],["https://mauinow.com/2025/05/02/hawai%ca%bbi-legislature-passes-biosecurity-bill/","Maui Now, May 2025"]],
+  costSources:[["https://mikegabbard.com/in-print/bmeo0i3o5xgizpgglzzwjtf15zb15n","2024 biosecurity funding, Hawaiʻi Public Radio"],["https://dlnr.hawaii.gov/hisc/files/2025/09/Submittal-2_HISC-FY26-Recommended-Budget-for-Council-Approval.pdf","HISC FY26 budget"],["https://www.thegardenisland.com/2026/02/02/business/hawaii-visitor-arrivals-end-2025-well-below-pre-pandemic-peak/","2025 visitor arrivals"]],
+  groups:["Leans toward protecting farms and keeping costs off residents. Skeptical of visitor fees and higher fines.","Leans toward stronger enforcement and new funding sources, including visitors."],
+  S:[
+   {id:1,t:"Every island should have a rapid-response crew that can treat a new little fire ant find within 72 hours.",a:[41,3,2],b:[37,5,4]},
+   {id:2,t:"Plants and soil shipped between islands should be inspected the same way as shipments from the mainland.",a:[38,6,2],b:[29,12,5]},
+   {id:3,t:"The state should publish a public map of confirmed pest sightings, updated weekly.",a:[40,2,4],b:[39,3,4]},
+   {id:4,t:"Fines for knowingly moving infested material should go up.",a:[22,20,4],b:[36,6,4]},
+   {id:5,t:"Funding for invasive species should come from a dedicated source, not compete with the general budget every year.",a:[35,5,6],b:[38,4,4]},
+   {id:6,t:"Homeowners should get free little fire ant treatment kits and training.",a:[39,4,3],b:[34,7,5]},
+   {id:7,t:"Visitors should pay a fee that goes directly to biosecurity.",a:[18,24,4],b:[37,5,4]},
+   {id:8,t:"Farmers who report a new pest quickly should be protected from losing their whole crop without compensation.",a:[42,1,3],b:[30,9,7]},
+   {id:9,t:"Schools should teach keiki to recognize the worst invasive pests.",a:[37,4,5],b:[40,2,4]}],
+  OPT:{
+   1:{name:"Rapid-response crews",unit:"crews",min:0,max:12,step:1,def:5,per:400000,yr:true,impact:n=>`${n} crew${n===1?"":"s"} of 4 staff with gear. ${n>=5?"Every major island covered.":"Some islands share a crew."}`,basis:"About $73,000 per biosecurity position, based on the 2024 law that funded 44 positions for $3.2 million, plus equipment.",bill:n=>`establish ${words(n)} rapid response teams, assigned so that every island can begin treatment of a newly detected little fire ant infestation within seventy-two hours of confirmation`},
+   2:{name:"Interisland plant and soil inspections",unit:"inspectors",min:0,max:30,step:2,def:12,per:85000,yr:true,impact:n=>`${n} inspectors at interisland ports and cargo hubs.`,basis:"Inspector salary and benefits, estimated.",bill:n=>`inspect plants and soil shipped between islands to the same standard as shipments from outside the State, with ${words(n)} additional inspector positions`},
+   3:{name:"Public pest sighting map",unit:"",min:1,max:1,step:1,def:1,per:150000,yr:true,impact:()=>"Weekly public map built on the pest dashboard Act 236 already requires.",basis:"Staff time and hosting, estimated.",bill:()=>"publish a public map of confirmed pest detections, updated at least weekly, as part of the pest dashboard required by Act 236, Session Laws of Hawaii 2025"},
+   5:{name:"Study a dedicated funding source",unit:"",min:1,max:1,step:1,def:1,per:250000,yr:false,impact:()=>"One-time study with recommendations to the legislature.",basis:"One-time contract, estimated.",bill:()=>"study and recommend a dedicated, recurring funding source for biosecurity programs and report its findings to the legislature"},
+   6:{name:"Free fire ant kits for homeowners",unit:"households",min:0,max:60000,step:5000,def:20000,per:40,yr:true,impact:n=>`${words(n)} households a year get bait and training.`,basis:"About $40 per household for bait and training, estimated.",bill:n=>`provide free little fire ant treatment supplies and training to up to ${words(n)} residential households each year`},
+   8:{name:"Farmer compensation fund",unit:"million dollars",min:0,max:5,step:0.5,def:1,per:1000000,yr:true,impact:n=>`$${n}M a year to cover crop losses from required pest control.`,basis:"Set by the legislature; no standard cost.",bill:n=>`establish a compensation fund of $${words(n*1000000)} each year for farmers who promptly report a new pest and suffer crop losses from required control measures`},
+   9:{name:"Pest lessons in schools",unit:"",min:1,max:1,step:1,def:1,per:200000,yr:true,impact:()=>"Lesson materials and teacher training statewide.",basis:"Curriculum and training, estimated.",bill:()=>"work with the department of education to offer invasive pest identification lessons in public schools"}},
+  billHead:`<span class="c">A BILL FOR AN ACT</span><span class="c">RELATING TO BIOSECURITY.</span>\n<span class="c">BE IT ENACTED BY THE LEGISLATURE OF THE STATE OF HAWAII:</span>\n     SECTION 1.  The legislature finds that residents of every island have identified invasive species as an urgent threat to agriculture, natural resources, and daily life, and that residents with differing views share common ground on the measures in this Act.\n\n     SECTION 2.  The department of agriculture and biosecurity shall:\n`,
+  feeSection:(fee)=>`There is established a biosecurity visitor fee of $${fee.toFixed(2)} per visitor arrival, to be deposited into a special fund for the purposes of this Act.`,
+  finesSection:"The penalties for knowingly transporting material infested with a restricted pest shall be increased.",
+  approp:(src)=>`There is appropriated ${src} or so much thereof as may be necessary for fiscal year 2027-2028 for the purposes of this Act.`,
+  generalFund:"the general revenues of the State of Hawaii", specialFund:"the biosecurity special fund",
+  effective:"This Act shall take effect on July 1, 2027.", secWord:"SECTION",
+  handoffTitle:"Hand off to your legislators",
+  handoffLede:"The package goes to the state representative and senator for this district. They decide whether to introduce it. The public record stays open either way.",
+  timing:"The 2027 session opens January 20. Bills are introduced in the first week or two, so packages should reach legislators by early January.",
+  copyTitle:"Invasive species, Hawaiʻi State Legislature"
+},
+federal:{
+  name:"U.S. Congress", short:"Federal",
+  district:"Hawaiʻi 2nd Congressional District (example)", session:"120th Congress convenes Jan 3, 2027",
+  footnote:"AI organizes and drafts. People decide. The House and Senate Offices of Legislative Counsel draft final bill text for any member who introduces it.",
+  residents:341800000, resLabel:"U.S. resident", resNote:"about 341.8 million U.S. residents (2025 estimate)",
+  popSource:{href:"https://www.worldatlas.com/society/how-many-people-are-in-the-us.html",label:"2025 U.S. population estimate"},
+  base:{amt:1158000000,label:"APHIS's enacted FY2026 budget of $1.16B"},
+  fee:null,
+  fines:{label:"Raise penalties for importing banned species",amt:1000000,statement:4},
+  issueTitle:"Invasive species and the federal government",
+  facts:[["Lead agency","USDA's Animal and Plant Health Inspection Service (APHIS) keeps foreign pests and diseases out and works with states on eradication."],["Main laws","The Plant Protection Act (2000) covers plant pests; the Lacey Act bans listed injurious animals; Executive Order 13112 (1999) created the National Invasive Species Council."],["Current funding","Congress enacted $1.16 billion for APHIS for fiscal year 2026."],["The gap at the border","Customs and Border Protection's own staffing model calls for 721 more agriculture specialists at ports of entry."]],
+  lists:[["Scale of the problem",["Federal agencies reported spending about $2.3 billion on invasive species in FY2016","Selected invasive species cost the U.S. economy an estimated $127 billion a year","Islands and territories like Hawaiʻi face the highest risk of new arrivals"]],["Where bills go",["House Committee on Agriculture","Senate Committee on Agriculture, Nutrition, and Forestry","Funding passes through the House and Senate Appropriations subcommittees on Agriculture"]]],
+  sources:[["https://www.everycrsreport.com/files/2026-02-17_R48564_45f28ce6892b90da209990438daba52630de5044.pdf","CRS, FY2026 Agriculture appropriations"],["https://www.everycrsreport.com/files/20170117_R43258_d499696c0ebea864567b3effeb4e4f3b5575ddaa.html","CRS, invasive species laws and agencies"],["https://www.freightwaves.com/news/additional-cbp-ag-specialists-wanted-at-us-ports","FreightWaves, CBP agriculture specialists"]],
+  costSources:[["https://www.everycrsreport.com/files/2026-02-17_R48564_45f28ce6892b90da209990438daba52630de5044.pdf","CRS, FY2026 APHIS funding"],["https://www.freightwaves.com/news/additional-cbp-ag-specialists-wanted-at-us-ports","CBP specialist shortfall"]],
+  groups:["Leans toward border enforcement and protecting farmers, wary of new costs on business.","Leans toward steady funding for states, research, and having importers share the cost."],
+  S:[
+   {id:1,t:"Hire the extra agriculture specialists that Customs and Border Protection says it needs at ports of entry.",a:[44,2,2],b:[36,6,4]},
+   {id:2,t:"States and territories should get steady federal grants for rapid response to new pests.",a:[30,10,6],b:[40,3,3]},
+   {id:3,t:"APHIS should publish a public national map of confirmed pest detections.",a:[38,4,4],b:[41,2,3]},
+   {id:4,t:"Penalties for knowingly importing banned species should go up.",a:[39,5,2],b:[37,6,3]},
+   {id:5,t:"Invasive species work should have a dedicated trust fund instead of depending on yearly appropriations.",a:[24,16,6],b:[39,4,3]},
+   {id:6,t:"Fund more research on biological controls, like natural predators of pests.",a:[35,6,5],b:[40,2,4]},
+   {id:7,t:"Importers and shippers should pay more of the cost of inspections.",a:[15,27,4],b:[38,4,4]},
+   {id:8,t:"Farmers hit by federal pest quarantines should get prompt compensation.",a:[43,1,2],b:[33,7,6]},
+   {id:9,t:"Islands and territories should get extra federal help because they face the highest risk.",a:[33,8,5],b:[39,3,4]}],
+  OPT:{
+   1:{name:"More agriculture specialists at ports",unit:"specialists",min:0,max:720,step:40,def:240,per:120000,yr:true,impact:n=>`${words(n)} more specialists, against a stated need of 721.`,basis:"About $120,000 per specialist for salary, benefits, and training, estimated. 240 a year matches the hiring pace a 2019 bill authorized.",bill:n=>`hire not fewer than ${words(n)} additional agriculture specialists for assignment to ports of entry`},
+   2:{name:"Rapid-response grants to states and territories",unit:"million dollars",min:0,max:300,step:25,def:100,per:1000000,yr:true,impact:n=>`$${n}M a year shared among states and territories.`,basis:"Set by Congress; no standard cost.",bill:n=>`make grants totaling $${words(n*1000000)} each fiscal year to States and territories for rapid response to newly detected plant pests`},
+   3:{name:"National public pest map",unit:"",min:1,max:1,step:1,def:1,per:5000000,yr:true,impact:()=>"A public national map of confirmed pest detections run by APHIS.",basis:"Systems, staff, and data sharing with states, estimated.",bill:()=>"publish and maintain a public national map of confirmed detections of regulated plant pests, updated at least weekly"},
+   5:{name:"Study a dedicated trust fund",unit:"",min:1,max:1,step:1,def:1,per:2000000,yr:false,impact:()=>"One-time study of a dedicated, recurring funding source.",basis:"One-time study, estimated.",bill:()=>"study the establishment of a dedicated trust fund for invasive species prevention and control and report to Congress within one year"},
+   6:{name:"Biological control research",unit:"million dollars",min:0,max:200,step:10,def:50,per:1000000,yr:true,impact:n=>`$${n}M a year for research on natural predators and other biological controls.`,basis:"Set by Congress; no standard cost.",bill:n=>`carry out research on biological control of invasive species, with $${words(n*1000000)} for each fiscal year`},
+   8:{name:"Quarantine compensation for farmers",unit:"million dollars",min:0,max:500,step:25,def:200,per:1000000,yr:true,impact:n=>`$${n}M a year for farmers who lose crops to federal pest quarantines.`,basis:"Set by Congress; no standard cost.",bill:n=>`compensate agricultural producers for losses resulting from Federal plant pest quarantines, with $${words(n*1000000)} for each fiscal year`},
+   9:{name:"Extra help for islands and territories",unit:"million dollars",min:0,max:100,step:5,def:25,per:1000000,yr:true,impact:n=>`$${n}M a year for Hawaiʻi, Pacific and Caribbean territories.`,basis:"Set by Congress; no standard cost.",bill:n=>`provide $${words(n*1000000)} each fiscal year in additional assistance to Hawaii and the territories for biosecurity`}},
+  revUnknown:{7:"Importer fee revenue not yet estimated"},
+  billHead:`<span class="c">H. R. ____</span><span class="c">IN THE HOUSE OF REPRESENTATIVES</span>\n<span class="c">A BILL</span><span class="c">To strengthen the prevention and control of invasive species, and for other purposes.</span>\n\n     Be it enacted by the Senate and House of Representatives of the United States of America in Congress assembled,\n\n     SECTION 1.  SHORT TITLE.\n     This Act may be cited as the "Invasive Species Prevention Act of 2027".\n\n     SEC. 2.  ACTIONS.\n     The Secretary of Agriculture and the Commissioner of U.S. Customs and Border Protection, as appropriate, shall:\n`,
+  feeSection:()=>"",
+  finesSection:"The maximum civil and criminal penalties for knowingly importing an injurious species or a prohibited plant pest are increased.",
+  approp:(src)=>`AUTHORIZATION OF APPROPRIATIONS.\n     There are authorized to be appropriated ${src} for fiscal year 2028 to carry out this Act.`,
+  generalFund:"", specialFund:"",
+  effective:"EFFECTIVE DATE.\n     This Act shall take effect 90 days after the date of enactment.", secWord:"SEC.",
+  handoffTitle:"Hand off to your members of Congress",
+  handoffLede:"The package goes to your U.S. representative and both of your state's senators. They decide whether to introduce it. The public record stays open either way.",
+  timing:"The 120th Congress convenes January 3, 2027. Bills can be introduced at any time in the two-year Congress, but early introduction gives more time for hearings.",
+  copyTitle:"Invasive species, U.S. Congress"
+}};
+
+// ---------- Per-pack state ----------
+const blank=(P)=>{const b={};Object.keys(P.OPT).forEach(k=>b[k]={on:false,n:P.OPT[k].def});return {mine:{},added:[],budget:b,fee:0,fines:false,budgetSeeded:false,submitted:false,receipt:"",nextId:100,step:0}};
+const ST={state:blank(PACKS.state),federal:blank(PACKS.federal)};
+let cur="state", P=PACKS.state, st=ST.state;
+const ISSUES=[{id:"invasive",name:"Invasive species",sub:"Pilot issue",live:true},{id:"food",name:"Food self-sufficiency",sub:"Issue pack later"},{id:"wildfire",name:"Wildfire resilience",sub:"Issue pack later"},{id:"housing",name:"Housing",sub:"Issue pack later"},{id:"water",name:"Water",sub:"Issue pack later"}];
+const JURIS=[{key:"state",name:"Hawaiʻi State Legislature",sub:"Pilot"},{key:"county",name:"Maui County Council",sub:"Jurisdiction pack later"},{key:"other",name:"Another state",sub:"Jurisdiction pack later"},{key:"federal",name:"U.S. Congress",sub:"Federal pack"}];
 const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
 
-// Cost model. Illustrative estimates anchored to recent Hawaiʻi appropriations; the live tool would use agency and independent estimates.
-const VISITORS=9640000; // 2025 visitor arrivals, preliminary state data
-const HISC_BASE=4780378; // HISC FY26 base budget
-const RESIDENTS=1432820; // Hawaii resident population, July 1, 2025 (state estimate)
-const perRes=v=>{const x=v/RESIDENTS;return x<=0?"$0":x<10?`$${x.toFixed(2)}`:`$${Math.round(x)}`};
-const netYearly=t=>Math.max(0,t.yearly-t.feeRev-t.fineRev);
-const unitMoney=v=>v>=1e6?`$${+(v/1e6).toFixed(2)}M`:v>=1000?`$${+(v/1000).toFixed(1)}K`:`$${v}`;
+const perRes=v=>{const x=v/P.residents;return x<=0?"$0":x<0.01?"under 1¢":x<10?`$${x.toFixed(2)}`:`$${Math.round(x)}`};
 function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
-  const math=o.unit&&o.unit!=="million dollars"?`${n.toLocaleString()} ${o.unit} × ${unitMoney(o.per)} = ${money(tot)}${when}`:`${money(tot)}${when}`;
-  return `${math} · about ${perRes(tot)} per Hawaiʻi resident${when}`}
-const OPT={
- 1:{name:"Rapid-response crews",unit:"crews",min:0,max:12,step:1,def:5,per:400000,yr:true,impact:n=>`${n} crew${n===1?"":"s"} of 4 staff with gear. ${n>=5?"Every major island covered.":"Some islands share a crew."}`,basis:"About $73,000 per biosecurity position, based on the 2024 law that funded 44 positions for $3.2 million, plus equipment."},
- 2:{name:"Interisland plant and soil inspections",unit:"inspectors",min:0,max:30,step:2,def:12,per:85000,yr:true,impact:n=>`${n} inspectors at interisland ports and cargo hubs.`,basis:"Inspector salary and benefits, estimated."},
- 3:{name:"Public pest sighting map",unit:"",min:1,max:1,step:1,def:1,per:150000,yr:true,impact:()=>"Weekly public map built on the pest dashboard Act 236 already requires.",basis:"Staff time and hosting, estimated."},
- 5:{name:"Study a dedicated funding source",unit:"",min:1,max:1,step:1,def:1,per:250000,yr:false,impact:()=>"One-time study with recommendations to the legislature.",basis:"One-time contract, estimated."},
- 6:{name:"Free fire ant kits for homeowners",unit:"households",min:0,max:60000,step:5000,def:20000,per:40,yr:true,impact:n=>`${n.toLocaleString()} households a year get bait and training.`,basis:"About $40 per household for bait and training, estimated."},
- 8:{name:"Farmer compensation fund",unit:"million dollars",min:0,max:5,step:0.5,def:1,per:1000000,yr:true,impact:n=>`$${n}M a year to cover crop losses from required pest control.`,basis:"Set by the legislature; no standard cost."},
- 9:{name:"Pest lessons in schools",unit:"",min:1,max:1,step:1,def:1,per:200000,yr:true,impact:()=>"Lesson materials and teacher training statewide.",basis:"Curriculum and training, estimated."}
-};
-let budget={}; Object.keys(OPT).forEach(k=>budget[k]={on:false,n:OPT[k].def});
-let fee=0, fines=false, budgetSeeded=false;
-const money=v=>v>=1e6?`$${(v/1e6).toFixed(v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`;
-
-// Example statements. a/b = invented agree, disagree, pass counts for two opinion groups found by voting pattern.
-const S=[
- {id:1,t:"Every island should have a rapid-response crew that can treat a new little fire ant find within 72 hours.",a:[41,3,2],b:[37,5,4]},
- {id:2,t:"Plants and soil shipped between islands should be inspected the same way as shipments from the mainland.",a:[38,6,2],b:[29,12,5]},
- {id:3,t:"The state should publish a public map of confirmed pest sightings, updated weekly.",a:[40,2,4],b:[39,3,4]},
- {id:4,t:"Fines for knowingly moving infested material should go up.",a:[22,20,4],b:[36,6,4]},
- {id:5,t:"Funding for invasive species should come from a dedicated source, not compete with the general budget every year.",a:[35,5,6],b:[38,4,4]},
- {id:6,t:"Homeowners should get free little fire ant treatment kits and training.",a:[39,4,3],b:[34,7,5]},
- {id:7,t:"Visitors should pay a fee that goes directly to biosecurity.",a:[18,24,4],b:[37,5,4]},
- {id:8,t:"Farmers who report a new pest quickly should be protected from losing their whole crop without compensation.",a:[42,1,3],b:[30,9,7]},
- {id:9,t:"Schools should teach keiki to recognize the worst invasive pests.",a:[37,4,5],b:[40,2,4]}
-];
-let submitted=false, receipt=""; let mine={}; let added=[]; let issue="invasive"; let step=0; let nextId=100;
-
-const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
-const esc=(s)=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const math=o.unit&&o.unit!=="million dollars"?`${words(n)} ${o.unit} × ${unitMoney(o.per)} = ${money(tot)}${when}`:`${money(tot)}${when}`;
+  return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
+const all=()=>[...P.S,...st.added];
 
 function tally(s){
-  const a=[...s.a], b=[...s.b], v=mine[s.id];
-  if(v!==undefined&&submitted){ a[v]++; } // the viewer's own vote joins group A in this demo
+  const a=[...s.a], b=[...s.b], v=st.mine[s.id];
+  if(v!==undefined&&st.submitted){ a[v]++; }
   const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
   const pa=pct(a), pb=pct(b);
   let kind="forming";
@@ -213,93 +273,92 @@ function tally(s){
   }
   return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2]};
 }
-const all=()=>[...S,...added];
-
-function renderIssues(){
-  const box=document.getElementById("issues");box.innerHTML="";
-  ISSUES.forEach(i=>{
-    const b=el(`<button class="issue" aria-pressed="${i.id===issue}" ${i.live?"":"disabled"}>${esc(i.name)}<small>${esc(i.sub)}</small></button>`);
-    box.appendChild(b);
-  });
+function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
+function seedBudget(){if(!st.budgetSeeded){Object.keys(P.OPT).forEach(k=>{const s=statusOf(k);st.budget[k].on=!!s&&s.kind==="common"});st.budgetSeeded=true}}
+function totals(){
+  let yearly=0, once=0;
+  Object.keys(P.OPT).forEach(k=>{const b=st.budget[k];if(!b.on)return;const c=P.OPT[k].per*b.n;P.OPT[k].yr?yearly+=c:once+=c});
+  const feeRev=P.fee?st.fee*P.fee.perUnit:0, fineRev=st.fines?P.fines.amt:0;
+  const gf=Math.max(0,yearly+once-feeRev-fineRev);
+  return {yearly,once,feeRev,fineRev,gf,surplus:Math.max(0,feeRev+fineRev-yearly-once)};
 }
-function renderJuris(){
-  const box=document.getElementById("juris");box.innerHTML="";
-  JURIS.forEach(j=>box.appendChild(el(`<button class="issue" aria-pressed="${!!j.live}" ${j.live?"":"disabled"}>${esc(j.name)}<small>${esc(j.sub)}</small></button>`)));
-}
-function renderSteps(){
-  const n=document.getElementById("steps");n.innerHTML="";
-  STEPS.forEach(([name,num],i)=>{
-    const b=el(`<button class="step ${i<step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===step}"><b>Step ${num}</b><span>${name}</span></button>`);
-    b.onclick=()=>{step=i;render()};n.appendChild(b);
-  });
-}
-
-function learn(){
-  return `<section class="panel" role="tabpanel">
-  <div><div class="eyebrow">Issue pack · shared facts</div><h2>Invasive species in Hawaiʻi</h2></div>
-  <p class="lede">Everyone starts from the same verified facts before weighing in. Each issue gets its own pack like this one; the rest of the tool stays the same.</p>
-  <div class="grid2">
-    <div class="fact"><span class="k">Lead agency</span><span>Department of Agriculture &amp; Biosecurity, renamed from the Department of Agriculture by Act 236 (2025).</span></div>
-    <div class="fact"><span class="k">New powers</span><span>The department and governor can now declare a biosecurity emergency to stop a pest from spreading.</span></div>
-    <div class="fact"><span class="k">Coming Jan 1, 2027</span><span>A new deputy for biosecurity takes charge of inspections and pest control programs.</span></div>
-    <div class="fact"><span class="k">Recent funding</span><span>$8.5 million over two years for the Hawaiʻi Invasive Species Council, plus $500,000 each for the Hawaiʻi Ant Lab and the coconut rhinoceros beetle response.</span></div>
-  </div>
-  <div class="grid2">
-    <div><h3>Pests people report most</h3><ul class="plain"><li>Little fire ant</li><li>Coconut rhinoceros beetle</li><li>Coquí frog</li><li>Two-lined spittlebug</li></ul></div>
-    <div><h3>Where bills go</h3><ul class="plain"><li>House Committee on Agriculture &amp; Food Systems</li><li>Senate Committee on Agriculture and Environment</li><li>Money bills also pass through House Finance and Senate Ways and Means</li></ul></div>
-  </div>
-  <p class="src">Sources: <a href="https://dab.hawaii.gov/?p=13137" target="_blank" rel="noopener">Dept. of Agriculture &amp; Biosecurity, July 2025</a> · <a href="https://www.mikegabbard.com/in-print/eft3shqdr2xjriuub2u5fqiz2v6t7g" target="_blank" rel="noopener">Hawaiʻi Public Radio, June 2025</a> · <a href="https://mauinow.com/2025/05/02/hawai%ca%bbi-legislature-passes-biosecurity-bill/" target="_blank" rel="noopener">Maui Now, May 2025</a></p>
-  <button class="btn" id="go1">Start weighing in</button>
-  </section>`;
-}
+const netYearly=t=>Math.max(0,t.yearly-t.feeRev-t.fineRev);
 
 function costInfo(id){
-  const o=OPT[id];
-  if(o){const b=budget[id];const n=b?b.n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. ${money(o.per*n)}${o.yr?" a year":" one time"} · ${perRes(o.per*n)} per resident`,basis:`${breakdown(o,n)}. ${o.impact(n)} ${o.basis}`}}
-  if(id===4) return {kind:"rev",amt:100000,yr:true,text:"Brings in about $100K a year",basis:"Rough estimate of added fine revenue. Fines mainly deter."};
-  if(id===7) return {kind:"rev",amt:VISITORS,yr:true,text:`Brings in about ${money(VISITORS)} a year per $1 fee · paid by visitors, not residents`,basis:"Based on about 9.64 million visitor arrivals in 2025. The fee amount is chosen in Step 4."};
+  const o=P.OPT[id];
+  if(o){const n=st.budget[id]?st.budget[id].n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. ${money(o.per*n)}${o.yr?" a year":" one time"} · ${perRes(o.per*n)} per resident`,basis:`${breakdown(o,n)}. ${o.impact(n)} ${o.basis}`}}
+  if(P.fines&&id===P.fines.statement) return {kind:"rev",amt:P.fines.amt,yr:true,text:`Brings in about ${money(P.fines.amt)} a year`,basis:"Rough estimate of added penalty revenue. Penalties mainly deter."};
+  if(P.fee&&id===P.fee.statement) return {kind:"rev",amt:P.fee.perUnit,yr:true,text:`Brings in about ${money(P.fee.perUnit)} a year per $1 fee · paid by visitors, not residents`,basis:"Based on about 9.64 million visitor arrivals in 2025. The fee amount is chosen in Step 4."};
+  if(P.revUnknown&&P.revUnknown[id]) return {kind:"unknown",text:P.revUnknown[id],basis:"Would bring in money rather than cost it, but the amount depends on fee design and import volumes. Analysts would estimate it before it could be counted."};
   return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas are sent to analysts for a cost estimate before they can be funded."};
 }
 function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
 function agreedTotals(){
-  let yearly=0,once=0,rev=0;
-  all().forEach(s=>{if(mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}else if(c.kind==="rev"&&s.id===4){rev+=c.amt}});
-  return {yearly,once,rev};
+  let yearly=0,once=0;
+  all().forEach(s=>{if(st.mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}});
+  return {yearly,once};
 }
-function voteCounts(){const v=Object.values(mine);return {agree:v.filter(x=>x===0).length,disagree:v.filter(x=>x===1).length,pass:v.filter(x=>x===2).length,total:v.length}}
+function voteCounts(){const v=Object.values(st.mine);return {agree:v.filter(x=>x===0).length,disagree:v.filter(x=>x===1).length,pass:v.filter(x=>x===2).length,total:v.length}}
 function makeReceipt(){
-  const str=JSON.stringify(Object.keys(mine).sort().map(k=>[k,mine[k]]))+Date.now();
+  const str=cur+JSON.stringify(Object.keys(st.mine).sort().map(k=>[k,st.mine[k]]))+Date.now();
   let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
   const x=(h>>>0).toString(36).toUpperCase().padStart(7,"0");
-  return `CA-${x.slice(0,4)}-${x.slice(4)}`;
+  return `CA-${cur==="federal"?"US":"HI"}-${x.slice(0,4)}-${x.slice(4)}`;
+}
+
+// ---------- Header controls ----------
+function renderHeader(){
+  document.getElementById("chip-district").textContent=P.district;
+  document.getElementById("chip-session").textContent=P.session;
+  document.getElementById("footnote").textContent=P.footnote;
+  const jb=document.getElementById("juris");jb.innerHTML="";
+  JURIS.forEach(j=>{const live=!!PACKS[j.key];const b=el(`<button class="issue" aria-pressed="${j.key===cur}" ${live?"":"disabled"}>${esc(j.name)}<small>${esc(j.sub)}</small></button>`);
+    if(live) b.onclick=()=>{if(j.key===cur)return;cur=j.key;P=PACKS[cur];st=ST[cur];render();window.scrollTo({top:0})};jb.appendChild(b)});
+  const ib=document.getElementById("issues");ib.innerHTML="";
+  ISSUES.forEach(i=>ib.appendChild(el(`<button class="issue" aria-pressed="${i.live?"true":"false"}" ${i.live?"":"disabled"}>${esc(i.name)}<small>${esc(i.sub)}</small></button>`)));
+  const n=document.getElementById("steps");n.innerHTML="";
+  STEPS.forEach(([name,num],i)=>{const b=el(`<button class="step ${i<st.step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===st.step}"><b>Step ${num}</b><span>${name}</span></button>`);b.onclick=()=>{st.step=i;render()};n.appendChild(b)});
+}
+
+// ---------- Steps ----------
+const srcLinks=list=>list.map(([h,l])=>`<a href="${h}" target="_blank" rel="noopener">${l}</a>`).join(" · ");
+function learn(){
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Issue pack · ${esc(P.name)}</div><h2>${P.issueTitle}</h2></div>
+  <p class="lede">Everyone starts from the same verified facts before weighing in. Each issue and each level of government gets its own pack like this one; the rest of the tool stays the same.</p>
+  <div class="grid2">${P.facts.map(([k,v])=>`<div class="fact"><span class="k">${k}</span><span>${v}</span></div>`).join("")}</div>
+  <div class="grid2">${P.lists.map(([h,items])=>`<div><h3>${h}</h3><ul class="plain">${items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("")}</div>
+  <p class="src">Sources: ${srcLinks(P.sources)}</p>
+  <button class="btn" id="go1">Start weighing in</button>
+  </section>`;
 }
 function submitBox(){
   const c=voteCounts(), t=agreedTotals(), n=all().length;
-  if(submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
+  if(st.submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
     <h3>✓ Your votes are recorded</h3>
     <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now count in the results on the next steps.</p>
-    <p class="meta">Your receipt</p><span class="receipt">${receipt}</span>
+    <p class="meta">Your receipt</p><span class="receipt">${st.receipt}</span>
     <p class="meta">In the live tool, you can look up this receipt in the public vote record to confirm your votes were counted exactly as cast, without revealing who you are.</p>
     <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
   </div>`;
   if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;
   return `<div class="submitbox"><h3>Review and submit</h3>
     <p>You voted on ${c.total} of ${n} statements: ${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass.${c.total<n?` ${n-c.total} still have no vote, and that's fine.`:""}</p>
-    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per resident a year.</p>`:""}
+    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per ${P.resLabel} a year.</p>`:""}
     <p class="meta">Your votes aren't counted until you submit.</p>
     <button class="btn" id="submitvotes">Submit my votes</button></div>`;
 }
 function weigh(){
-  const list=all(), voted=list.filter(s=>mine[s.id]!==undefined).length;
-  const items=list.map(s=>{
-    const v=mine[s.id];
-    return `<div class="stmt ${s.mine?"mine":""} ${submitted?"locked":""}">
+  const list=all(), voted=list.filter(s=>st.mine[s.id]!==undefined).length;
+  const t=agreedTotals(), any=Object.values(st.mine).some(v=>v===0);
+  const items=list.map(s=>{const v=st.mine[s.id];
+    return `<div class="stmt ${s.mine?"mine":""} ${st.submitted?"locked":""}">
       <p>${esc(s.t)}</p>
       ${costLine(s.id)}
       <div class="vote" data-id="${s.id}">
-        <button class="agree" aria-pressed="${v===0}" data-v="0" ${submitted?"disabled":""}>Agree</button>
-        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${submitted?"disabled":""}>Disagree</button>
-        <button class="pass" aria-pressed="${v===2}" data-v="2" ${submitted?"disabled":""}>Pass / unsure</button>
+        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted?"disabled":""}>Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted?"disabled":""}>Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted?"disabled":""}>Pass / unsure</button>
       </div>
       ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
     </div>`}).join("");
@@ -307,7 +366,7 @@ function weigh(){
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
   <p class="progress">You've voted on ${voted} of ${list.length} statements.</p>
-  ${(()=>{const t=agreedTotals();const any=Object.values(mine).some(v=>v===0);return `<div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per Hawaiʻi resident a year</b>.${mine[7]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>`})()}
+  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${P.resLabel} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
   <form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
@@ -318,12 +377,10 @@ function weigh(){
   ${submitBox()}
   </section>`;
 }
-
 function ground(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common").sort((x,y)=>(y.pa+y.pb)-(x.pa+x.pb));
-  const split=list.filter(s=>s.kind==="split");
-  const forming=list.filter(s=>s.kind==="forming");
+  const split=list.filter(s=>s.kind==="split"), forming=list.filter(s=>s.kind==="forming");
   const card=(s)=>`<div class="stmt">
     <span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"}</span>
     <p>${esc(s.t)}</p>
@@ -336,45 +393,36 @@ function ground(){
   </div>`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
-  ${!submitted&&Object.keys(mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
+  ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
   <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
   <div class="groups">
-    <div class="grp"><h3>Group A</h3><p class="meta">Leans toward protecting farms and keeping costs off residents. Skeptical of visitor fees and higher fines.</p></div>
-    <div class="grp"><h3>Group B</h3><p class="meta">Leans toward stronger enforcement and new funding sources, including visitors.</p></div>
+    <div class="grp"><h3>Group A</h3><p class="meta">${P.groups[0]}</p></div>
+    <div class="grp"><h3>Group B</h3><p class="meta">${P.groups[1]}</p></div>
   </div>
   <h3>Both groups agree (${common.length})</h3>
   ${common.map(card).join("")||'<p class="meta">Nothing yet.</p>'}
   <h3>Where they split (${split.length})</h3>
-  <p class="meta">These go to the legislator too, so the strongest dissent isn't lost.</p>
+  <p class="meta">These go to the representative too, so the strongest dissent isn't lost.</p>
   ${split.map(card).join("")||'<p class="meta">No sharp splits right now.</p>'}
   ${forming.length?`<h3>Still forming (${forming.length})</h3>${forming.map(card).join("")}`:""}
   <button class="btn" id="go3">Weigh the costs</button>
   </section>`;
 }
-
-function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
-function totals(){
-  let yearly=0, once=0;
-  Object.keys(OPT).forEach(k=>{const b=budget[k];if(!b.on)return;const c=OPT[k].per*b.n;OPT[k].yr?yearly+=c:once+=c});
-  const feeRev=fee*VISITORS, fineRev=fines?100000:0;
-  const gf=Math.max(0,yearly+once-feeRev-fineRev);
-  return {yearly,once,feeRev,fineRev,gf,surplus:Math.max(0,feeRev+fineRev-yearly-once)};
-}
+function tagFor(s){return s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:""}
 function costs(){
-  if(!budgetSeeded){Object.keys(OPT).forEach(k=>{const s=statusOf(k);budget[k].on=!!s&&s.kind==="common"});budgetSeeded=true}
-  const s7=statusOf(7), s4=statusOf(4);
-  const opts=Object.keys(OPT).map(k=>{
-    const o=OPT[k], b=budget[k], s=statusOf(k);
-    const tag=s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:"";
+  seedBudget();
+  const opts=Object.keys(P.OPT).map(k=>{
+    const o=P.OPT[k], b=st.budget[k];
     const slider=o.max>o.min?`<label class="meta" for="r-${k}">How much: <span id="n-${k}"></span></label><input type="range" id="r-${k}" min="${o.min}" max="${o.max}" step="${o.step}" value="${b.n}">`:"";
     return `<div class="opt ${b.on?"":"off"}" id="o-${k}">
       <div class="opthead"><label><input type="checkbox" id="c-${k}" ${b.on?"checked":""}><span>${esc(o.name)}</span></label><span class="cost" id="cost-${k}"></span></div>
-      ${tag}
+      ${tagFor(statusOf(k))}
       ${slider}
       <p class="meta" id="br-${k}" style="font-family:var(--mono)"></p>
       <p class="meta" id="imp-${k}"></p>
       <details><summary>How this cost was estimated</summary><p class="meta" style="margin-top:6px">${esc(o.basis)}</p></details>
     </div>`}).join("");
+  const unk=P.revUnknown?Object.keys(P.revUnknown).map(id=>{const s=statusOf(id);return `<div class="opt off"><p>${esc(s.t)}</p>${tagFor(s)}<span class="cost-chip unknown">${P.revUnknown[id]}</span><p class="meta">Would bring in money, but the amount depends on fee design. It can be added once analysts estimate it.</p></div>`}).join(""):"";
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 4</div><h2>Weigh costs</h2></div>
   <p class="lede">Every idea costs something, and someone pays for it. Turn options on or off, adjust how big each one is, and choose how to pay. The totals update as you go.</p>
@@ -382,42 +430,43 @@ function costs(){
     <div class="rows">
       <div class="r"><span>Yearly cost</span><span id="t-yearly"></span></div>
       <div class="r"><span>One-time cost</span><span id="t-once"></span></div>
-      <div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>
-      <div class="r"><span>Higher fines bring in</span><span id="t-fines"></span></div>
-      <div class="r total"><span>Still needed from the general fund</span><span id="t-gf"></span></div>
-      <div class="r"><span>Your share as a Hawaiʻi resident</span><span id="t-per"></span></div>
+      ${P.fee?`<div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>`:""}
+      <div class="r"><span>Higher ${cur==="federal"?"penalties":"fines"} bring in</span><span id="t-fines"></span></div>
+      <div class="r total"><span>Still needed from ${cur==="federal"?"federal general funds":"the general fund"}</span><span id="t-gf"></span></div>
+      <div class="r"><span>Your share as a ${P.resLabel}</span><span id="t-per"></span></div>
     </div>
-    <div class="gauge" title="Compared with the Invasive Species Council's current base budget"><div class="g" id="g-bar"></div></div>
+    <div class="gauge" title="Compared with current spending"><div class="g" id="g-bar"></div></div>
     <p class="meta" id="t-compare"></p>
   </div>
   <h3>What to fund</h3>
   ${opts}
-  ${added.length?`<h3>New ideas waiting for a cost estimate</h3>${added.map(a=>`<div class="opt off"><p>${esc(a.t)}</p><span class="cost-chip unknown">Cost not yet estimated</span><p class="meta">In the live tool, new ideas go to analysts for an estimate before they can be funded.</p></div>`).join("")}`:""}
+  ${st.added.length?`<h3>New ideas waiting for a cost estimate</h3>${st.added.map(a=>`<div class="opt off"><p>${esc(a.t)}</p><span class="cost-chip unknown">Cost not yet estimated</span><p class="meta">In the live tool, new ideas go to analysts for an estimate before they can be funded.</p></div>`).join("")}`:""}
   <h3>How to pay for it</h3>
+  ${P.fee?`<div class="opt">
+    <div class="opthead"><label for="fee">${P.fee.label}</label><span class="cost" id="fee-v"></span></div>
+    ${tagFor(statusOf(P.fee.statement))}
+    <input type="range" id="fee" min="0" max="${P.fee.max}" step="${P.fee.step}" value="${st.fee}">
+    <p class="meta">${P.fee.unitText}</p>
+  </div>`:""}
   <div class="opt">
-    <div class="opthead"><label for="fee">Visitor biosecurity fee</label><span class="cost" id="fee-v"></span></div>
-    ${s7?`<span class="tag ${s7.kind}">${s7.kind==="split"?"Divides groups":s7.kind==="common"?"Common ground":"Still forming"} · A ${s7.pa}% B ${s7.pb}%</span>`:""}
-    <input type="range" id="fee" min="0" max="10" step="0.5" value="${fee}">
-    <p class="meta">Per visitor, based on about 9.64 million visitor arrivals in 2025. Paid by visitors, not residents.</p>
+    <div class="opthead"><label><input type="checkbox" id="fines" ${st.fines?"checked":""}><span>${P.fines.label}</span></label><span class="cost">about ${money(P.fines.amt)}/yr</span></div>
+    ${tagFor(statusOf(P.fines.statement))}
+    <p class="meta">Penalties mainly deter. The revenue estimate is rough.</p>
   </div>
-  <div class="opt">
-    <div class="opthead"><label><input type="checkbox" id="fines" ${fines?"checked":""}><span>Raise fines for moving infested material</span></label><span class="cost">about $100K/yr</span></div>
-    ${s4?`<span class="tag ${s4.kind}">${s4.kind==="split"?"Divides groups":s4.kind==="common"?"Common ground":"Still forming"} · A ${s4.pa}% B ${s4.pb}%</span>`:""}
-    <p class="meta">Fines mainly deter. The revenue estimate is rough.</p>
-  </div>
-  <p class="meta">Whatever fees and fines don't cover comes from the general fund, where it competes with schools, health care, housing, and everything else the state pays for.</p>
-  <p class="meta">"Per resident" divides the cost by Hawaiʻi's 1,432,820 residents (2025 estimate). It shows scale, not a bill: state costs are paid through taxes, which people pay in different amounts.</p>
-  <p class="note"><b>Estimates.</b> These costs are rough figures built from recent Hawaiʻi appropriations, for illustration. In the live tool, agencies and independent analysts would supply the estimates, with sources shown.</p>
-  <p class="src">Sources: <a href="https://mikegabbard.com/in-print/bmeo0i3o5xgizpgglzzwjtf15zb15n" target="_blank" rel="noopener">2024 biosecurity funding, Hawaiʻi Public Radio</a> · <a href="https://dlnr.hawaii.gov/hisc/files/2025/09/Submittal-2_HISC-FY26-Recommended-Budget-for-Council-Approval.pdf" target="_blank" rel="noopener">HISC FY26 budget</a> · <a href="https://www.thegardenisland.com/2026/02/02/business/hawaii-visitor-arrivals-end-2025-well-below-pre-pandemic-peak/" target="_blank" rel="noopener">2025 visitor arrivals</a> · <a href="https://census.hawaii.gov/?p=11686" target="_blank" rel="noopener">2025 population estimate</a></p>
+  ${unk}
+  <p class="meta">Whatever fees and penalties don't cover comes from ${cur==="federal"?"federal general funds, where it competes with every other federal program or adds to borrowing":"the general fund, where it competes with schools, health care, housing, and everything else the state pays for"}.</p>
+  <p class="meta">"Per resident" divides the cost by ${P.resNote}. It shows scale, not a bill: government costs are paid through taxes, which people pay in different amounts.</p>
+  <p class="note"><b>Estimates.</b> These costs are rough figures for illustration, anchored to recent public budgets where possible. In the live tool, agencies and independent analysts would supply the estimates, with sources shown.</p>
+  <p class="src">Sources: ${srcLinks(P.costSources)} · <a href="${P.popSource.href}" target="_blank" rel="noopener">${P.popSource.label}</a></p>
   <button class="btn" id="goC">Draft the proposal</button>
   </section>`;
 }
 function updateBudget(){
-  Object.keys(OPT).forEach(k=>{
-    const o=OPT[k], b=budget[k];
+  Object.keys(P.OPT).forEach(k=>{
+    const o=P.OPT[k], b=st.budget[k];
     const c=document.getElementById("cost-"+k); if(!c) return;
     c.textContent=b.on?`${money(o.per*b.n)}${o.yr?"/yr":" once"}`:"off";
-    const n=document.getElementById("n-"+k); if(n) n.textContent=`${b.n.toLocaleString()} ${o.unit}`;
+    const n=document.getElementById("n-"+k); if(n) n.textContent=`${words(b.n)} ${o.unit}`;
     document.getElementById("imp-"+k).textContent=o.impact(b.n);
     document.getElementById("br-"+k).textContent=b.on?breakdown(o,b.n):`Off. Would be ${breakdown(o,b.n)}`;
     document.getElementById("o-"+k).classList.toggle("off",!b.on);
@@ -425,135 +474,117 @@ function updateBudget(){
   const t=totals();
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
   set("t-yearly",money(t.yearly)); set("t-once",money(t.once));
-  set("t-fee",fee?`− ${money(t.feeRev)}`:"$0"); set("t-fines",fines?`− ${money(t.fineRev)}`:"$0");
+  set("t-fee",st.fee?`− ${money(t.feeRev)}`:"$0"); set("t-fines",st.fines?`− ${money(t.fineRev)}`:"$0");
   set("t-gf",t.surplus?`$0 (fees exceed costs by ${money(t.surplus)})`:money(t.gf));
-  set("fee-v",fee?`$${fee.toFixed(2)} per visitor`:"none");
+  if(P.fee) set("fee-v",st.fee?`$${st.fee.toFixed(2)} per visitor`:"none");
   set("t-per",`about ${perRes(netYearly(t))} a year${t.once?` + ${perRes(t.once)} one time`:""}`);
-  const share=(t.yearly)/HISC_BASE;
+  const share=t.yearly/P.base.amt;
   const bar=document.getElementById("g-bar");
   if(bar){bar.style.width=Math.min(100,share*50)+"%";bar.classList.toggle("over",share>1)}
-  set("t-compare",`Yearly cost is ${share.toFixed(1)}× the Invasive Species Council's current base budget of ${money(HISC_BASE)} (FY26). The bar fills at twice that budget.`);
+  set("t-compare",`Yearly cost is ${share<0.1?(share*100).toFixed(1)+"% of":share.toFixed(1)+"×"} ${P.base.label}. The bar fills at twice that amount.`);
 }
-
 function draft(){
-  const common=all().map(s=>({...s,...tally(s)})).filter(s=>s.kind==="common").sort((x,y)=>(y.pa+y.pb)-(x.pa+x.pb));
-  if(!budgetSeeded){Object.keys(OPT).forEach(k=>{const s=statusOf(k);budget[k].on=!!s&&s.kind==="common"});budgetSeeded=true}
-  const has=(id)=>budget[id]&&budget[id].on;
-  const words=n=>n.toLocaleString();
-  const secs=[];
-  if(has(1)) secs.push(`establish ${words(budget[1].n)} rapid response teams, assigned so that every island can begin treatment of a newly detected little fire ant infestation within seventy-two hours of confirmation`);
-  if(has(2)) secs.push(`inspect plants and soil shipped between islands to the same standard as shipments from outside the State, with ${words(budget[2].n)} additional inspector positions`);
-  if(has(3)) secs.push("publish a public map of confirmed pest detections, updated at least weekly, as part of the pest dashboard required by Act 236, Session Laws of Hawaii 2025");
-  if(has(5)) secs.push("study and recommend a dedicated, recurring funding source for biosecurity programs and report its findings to the legislature");
-  if(has(6)) secs.push(`provide free little fire ant treatment supplies and training to up to ${words(budget[6].n)} residential households each year`);
-  if(has(9)) secs.push("work with the department of education to offer invasive pest identification lessons in public schools");
-  if(has(8)) secs.push(`establish a compensation fund of $${words(budget[8].n*1000000)} each year for farmers who promptly report a new pest and suffer crop losses from required control measures`);
+  seedBudget();
   const t=totals();
-  const picked=Object.keys(OPT).filter(k=>budget[k].on).map(k=>({k,o:OPT[k],s:statusOf(k)}));
-  const plain=picked.map(p=>`<li>${esc(p.o.name)}: ${breakdown(p.o,budget[p.k].n)}${p.s&&p.s.kind!=="common"?` <span class="warn">(not common ground: A ${p.s.pa}%, B ${p.s.pb}%)</span>`:""}</li>`).join("");
-  const s7=statusOf(7);
-  const feeNote=fee&&s7&&s7.kind!=="common"?`<p class="warn">The visitor fee divides participants (A ${s7.pa}%, B ${s7.pb}%). It goes to the legislator flagged as a disagreement.</p>`:"";
+  const picked=Object.keys(P.OPT).filter(k=>st.budget[k].on);
+  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n));
+  const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}</li>`}).join("");
+  const sf=P.fee?statusOf(P.fee.statement):null;
+  const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The visitor fee divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the legislator flagged as a disagreement.</p>`:"";
   const body=secs.map((s,i)=>`     (${i+1}) ${s};`).join("\n");
-  const feeSec=fee?`\n\n     SECTION 3.  There is established a biosecurity visitor fee of $${fee.toFixed(2)} per visitor arrival, to be deposited into a special fund for the purposes of this Act.`:"";
-  const fineSec=fines?`\n\n     SECTION ${fee?4:3}.  The penalties for knowingly transporting material infested with a restricted pest shall be increased.`:"";
-  const next=3+(fee?1:0)+(fines?1:0);
-  const tot=Math.round(t.yearly+t.once), fromFees=fee?Math.min(tot,Math.round(t.feeRev)):0;
-  const src=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of the biosecurity special fund and the sum of $${words(Math.round(t.gf))} out of the general revenues of the State of Hawaii,`:t.gf>0?`out of the general revenues of the State of Hawaii the sum of $${words(Math.round(t.gf))}`:`out of the biosecurity special fund the sum of $${words(tot)}`;
-  const approp=`     SECTION ${next}.  There is appropriated ${src} or so much thereof as may be necessary for fiscal year 2027-2028 for the purposes of this Act.`;
+  let n=3; const extra=[];
+  if(P.fee&&st.fee){extra.push(`     ${P.secWord} ${n}.  ${P.feeSection(st.fee)}`);n++}
+  if(st.fines){extra.push(`     ${P.secWord} ${n}.  ${P.finesSection}`);n++}
+  const tot=Math.round(t.yearly+t.once);
+  let src;
+  if(cur==="federal") src=`$${words(tot)}`;
+  else {const fromFees=st.fee?Math.min(tot,Math.round(t.feeRev)):0;
+    src=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of ${P.specialFund} and the sum of $${words(Math.round(t.gf))} out of ${P.generalFund},`:t.gf>0?`out of ${P.generalFund} the sum of $${words(Math.round(t.gf))}`:`out of ${P.specialFund} the sum of $${words(tot)}`;}
+  const approp=`     ${P.secWord} ${n}.  ${P.approp(src)}`;
+  const eff=`     ${P.secWord} ${n+1}.  ${P.effective}`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
   <p class="lede">The proposal is built from your choices in Step 4, starting from what both groups agreed on. Anything you added that lacks common ground is flagged.</p>
   <h3>Plain-language proposal</h3>
   ${plain?`<ul class="plain">${plain}</ul>`:'<p class="meta">Nothing is selected yet. Choose options in Step 4.</p>'}
-  <div class="stat" style="display:flex;gap:20px;flex-wrap:wrap">
-    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.yearly)}</strong><span class="meta">yearly cost</span></div>
-    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.once)}</strong><span class="meta">one-time cost</span></div>
-    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.gf)}</strong><span class="meta">from the general fund</span></div>
-    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${perRes(netYearly(t))}</strong><span class="meta">per resident a year</span></div>
+  <div class="stat">
+    <div><strong>${money(t.yearly)}</strong><span>yearly cost</span></div>
+    <div><strong>${money(t.once)}</strong><span>one-time cost</span></div>
+    <div><strong>${money(t.gf)}</strong><span>from general funds</span></div>
+    <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
   </div>
   ${feeNote}
   <h3>Starting bill text</h3>
-  <p class="meta">An AI-written starting point for a legislator's office. It is not final legal text.</p>
-  <div class="bill"><span class="c">A BILL FOR AN ACT</span><span class="c">RELATING TO BIOSECURITY.</span>
-<span class="c">BE IT ENACTED BY THE LEGISLATURE OF THE STATE OF HAWAII:</span>
-     SECTION 1.  The legislature finds that residents of every island have identified invasive species as an urgent threat to agriculture, natural resources, and daily life, and that residents with differing views share common ground on the measures in this Act.
-
-     SECTION 2.  The department of agriculture and biosecurity shall:
-${body||"     (no provisions yet)"}${feeSec}${fineSec}
-
-${approp}
-
-     SECTION ${next+1}.  This Act shall take effect on July 1, 2027.</div>
+  <p class="meta">An AI-written starting point for a ${cur==="federal"?"member of Congress":"legislator"}'s office. It is not final legal text.</p>
+  <div class="bill">${P.billHead}${body||"     (no provisions yet)"}${extra.length?"\n\n"+extra.join("\n\n"):""}\n\n${approp}\n\n${eff}</div>
   <button class="btn" id="go4">Prepare the hand-off</button>
   </section>`;
 }
-
 function handoff(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
-  const people=92+(submitted?1:0);
-  const votes=list.reduce((n,s)=>n+s.n,0);
+  const people=92+(st.submitted?1:0), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
   return `<section class="panel" role="tabpanel">
-  <div><div class="eyebrow">Step 6</div><h2>Hand off to your legislator</h2></div>
-  <p class="lede">The package goes to the state representative and senator for this district. They decide whether to introduce it. The public record stays open either way.</p>
+  <div><div class="eyebrow">Step 6</div><h2>${P.handoffTitle}</h2></div>
+  <p class="lede">${P.handoffLede}</p>
   <div class="pkg">
     <div class="stat">
       <div><strong>${people}</strong><span>verified residents</span></div>
       <div><strong>${votes}</strong><span>votes cast</span></div>
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
       <div><strong>${split.length}</strong><span>open disagreements</span></div>
-      <div><strong>${money(totals().yearly)}</strong><span>estimated yearly cost</span></div>
-      <div><strong>${perRes(netYearly(totals()))}</strong><span>per resident a year</span></div>
+      <div><strong>${money(t.yearly)}</strong><span>estimated yearly cost</span></div>
+      <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
       <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
     </div>
-    <div class="grp"><h3>Timing</h3><p class="meta">The 2027 session opens January 20. Bills are introduced in the first week or two, so packages should reach legislators by early January.</p></div>
+    <div class="grp"><h3>Timing</h3><p class="meta">${P.timing}</p></div>
   </div>
   <div class="row"><button class="btn" id="copy">Copy summary</button><span class="toast" id="copymsg" aria-live="polite"></span></div>
   <textarea id="summarytext" rows="6" readonly hidden></textarea>
   </section>`;
 }
 
+// ---------- Render and wiring ----------
 function render(){
-  renderJuris();renderIssues();renderSteps();
+  renderHeader();
   const p=document.getElementById("panel");
-  p.innerHTML=[learn,weigh,ground,costs,draft,handoff][step]();
-  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{step=n;render();window.scrollTo({top:0})}};
-  go("go1",1);go("go3",3);go("goC",4);go("go4",5);
-  if(step===3){
-    Object.keys(OPT).forEach(k=>{
-      const c=document.getElementById("c-"+k); c.onchange=()=>{budget[k].on=c.checked;updateBudget()};
-      const r=document.getElementById("r-"+k); if(r) r.oninput=()=>{budget[k].n=+r.value;if(!budget[k].on){budget[k].on=true;c.checked=true}updateBudget()};
+  p.innerHTML=[learn,weigh,ground,costs,draft,handoff][st.step]();
+  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
+  go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
+  if(st.step===3){
+    Object.keys(P.OPT).forEach(k=>{
+      const c=document.getElementById("c-"+k); c.onchange=()=>{st.budget[k].on=c.checked;updateBudget()};
+      const r=document.getElementById("r-"+k); if(r) r.oninput=()=>{st.budget[k].n=+r.value;if(!st.budget[k].on){st.budget[k].on=true;c.checked=true}updateBudget()};
     });
-    const f=document.getElementById("fee"); f.oninput=()=>{fee=+f.value;updateBudget()};
-    const fi=document.getElementById("fines"); fi.onchange=()=>{fines=fi.checked;updateBudget()};
+    const f=document.getElementById("fee"); if(f) f.oninput=()=>{st.fee=+f.value;updateBudget()};
+    const fi=document.getElementById("fines"); fi.onchange=()=>{st.fines=fi.checked;updateBudget()};
     updateBudget();
   }
   p.querySelectorAll(".vote").forEach(row=>{
     row.querySelectorAll("button").forEach(b=>b.onclick=()=>{
       const id=+row.dataset.id, v=+b.dataset.v;
-      mine[id]=mine[id]===v?undefined:v; if(mine[id]===undefined) delete mine[id];
+      if(st.mine[id]===v) delete st.mine[id]; else st.mine[id]=v;
       const y=window.scrollY; render(); window.scrollTo({top:y});
     });
   });
   const sv=document.getElementById("submitvotes");
-  if(sv) sv.onclick=()=>{submitted=true;receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
+  if(sv) sv.onclick=()=>{st.submitted=true;st.receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
   const us=document.getElementById("unsubmit");
-  if(us) us.onclick=()=>{submitted=false;receipt="";render()};
-  go("goNext",2);
+  if(us) us.onclick=()=>{st.submitted=false;st.receipt="";render()};
   const bs=document.getElementById("backsubmit");
-  if(bs) bs.onclick=(e)=>{e.preventDefault();step=1;render();const b=document.querySelector(".submitbox");if(b)b.scrollIntoView({block:"center"})};
+  if(bs) bs.onclick=(e)=>{e.preventDefault();st.step=1;render();const b=document.querySelector(".submitbox");if(b)b.scrollIntoView({block:"center"})};
   const f=document.getElementById("addform");
   if(f) f.onsubmit=(e)=>{e.preventDefault();const t=document.getElementById("newstmt").value.trim();
     const m=document.getElementById("addmsg");
     if(t.length<10){m.textContent="Write at least a short sentence so others can vote on it.";return}
-    const id=nextId++;added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});mine[id]=0;if(submitted){submitted=false;receipt=""}
+    const id=st.nextId++;st.added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});st.mine[id]=0;if(st.submitted){st.submitted=false;st.receipt=""}
     const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added. Others can now vote on it.";};
   const c=document.getElementById("copy");
   if(c) c.onclick=()=>{
-    const list=all().map(s=>({...s,...tally(s)}));
-    const txt="Civic Accord summary: Invasive species (example data)\n\nCommon ground:\n"+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
+    const list=all().map(s=>({...s,...tally(s)})), t=totals();
+    const txt=`Civic Accord summary: ${P.copyTitle} (example data)\n\nEstimated cost: ${money(t.yearly)} a year, about ${perRes(netYearly(t))} per ${P.resLabel}\n\nCommon ground:\n`+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
     const msg=document.getElementById("copymsg");
     const fallback=()=>{const ta=document.getElementById("summarytext");ta.hidden=false;ta.value=txt;ta.select();msg.textContent="Select and copy the text below."};
     try{navigator.clipboard.writeText(txt).then(()=>msg.textContent="Copied.",fallback)}catch(e){fallback()}
