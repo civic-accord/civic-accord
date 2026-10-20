@@ -149,7 +149,7 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
     <h1>Start a Deliberation</h1>
     <p class="lede">Set up a deliberation on any issue, for any government. You fill in the facts, the statements people vote on, and what each option would cost. The tool checks the rules as you go, and you can preview it before it goes for review.</p>
     <p class="note"><b>How it goes live.</b> A second person reviews every pack before residents see it. Your draft is saved only in this browser until you send it for review.</p>
-    <div class="actions"><button class="btn ghost" id="example" type="button">Start from an example pack</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="/" class="btn ghost" style="text-decoration:none">← Back to Civic Accord</a></div>
+    <div class="actions"><button class="btn ghost" id="example" type="button">Start from an example pack</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="app.html" class="btn ghost" style="text-decoration:none">← Back to the deliberation</a></div>
   </header>
 
   <section class="panel sticky" aria-live="polite"><h3>Pack checks</h3><div class="checks" id="checks"></div></section>
@@ -387,7 +387,7 @@ $("example").onclick=()=>{const t=templates["hi-state"];if(!t)return;const is=t.
     costs:is.costOptions.map(c=>({stmt:String(c.statement),name:c.name,unit:c.unit==="million dollars"?"":c.unit,cost:String(c.unit==="million dollars"?c.unitCost*c.default:c.unitCost),def:String(c.unit==="million dollars"?1:c.default),max:String(c.unit==="million dollars"?1:c.max),yr:c.recurring,basis:c.basis,url:"",impact:c.impact.replace("{total}","this"),bill:c.billText.replace("{dollars}","$"+(c.unitCost*c.default).toLocaleString())})),
     revs:is.revenue.filter(r=>r.type!=="fee").map(r=>({stmt:String(r.statement),type:r.type==="fixed"?"fixed":"unestimated",name:r.name,amount:String(r.amount||""),note:r.note,bill:r.billText||""}))};
   save();renderAll();$("amsg").textContent="Loaded the Hawaiʻi example. Edit anything.";window.scrollTo({top:0})};
-$("preview").onclick=()=>{try{localStorage.setItem("civicaccord-draft",JSON.stringify(buildPack()));location.href="index.html?preview=draft"}catch(e){$("amsg").textContent="Preview needs browser storage, which is blocked here. Try another browser."}};
+$("preview").onclick=()=>{try{localStorage.setItem("civicaccord-draft",JSON.stringify(buildPack()));location.href="app.html?preview=draft"}catch(e){$("amsg").textContent="Preview needs browser storage, which is blocked here. Try another browser."}};
 $("download").onclick=()=>{const p=buildPack();const blob=new Blob([JSON.stringify(p,null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${p.id}.json`;document.body.appendChild(a);a.click();a.remove();$("amsg").textContent=`Downloaded ${p.id}.json.`};
 $("copy").onclick=()=>{const txt=JSON.stringify(buildPack(),null,1);const fb=()=>{const ta=$("copytext");ta.hidden=false;ta.value=txt;ta.select();$("amsg").textContent="Select and copy the text below."};try{navigator.clipboard.writeText(txt).then(()=>$("amsg").textContent="Copied.",fb)}catch(e){fb()}};
 (async()=>{

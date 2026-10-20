@@ -568,7 +568,7 @@
       "name": "Age",
       "rows": [
        [
-        "18–34",
+        "16–34",
         17,
         28,
         27
@@ -591,19 +591,19 @@
       "name": "Area",
       "rows": [
        [
-        "Upcountry",
+        "Cities",
         44,
         31,
         31
        ],
        [
-        "Central",
+        "Suburbs and towns",
         30,
         39,
         38
        ],
        [
-        "East and West",
+        "Rural areas",
         26,
         30,
         31

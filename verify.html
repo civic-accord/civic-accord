@@ -162,7 +162,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
     <div class="vsteps" id="vsteps"></div>
   </header>
   <section class="panel" id="p"></section>
-  <p class="meta"><a href="/" style="color:var(--koa)">← Back to Civic Accord</a></p>
+  <p class="meta"><a href="app.html" style="color:var(--koa)">← Back to the deliberation</a></p>
   <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Identity is used only to confirm residency, never linked to votes.</span></footer>
 </div>
 <script src="lib/registry.js"></script>
@@ -249,7 +249,7 @@ async function render(){bar();const p=$("p");
     <div><b>3. The public vote record</b><span class="meta">Sees only the key, a registered-voter flag, and the votes. Results by status are shown only for groups large enough that no one can be singled out. Anyone can recount, and you can find your own votes with your receipt.</span></div>
    </div>
    <p class="meta">Verification lasts one year, or until you move. What's kept, and for how long, follows each state's privacy law and is checked in that state's legal review.</p>
-   <div class="actions"><a class="btn" href="/" style="text-decoration:none">Start taking part</a></div>`;
+   <div class="actions"><a class="btn" href="app.html" style="text-decoration:none">Start taking part</a></div>`;
 }
 (async()=>{try{const idx=await (await fetch("packs/index.json")).json();OPEN=[...new Set(idx.packs.map(p=>p.jurisdiction))]}catch(e){}render()})();
 </script>

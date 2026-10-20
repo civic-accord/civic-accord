@@ -1,1 +1,1 @@
-{"packs": [{"file": "packs/us-congress-invasive.json", "jurisdiction": "federal", "issue": "invasive"}, {"file": "packs/hi-state-invasive.json", "jurisdiction": "hi-state", "issue": "invasive"}]}
+{"packs": [{"file": "packs/us-congress-invasive.json", "jurisdiction": "federal", "issue": "invasive"}, {"file": "packs/hi-state-invasive.json", "jurisdiction": "hi-state", "issue": "invasive"}, {"file": "packs/us-civic-channel.json", "jurisdiction": "federal", "issue": "civic-channel"}]}
