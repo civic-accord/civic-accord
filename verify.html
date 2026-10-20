@@ -180,12 +180,13 @@ async function render(){bar();const p=$("p");
    <div class="addr"><label for="addr" class="meta">Home address</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. In the live tool, it is used once to mail your code, then deleted. Only your districts are kept.</p>
    <div class="grp"><h3>Who can take part</h3><p class="meta">Anyone 16 or older who lives in the district. Your voter registration status is confirmed too, so results can be shown for everyone who took part and for registered voters only.</p></div>
-   <div class="actions"><button class="btn" id="go" type="button">Find my districts</button><button class="btn ghost" id="ex" type="button">Use the example address in Haʻikū</button></div>
+   <div class="actions"><button class="btn" id="go" type="button">Find my districts</button></div>
+   <p class="meta">No address handy? Try a state capitol: ${CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ")}</p>
    <span class="toast" id="msg" aria-live="polite"></span>`;
-   $("ex").onclick=()=>{geo=CA_REG.EXAMPLE;step=1;render()};
+   document.querySelectorAll(".sample").forEach(x=>x.onclick=e=>{e.preventDefault();$("addr").value=CA_REG.SAMPLES[+x.dataset.i][1];$("go").click()});
    $("go").onclick=async()=>{const a=$("addr").value.trim();if(a.length<8){$("msg").textContent="Enter a full street address, including city and state.";return}
      $("msg").textContent="Looking up your districts with the Census Bureau…";
-     try{geo=await CA_REG.lookup(a);step=1;render()}catch(e){$("msg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling, or try the example.":"Couldn't reach the Census Bureau's geocoder. Try again, or use the example."}};
+     try{geo=await CA_REG.lookup(a);step=1;render()}catch(e){$("msg").innerHTML=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":`Couldn't reach the Census Bureau's geocoder. Try again, or <a href="#" id="ex" style="color:var(--koa)">continue with an offline example</a>.`;const ex=$("ex");if(ex)ex.onclick=ev=>{ev.preventDefault();geo=CA_REG.EXAMPLE;step=1;render()}}};
    return}
  if(step===1){p.innerHTML=`<div><div class="eyebrow">Step 2</div><h2>Every government that represents you</h2></div><p class="meta">Loading…</p>`;
    const map=await CA_REG.buildMap(geo), people=await CA_REG.officeholders(geo);
@@ -195,10 +196,9 @@ async function render(){bar();const p=$("p");
    ${CA_REG.render(map,people,OPEN)}
    <p>Once you're verified, your voice counts in every deliberation open for these governments.</p>
    <div class="actions"><button class="btn" id="yes" type="button">This is where I live</button><button class="btn ghost" id="back" type="button">Change address</button></div>`;
-   $("yes").onclick=()=>{step=2;render()};$("back").onclick=()=>{step=0;render()};return}
+   $("yes").onclick=()=>{step=2;render()};$("back").onclick=()=>{step=0;ELIG=null;render()};return}
  if(step===2){
-   if(!ELIG){const reg=geo.state?await (await fetch("registry/"+geo.state.toLowerCase()+".json").catch(()=>null))?.json?.().catch(()=>null):null;
-     const us=await (await fetch("registry/us.json")).json();ELIG=(reg&&reg.eligibility)||us.eligibilityDefault}
+   if(!ELIG) ELIG=await CA_REG.eligibility(geo);
    const vs=ELIG.voterStatus, law=vs.basis==="law";
    const vals=law?["registered","preregistered","not registered"]:["registered","not registered"];
    p.innerHTML=`<div><div class="eyebrow">Step 3</div><h2>Age and voter registration</h2></div>
@@ -232,7 +232,7 @@ async function render(){bar();const p=$("p");
    <span class="toast" id="msg" aria-live="polite"></span>
    <div class="actions"><button class="btn" id="check" type="button">Verify</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
    $("check").onclick=()=>{if($("code").value.trim()!==code){$("msg").textContent="That code doesn't match. Check it and try again.";return}
-     const v={districts:{state:geo.state,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null},voterStatus:vstatus.status,voterStatusHow:vstatus.how,method,date:new Date().toISOString().slice(0,10),credential:cred(),example:!!geo.example};
+     const v={districts:{state:geo.state,stateName:geo.stateLabel||geo.stateName,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null,countyId:geo.county?geo.county.geoid:null,place:geo.place?geo.place.name:null},voterStatus:vstatus.status,voterStatusHow:vstatus.how,method,date:new Date().toISOString().slice(0,10),credential:cred(),example:!!geo.example};
      try{localStorage.setItem("civicaccord-verified",JSON.stringify(v))}catch(e){}
      window.__ver=v;step=5;render()};
    $("back").onclick=()=>{step=3;render()};return}
@@ -240,7 +240,7 @@ async function render(){bar();const p=$("p");
  p.innerHTML=`<div class="submitbox"><h3>✓ You're verified</h3><p>Your voice now counts in deliberations for ${esc([geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).join(", "))}.</p>
    <p class="meta">Verification receipt</p><span class="receipt">${esc(v.credential)}</span>
    <p class="meta">Voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in both views: all participants and registered voters.":"Your votes count with all participants."}</p>
-   ${v.voterStatus==="not registered"&&ELIG&&ELIG.voterStatus.registerUrl?`<p class="meta">Want to register? <a href="${esc(ELIG.voterStatus.registerUrl)}" target="_blank" rel="noopener" style="color:var(--koa)">Hawaiʻi Office of Elections</a>.</p>`:""}
+   ${v.voterStatus==="not registered"?`<p class="meta">Want to register? <a href="${esc(ELIG&&ELIG.voterStatus.registerUrl||"https://vote.gov/")}" target="_blank" rel="noopener" style="color:var(--koa)">${ELIG&&ELIG.voterStatus.registerUrl?"Your state election office":"Vote.gov"}</a>.</p>`:""}
    <p class="meta">This proves you're a verified resident. It says nothing about how you vote.</p></div>
    <h3>How your privacy is protected</h3>
    <div class="flow">

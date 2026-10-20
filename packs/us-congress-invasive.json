@@ -5,7 +5,7 @@
   "key": "federal",
   "name": "U.S. Congress",
   "level": "federal",
-  "district": "Hawaiʻi 2nd Congressional District (example)",
+  "district": "Nationwide · your U.S. representative and senators",
   "session": "120th Congress convenes Jan 3, 2027",
   "drafting": "AI organizes and drafts. People decide. The House and Senate Offices of Legislative Counsel draft final bill text for any member who introduces it.",
   "residents": 341800000,
@@ -81,7 +81,9 @@
     "Federal election dates for each state"
    ],
    "cadence": "Before launch and at the start of each Congress"
-  }
+  },
+  "state": null,
+  "national": true
  },
  "issue": {
   "key": "invasive",

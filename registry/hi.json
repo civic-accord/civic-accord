@@ -39,7 +39,7 @@
    "chosen": "Elected by district",
    "term": "2-year term",
    "civic": "receives",
-   "pack": "state",
+   "pack": "hi-state",
    "office": "state-house"
   },
   {
@@ -50,7 +50,7 @@
    "chosen": "Elected by district",
    "term": "4-year term",
    "civic": "receives",
-   "pack": "state",
+   "pack": "hi-state",
    "office": "state-senate"
   },
   {

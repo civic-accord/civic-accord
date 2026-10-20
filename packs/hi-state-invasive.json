@@ -2,7 +2,7 @@
  "id": "hi-state-invasive",
  "format": 1,
  "jurisdiction": {
-  "key": "state",
+  "key": "hi-state",
   "name": "Hawaiʻi State Legislature",
   "level": "state",
   "district": "Maui · State House District (example)",
@@ -105,7 +105,8 @@
     "Hearing testimony format, once packages are submitted as testimony"
    ],
    "cadence": "Before launch and at the start of each election cycle"
-  }
+  },
+  "state": "HI"
  },
  "issue": {
   "key": "invasive",

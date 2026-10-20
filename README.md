@@ -6,6 +6,8 @@ AI organizes and drafts. People decide. A legislator decides whether to introduc
 
 **Live prototype:** https://civicaccord.org (example data only)
 
+Civic Accord is built for every U.S. jurisdiction: any address finds its federal, state, county, city or town, and school district governments, and any government can host a deliberation. The first pilot deliberation happens to be in Hawaiʻi; nothing in the core is specific to it.
+
 ## How it works
 
 1. **Learn.** Everyone reads the same short, sourced briefing.

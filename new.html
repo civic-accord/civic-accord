@@ -149,7 +149,7 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
     <h1>Start a Deliberation</h1>
     <p class="lede">Set up a deliberation on any issue, for any government. You fill in the facts, the statements people vote on, and what each option would cost. The tool checks the rules as you go, and you can preview it before it goes for review.</p>
     <p class="note"><b>How it goes live.</b> A second person reviews every pack before residents see it. Your draft is saved only in this browser until you send it for review.</p>
-    <div class="actions"><button class="btn ghost" id="example" type="button">Start from the Hawaiʻi example</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="/" class="btn ghost" style="text-decoration:none">← Back to Civic Accord</a></div>
+    <div class="actions"><button class="btn ghost" id="example" type="button">Start from an example pack</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="/" class="btn ghost" style="text-decoration:none">← Back to Civic Accord</a></div>
   </header>
 
   <section class="panel sticky" aria-live="polite"><h3>Pack checks</h3><div class="checks" id="checks"></div></section>
@@ -380,8 +380,8 @@ $("addstmt").onclick=()=>{if(B.stmts.length>=15)return;B.stmts.push("");save();r
 $("addcost").onclick=()=>{B.costs.push({stmt:"",name:"",unit:"",cost:"",def:"1",max:"",yr:true,basis:"",url:"",impact:"",bill:""});save();renderLists();renderChecks()};
 $("addrev").onclick=()=>{B.revs.push({stmt:"",type:"fixed",name:"",amount:"",note:"",bill:""});save();renderLists();renderChecks()};
 $("clear").onclick=()=>{B=empty();save();renderAll();$("amsg").textContent="Cleared."};
-$("example").onclick=()=>{const t=templates["state"];if(!t)return;const is=t.issue;
-  B={gov:"state",custom:empty().custom,name:is.name,title:is.title,
+$("example").onclick=()=>{const t=templates["hi-state"];if(!t)return;const is=t.issue;
+  B={gov:"hi-state",custom:empty().custom,name:is.name,title:is.title,
     facts:is.facts.map((f,i)=>({label:f[0],text:f[1],url:(is.sources[i]||is.sources[0]||[""])[0]})),
     stmts:is.statements.map(s=>s.text),
     costs:is.costOptions.map(c=>({stmt:String(c.statement),name:c.name,unit:c.unit==="million dollars"?"":c.unit,cost:String(c.unit==="million dollars"?c.unitCost*c.default:c.unitCost),def:String(c.unit==="million dollars"?1:c.default),max:String(c.unit==="million dollars"?1:c.max),yr:c.recurring,basis:c.basis,url:"",impact:c.impact.replace("{total}","this"),bill:c.billText.replace("{dollars}","$"+(c.unitCost*c.default).toLocaleString())})),

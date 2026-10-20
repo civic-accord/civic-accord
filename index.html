@@ -149,9 +149,9 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
   </header>
 
   <div>
-    <div class="eyebrow" style="margin-bottom:6px">Your governments · example address in Haʻikū, Maui</div>
+    <div class="eyebrow" style="margin-bottom:6px" id="juris-label">Open deliberations</div>
     <div class="issues" id="juris"></div>
-    <p class="meta" style="margin-top:6px">Your address finds every government that represents you and shows which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See every government for an address →</a></p>
+    <p class="meta" style="margin-top:6px" id="juris-note"></p>
   </div>
   <div>
     <div class="eyebrow" style="margin-bottom:6px">Issue</div>
@@ -210,10 +210,16 @@ let PACKS={};
 
 // ---------- Per-pack state ----------
 const blank=(P)=>{if(!P)return null;const b={};Object.keys(P.OPT).forEach(k=>b[k]={on:false,n:P.OPT[k].def});return {mine:{},added:[],budget:b,fee:0,fines:false,budgetSeeded:false,submitted:false,receipt:"",nextId:100,step:0}};
-let ST={}; let cur="state/invasive", P=null, st=null;
+let ST={}; let cur=null, P=null, st=null;
 const packsFor=jk=>Object.values(PACKS).filter(x=>x.key===jk);
 const selectPack=k=>{cur=k;P=PACKS[k];st=ST[k];render();window.scrollTo({top:0})};
-const JURIS=[{key:"federal",name:"U.S. Congress",sub:"1 representative, 2 senators"},{key:"state",name:"Hawaiʻi State Legislature",sub:"1 state representative, 1 senator"},{key:"county",name:"Maui County Council",sub:"Council members"}];
+const VD=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verified")||"null");return v&&v.districts&&v.districts.state&&!v.example?v.districts:null}catch(e){return null}})();
+const JURIS=VD?[
+  {key:"federal",name:"U.S. Congress",sub:`${VD.state} ${VD.cd==="at-large"?"at large":"district "+VD.cd} · 2 senators`},
+  {key:VD.state.toLowerCase()+"-state",name:`${VD.stateName||VD.state} Legislature`,sub:[VD.sldl&&"House "+VD.sldl,VD.sldu&&"Senate "+VD.sldu].filter(Boolean).join(" · ")||"Your state legislators"},
+  ...(VD.county?[{key:VD.state.toLowerCase()+"-county-"+(VD.countyId||VD.county),name:VD.county,sub:"County government"}]:[]),
+  ...(VD.place?[{key:VD.state.toLowerCase()+"-city-"+VD.place,name:VD.place,sub:"City or town government"}]:[])]
+ :[{key:"federal",name:"U.S. Congress",sub:"Nationwide"},{key:"hi-state",name:"Hawaiʻi State Legislature",sub:"Pilot"}];
 const requested={};
 const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
 
@@ -285,12 +291,14 @@ function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
 function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. It takes one check, and your votes can never be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
 function renderHeader(){verChip();
   const vd=VER&&VER.districts&&!VER.example?VER.districts:null;
-  document.getElementById("chip-district").textContent=vd&&P.key==="state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
+  document.getElementById("chip-district").textContent=vd&&P.key===vd.state.toLowerCase()+"-state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
   document.getElementById("chip-session").textContent=P.session;
   document.getElementById("footnote").textContent=P.footnote;
   const jb=document.getElementById("juris");jb.innerHTML="";
-  const jl=[...JURIS];Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
-  jl.forEach(j=>{const live=packsFor(j.key).length>0;
+  document.getElementById("juris-label").textContent=VD?"Your governments · verified districts":"Open deliberations";
+  document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">Find your governments →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
+  const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
+  jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
     const status=live?"● Deliberation open":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
     const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
     b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
@@ -620,6 +628,7 @@ async function boot(){
     const idx=await (await fetch("packs/index.json")).json();
     for(const e of idx.packs){const d=await (await fetch(e.file)).json(); const c=compilePack(d); PACKS[c.packKey]=c; ST[c.packKey]=blank(c);}
     if(/[?&]preview=draft/.test(location.search)){try{const raw=localStorage.getItem("civicaccord-draft");if(raw){const c=compilePack(JSON.parse(raw),{draft:true});c.packKey="draft:"+c.packKey;PACKS[c.packKey]=c;ST[c.packKey]=blank(c);cur=c.packKey}}catch(e){}}
+    if(!cur){const ks=Object.keys(PACKS);cur=(VD&&ks.find(k=>PACKS[k].key===VD.state.toLowerCase()+"-state"))||ks[0]}
     P=PACKS[cur]; st=ST[cur]; render();
   }catch(err){panel.innerHTML='<section class="panel"><h2>Couldn\'t load this deliberation</h2><p class="meta">Check your connection and reload the page.</p></section>'}
 }
