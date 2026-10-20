@@ -1,0 +1,491 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Civic Accord Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#b07a12; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:var(--sun)}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.issues{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Civic deliberation · working prototype · Hawaiʻi pilot</div>
+    <h1>Civic Accord</h1>
+    <p class="lede">Residents talk an issue through, the tool finds where they actually agree, and the result goes to their state legislator as a proposed bill with the full public record behind it.</p>
+    <div class="who">
+      <span class="chip ok">✓ Verified resident</span>
+      <span class="chip">Maui · House District (example)</span>
+      <span class="chip">2027 session opens Jan 20</span>
+    </div>
+    <p class="note"><b>Example data.</b> Every vote, comment, and participant here is invented to show how the tool works. Nothing is sent anywhere.</p>
+  </header>
+
+  <div>
+    <div class="eyebrow" style="margin-bottom:6px">Government</div>
+    <div class="issues" id="juris"></div>
+  </div>
+  <div>
+    <div class="eyebrow" style="margin-bottom:6px">Issue</div>
+    <div class="issues" id="issues"></div>
+  </div>
+
+  <nav class="steps" role="tablist" id="steps"></nav>
+
+  <main id="panel"></main>
+
+  <footer>
+    <span>Prototype by Jeffrey Wise with Claude · October 2026</span>
+    <span>AI organizes and drafts. People decide. The Legislative Reference Bureau drafts the final bill text for any legislator who introduces it.</span>
+  </footer>
+</div>
+
+<script>
+const ISSUES=[
+  {id:"invasive",name:"Invasive species",sub:"Pilot issue",live:true},
+  {id:"food",name:"Food self-sufficiency",sub:"Issue pack later"},
+  {id:"wildfire",name:"Wildfire resilience",sub:"Issue pack later"},
+  {id:"housing",name:"Housing",sub:"Issue pack later"},
+  {id:"water",name:"Water",sub:"Issue pack later"}
+];
+const JURIS=[
+  {name:"Hawaiʻi State Legislature",sub:"Pilot",live:true},
+  {name:"Maui County Council",sub:"Jurisdiction pack later"},
+  {name:"Another state",sub:"Jurisdiction pack later"},
+  {name:"U.S. Congress",sub:"Jurisdiction pack later"}
+];
+const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
+
+// Cost model. Illustrative estimates anchored to recent Hawaiʻi appropriations; the live tool would use agency and independent estimates.
+const VISITORS=9640000; // 2025 visitor arrivals, preliminary state data
+const HISC_BASE=4780378; // HISC FY26 base budget
+const OPT={
+ 1:{name:"Rapid-response crews",unit:"crews",min:0,max:12,step:1,def:5,per:400000,yr:true,impact:n=>`${n} crew${n===1?"":"s"} of 4 staff with gear. ${n>=5?"Every major island covered.":"Some islands share a crew."}`,basis:"About $73,000 per biosecurity position, based on the 2024 law that funded 44 positions for $3.2 million, plus equipment."},
+ 2:{name:"Interisland plant and soil inspections",unit:"inspectors",min:0,max:30,step:2,def:12,per:85000,yr:true,impact:n=>`${n} inspectors at interisland ports and cargo hubs.`,basis:"Inspector salary and benefits, estimated."},
+ 3:{name:"Public pest sighting map",unit:"",min:1,max:1,step:1,def:1,per:150000,yr:true,impact:()=>"Weekly public map built on the pest dashboard Act 236 already requires.",basis:"Staff time and hosting, estimated."},
+ 5:{name:"Study a dedicated funding source",unit:"",min:1,max:1,step:1,def:1,per:250000,yr:false,impact:()=>"One-time study with recommendations to the legislature.",basis:"One-time contract, estimated."},
+ 6:{name:"Free fire ant kits for homeowners",unit:"households",min:0,max:60000,step:5000,def:20000,per:40,yr:true,impact:n=>`${n.toLocaleString()} households a year get bait and training.`,basis:"About $40 per household for bait and training, estimated."},
+ 8:{name:"Farmer compensation fund",unit:"million dollars",min:0,max:5,step:0.5,def:1,per:1000000,yr:true,impact:n=>`$${n}M a year to cover crop losses from required pest control.`,basis:"Set by the legislature; no standard cost."},
+ 9:{name:"Pest lessons in schools",unit:"",min:1,max:1,step:1,def:1,per:200000,yr:true,impact:()=>"Lesson materials and teacher training statewide.",basis:"Curriculum and training, estimated."}
+};
+let budget={}; Object.keys(OPT).forEach(k=>budget[k]={on:false,n:OPT[k].def});
+let fee=0, fines=false, budgetSeeded=false;
+const money=v=>v>=1e6?`$${(v/1e6).toFixed(v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`;
+
+// Example statements. a/b = invented agree, disagree, pass counts for two opinion groups found by voting pattern.
+const S=[
+ {id:1,t:"Every island should have a rapid-response crew that can treat a new little fire ant find within 72 hours.",a:[41,3,2],b:[37,5,4]},
+ {id:2,t:"Plants and soil shipped between islands should be inspected the same way as shipments from the mainland.",a:[38,6,2],b:[29,12,5]},
+ {id:3,t:"The state should publish a public map of confirmed pest sightings, updated weekly.",a:[40,2,4],b:[39,3,4]},
+ {id:4,t:"Fines for knowingly moving infested material should go up.",a:[22,20,4],b:[36,6,4]},
+ {id:5,t:"Funding for invasive species should come from a dedicated source, not compete with the general budget every year.",a:[35,5,6],b:[38,4,4]},
+ {id:6,t:"Homeowners should get free little fire ant treatment kits and training.",a:[39,4,3],b:[34,7,5]},
+ {id:7,t:"Visitors should pay a fee that goes directly to biosecurity.",a:[18,24,4],b:[37,5,4]},
+ {id:8,t:"Farmers who report a new pest quickly should be protected from losing their whole crop without compensation.",a:[42,1,3],b:[30,9,7]},
+ {id:9,t:"Schools should teach keiki to recognize the worst invasive pests.",a:[37,4,5],b:[40,2,4]}
+];
+let mine={}; let added=[]; let issue="invasive"; let step=0; let nextId=100;
+
+const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
+const esc=(s)=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function tally(s){
+  const a=[...s.a], b=[...s.b], v=mine[s.id];
+  if(v!==undefined){ a[v]++; } // the viewer's own vote joins group A in this demo
+  const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+  const pa=pct(a), pb=pct(b);
+  let kind="forming";
+  if(a[0]+a[1]+a[2]+b[0]+b[1]+b[2]>=10){
+    if(pa>=70&&pb>=70) kind="common"; else if(Math.min(pa,pb)<50&&Math.max(pa,pb)>=70) kind="split";
+  }
+  return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2]};
+}
+const all=()=>[...S,...added];
+
+function renderIssues(){
+  const box=document.getElementById("issues");box.innerHTML="";
+  ISSUES.forEach(i=>{
+    const b=el(`<button class="issue" aria-pressed="${i.id===issue}" ${i.live?"":"disabled"}>${esc(i.name)}<small>${esc(i.sub)}</small></button>`);
+    box.appendChild(b);
+  });
+}
+function renderJuris(){
+  const box=document.getElementById("juris");box.innerHTML="";
+  JURIS.forEach(j=>box.appendChild(el(`<button class="issue" aria-pressed="${!!j.live}" ${j.live?"":"disabled"}>${esc(j.name)}<small>${esc(j.sub)}</small></button>`)));
+}
+function renderSteps(){
+  const n=document.getElementById("steps");n.innerHTML="";
+  STEPS.forEach(([name,num],i)=>{
+    const b=el(`<button class="step ${i<step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===step}"><b>Step ${num}</b><span>${name}</span></button>`);
+    b.onclick=()=>{step=i;render()};n.appendChild(b);
+  });
+}
+
+function learn(){
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Issue pack · shared facts</div><h2>Invasive species in Hawaiʻi</h2></div>
+  <p class="lede">Everyone starts from the same verified facts before weighing in. Each issue gets its own pack like this one; the rest of the tool stays the same.</p>
+  <div class="grid2">
+    <div class="fact"><span class="k">Lead agency</span><span>Department of Agriculture &amp; Biosecurity, renamed from the Department of Agriculture by Act 236 (2025).</span></div>
+    <div class="fact"><span class="k">New powers</span><span>The department and governor can now declare a biosecurity emergency to stop a pest from spreading.</span></div>
+    <div class="fact"><span class="k">Coming Jan 1, 2027</span><span>A new deputy for biosecurity takes charge of inspections and pest control programs.</span></div>
+    <div class="fact"><span class="k">Recent funding</span><span>$8.5 million over two years for the Hawaiʻi Invasive Species Council, plus $500,000 each for the Hawaiʻi Ant Lab and the coconut rhinoceros beetle response.</span></div>
+  </div>
+  <div class="grid2">
+    <div><h3>Pests people report most</h3><ul class="plain"><li>Little fire ant</li><li>Coconut rhinoceros beetle</li><li>Coquí frog</li><li>Two-lined spittlebug</li></ul></div>
+    <div><h3>Where bills go</h3><ul class="plain"><li>House Committee on Agriculture &amp; Food Systems</li><li>Senate Committee on Agriculture and Environment</li><li>Money bills also pass through House Finance and Senate Ways and Means</li></ul></div>
+  </div>
+  <p class="src">Sources: <a href="https://dab.hawaii.gov/?p=13137" target="_blank" rel="noopener">Dept. of Agriculture &amp; Biosecurity, July 2025</a> · <a href="https://www.mikegabbard.com/in-print/eft3shqdr2xjriuub2u5fqiz2v6t7g" target="_blank" rel="noopener">Hawaiʻi Public Radio, June 2025</a> · <a href="https://mauinow.com/2025/05/02/hawai%ca%bbi-legislature-passes-biosecurity-bill/" target="_blank" rel="noopener">Maui Now, May 2025</a></p>
+  <button class="btn" id="go1">Start weighing in</button>
+  </section>`;
+}
+
+function weigh(){
+  const list=all(), voted=list.filter(s=>mine[s.id]!==undefined).length;
+  const items=list.map(s=>{
+    const v=mine[s.id];
+    return `<div class="stmt ${s.mine?"mine":""}">
+      <p>${esc(s.t)}</p>
+      <div class="vote" data-id="${s.id}">
+        <button class="agree" aria-pressed="${v===0}" data-v="0">Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1">Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2">Pass / unsure</button>
+      </div>
+      ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
+    </div>`}).join("");
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
+  <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
+  <p class="progress">You've voted on ${voted} of ${list.length} statements.</p>
+  ${items}
+  <form class="add" id="addform">
+    <label for="newstmt"><h3>Add a statement</h3></label>
+    <textarea id="newstmt" rows="2" maxlength="200" placeholder="One clear idea, in your own words."></textarea>
+    <button class="btn" type="submit">Add statement</button>
+    <span class="toast" id="addmsg" aria-live="polite"></span>
+  </form>
+  </section>`;
+}
+
+function ground(){
+  const list=all().map(s=>({...s,...tally(s)}));
+  const common=list.filter(s=>s.kind==="common").sort((x,y)=>(y.pa+y.pb)-(x.pa+x.pb));
+  const split=list.filter(s=>s.kind==="split");
+  const forming=list.filter(s=>s.kind==="forming");
+  const card=(s)=>`<div class="stmt">
+    <span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"}</span>
+    <p>${esc(s.t)}</p>
+    <div class="bars">
+      <div class="bar"><span>Group A</span><div class="track"><div class="fill ${s.pa<50?"low":""}" style="width:${s.pa}%"></div></div><span>${s.pa}%</span></div>
+      <div class="bar"><span>Group B</span><div class="track"><div class="fill ${s.pb<50?"low":""}" style="width:${s.pb}%"></div></div><span>${s.pb}%</span></div>
+    </div>
+    <details><summary>See the ${s.n} votes behind this</summary><p class="meta" style="margin-top:6px">In the live tool this opens every vote and the original statement, so no one has to take the summary on trust.</p></details>
+  </div>`;
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
+  <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
+  <div class="groups">
+    <div class="grp"><h3>Group A</h3><p class="meta">Leans toward protecting farms and keeping costs off residents. Skeptical of visitor fees and higher fines.</p></div>
+    <div class="grp"><h3>Group B</h3><p class="meta">Leans toward stronger enforcement and new funding sources, including visitors.</p></div>
+  </div>
+  <h3>Both groups agree (${common.length})</h3>
+  ${common.map(card).join("")||'<p class="meta">Nothing yet.</p>'}
+  <h3>Where they split (${split.length})</h3>
+  <p class="meta">These go to the legislator too, so the strongest dissent isn't lost.</p>
+  ${split.map(card).join("")||'<p class="meta">No sharp splits right now.</p>'}
+  ${forming.length?`<h3>Still forming (${forming.length})</h3>${forming.map(card).join("")}`:""}
+  <button class="btn" id="go3">Weigh the costs</button>
+  </section>`;
+}
+
+function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
+function totals(){
+  let yearly=0, once=0;
+  Object.keys(OPT).forEach(k=>{const b=budget[k];if(!b.on)return;const c=OPT[k].per*b.n;OPT[k].yr?yearly+=c:once+=c});
+  const feeRev=fee*VISITORS, fineRev=fines?100000:0;
+  const gf=Math.max(0,yearly+once-feeRev-fineRev);
+  return {yearly,once,feeRev,fineRev,gf,surplus:Math.max(0,feeRev+fineRev-yearly-once)};
+}
+function costs(){
+  if(!budgetSeeded){Object.keys(OPT).forEach(k=>{const s=statusOf(k);budget[k].on=!!s&&s.kind==="common"});budgetSeeded=true}
+  const s7=statusOf(7), s4=statusOf(4);
+  const opts=Object.keys(OPT).map(k=>{
+    const o=OPT[k], b=budget[k], s=statusOf(k);
+    const tag=s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:"";
+    const slider=o.max>o.min?`<label class="meta" for="r-${k}">How much: <span id="n-${k}"></span></label><input type="range" id="r-${k}" min="${o.min}" max="${o.max}" step="${o.step}" value="${b.n}">`:"";
+    return `<div class="opt ${b.on?"":"off"}" id="o-${k}">
+      <div class="opthead"><label><input type="checkbox" id="c-${k}" ${b.on?"checked":""}><span>${esc(o.name)}</span></label><span class="cost" id="cost-${k}"></span></div>
+      ${tag}
+      ${slider}
+      <p class="meta" id="imp-${k}"></p>
+      <details><summary>How this cost was estimated</summary><p class="meta" style="margin-top:6px">${esc(o.basis)}</p></details>
+    </div>`}).join("");
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 4</div><h2>Weigh costs</h2></div>
+  <p class="lede">Every idea costs something, and someone pays for it. Turn options on or off, adjust how big each one is, and choose how to pay. The totals update as you go.</p>
+  <div class="ledger" aria-live="polite">
+    <div class="rows">
+      <div class="r"><span>Yearly cost</span><span id="t-yearly"></span></div>
+      <div class="r"><span>One-time cost</span><span id="t-once"></span></div>
+      <div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>
+      <div class="r"><span>Higher fines bring in</span><span id="t-fines"></span></div>
+      <div class="r total"><span>Still needed from the general fund</span><span id="t-gf"></span></div>
+    </div>
+    <div class="gauge" title="Compared with the Invasive Species Council's current base budget"><div class="g" id="g-bar"></div></div>
+    <p class="meta" id="t-compare"></p>
+  </div>
+  <h3>What to fund</h3>
+  ${opts}
+  <h3>How to pay for it</h3>
+  <div class="opt">
+    <div class="opthead"><label for="fee">Visitor biosecurity fee</label><span class="cost" id="fee-v"></span></div>
+    ${s7?`<span class="tag ${s7.kind}">${s7.kind==="split"?"Divides groups":s7.kind==="common"?"Common ground":"Still forming"} · A ${s7.pa}% B ${s7.pb}%</span>`:""}
+    <input type="range" id="fee" min="0" max="10" step="0.5" value="${fee}">
+    <p class="meta">Per visitor, based on about 9.64 million visitor arrivals in 2025.</p>
+  </div>
+  <div class="opt">
+    <div class="opthead"><label><input type="checkbox" id="fines" ${fines?"checked":""}><span>Raise fines for moving infested material</span></label><span class="cost">about $100K/yr</span></div>
+    ${s4?`<span class="tag ${s4.kind}">${s4.kind==="split"?"Divides groups":s4.kind==="common"?"Common ground":"Still forming"} · A ${s4.pa}% B ${s4.pb}%</span>`:""}
+    <p class="meta">Fines mainly deter. The revenue estimate is rough.</p>
+  </div>
+  <p class="meta">Whatever fees and fines don't cover comes from the general fund, where it competes with schools, health care, housing, and everything else the state pays for.</p>
+  <p class="note"><b>Estimates.</b> These costs are rough figures built from recent Hawaiʻi appropriations, for illustration. In the live tool, agencies and independent analysts would supply the estimates, with sources shown.</p>
+  <p class="src">Sources: <a href="https://mikegabbard.com/in-print/bmeo0i3o5xgizpgglzzwjtf15zb15n" target="_blank" rel="noopener">2024 biosecurity funding, Hawaiʻi Public Radio</a> · <a href="https://dlnr.hawaii.gov/hisc/files/2025/09/Submittal-2_HISC-FY26-Recommended-Budget-for-Council-Approval.pdf" target="_blank" rel="noopener">HISC FY26 budget</a> · <a href="https://www.thegardenisland.com/2026/02/02/business/hawaii-visitor-arrivals-end-2025-well-below-pre-pandemic-peak/" target="_blank" rel="noopener">2025 visitor arrivals</a></p>
+  <button class="btn" id="goC">Draft the proposal</button>
+  </section>`;
+}
+function updateBudget(){
+  Object.keys(OPT).forEach(k=>{
+    const o=OPT[k], b=budget[k];
+    const c=document.getElementById("cost-"+k); if(!c) return;
+    c.textContent=b.on?`${money(o.per*b.n)}${o.yr?"/yr":" once"}`:"off";
+    const n=document.getElementById("n-"+k); if(n) n.textContent=`${b.n.toLocaleString()} ${o.unit}`;
+    document.getElementById("imp-"+k).textContent=o.impact(b.n);
+    document.getElementById("o-"+k).classList.toggle("off",!b.on);
+  });
+  const t=totals();
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  set("t-yearly",money(t.yearly)); set("t-once",money(t.once));
+  set("t-fee",fee?`− ${money(t.feeRev)}`:"$0"); set("t-fines",fines?`− ${money(t.fineRev)}`:"$0");
+  set("t-gf",t.surplus?`$0 (fees exceed costs by ${money(t.surplus)})`:money(t.gf));
+  set("fee-v",fee?`$${fee.toFixed(2)} per visitor`:"none");
+  const share=(t.yearly)/HISC_BASE;
+  const bar=document.getElementById("g-bar");
+  if(bar){bar.style.width=Math.min(100,share*50)+"%";bar.classList.toggle("over",share>1)}
+  set("t-compare",`Yearly cost is ${share.toFixed(1)}× the Invasive Species Council's current base budget of ${money(HISC_BASE)} (FY26). The bar fills at twice that budget.`);
+}
+
+function draft(){
+  const common=all().map(s=>({...s,...tally(s)})).filter(s=>s.kind==="common").sort((x,y)=>(y.pa+y.pb)-(x.pa+x.pb));
+  if(!budgetSeeded){Object.keys(OPT).forEach(k=>{const s=statusOf(k);budget[k].on=!!s&&s.kind==="common"});budgetSeeded=true}
+  const has=(id)=>budget[id]&&budget[id].on;
+  const words=n=>n.toLocaleString();
+  const secs=[];
+  if(has(1)) secs.push(`establish ${words(budget[1].n)} rapid response teams, assigned so that every island can begin treatment of a newly detected little fire ant infestation within seventy-two hours of confirmation`);
+  if(has(2)) secs.push(`inspect plants and soil shipped between islands to the same standard as shipments from outside the State, with ${words(budget[2].n)} additional inspector positions`);
+  if(has(3)) secs.push("publish a public map of confirmed pest detections, updated at least weekly, as part of the pest dashboard required by Act 236, Session Laws of Hawaii 2025");
+  if(has(5)) secs.push("study and recommend a dedicated, recurring funding source for biosecurity programs and report its findings to the legislature");
+  if(has(6)) secs.push(`provide free little fire ant treatment supplies and training to up to ${words(budget[6].n)} residential households each year`);
+  if(has(9)) secs.push("work with the department of education to offer invasive pest identification lessons in public schools");
+  if(has(8)) secs.push(`establish a compensation fund of $${words(budget[8].n*1000000)} each year for farmers who promptly report a new pest and suffer crop losses from required control measures`);
+  const t=totals();
+  const picked=Object.keys(OPT).filter(k=>budget[k].on).map(k=>({k,o:OPT[k],s:statusOf(k)}));
+  const plain=picked.map(p=>`<li>${esc(p.o.name)}: ${money(p.o.per*budget[p.k].n)}${p.o.yr?" a year":" once"}${p.s&&p.s.kind!=="common"?` <span class="warn">(not common ground: A ${p.s.pa}%, B ${p.s.pb}%)</span>`:""}</li>`).join("");
+  const s7=statusOf(7);
+  const feeNote=fee&&s7&&s7.kind!=="common"?`<p class="warn">The visitor fee divides participants (A ${s7.pa}%, B ${s7.pb}%). It goes to the legislator flagged as a disagreement.</p>`:"";
+  const body=secs.map((s,i)=>`     (${i+1}) ${s};`).join("\n");
+  const feeSec=fee?`\n\n     SECTION 3.  There is established a biosecurity visitor fee of $${fee.toFixed(2)} per visitor arrival, to be deposited into a special fund for the purposes of this Act.`:"";
+  const fineSec=fines?`\n\n     SECTION ${fee?4:3}.  The penalties for knowingly transporting material infested with a restricted pest shall be increased.`:"";
+  const next=3+(fee?1:0)+(fines?1:0);
+  const tot=Math.round(t.yearly+t.once), fromFees=fee?Math.min(tot,Math.round(t.feeRev)):0;
+  const src=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of the biosecurity special fund and the sum of $${words(Math.round(t.gf))} out of the general revenues of the State of Hawaii,`:t.gf>0?`out of the general revenues of the State of Hawaii the sum of $${words(Math.round(t.gf))}`:`out of the biosecurity special fund the sum of $${words(tot)}`;
+  const approp=`     SECTION ${next}.  There is appropriated ${src} or so much thereof as may be necessary for fiscal year 2027-2028 for the purposes of this Act.`;
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
+  <p class="lede">The proposal is built from your choices in Step 4, starting from what both groups agreed on. Anything you added that lacks common ground is flagged.</p>
+  <h3>Plain-language proposal</h3>
+  ${plain?`<ul class="plain">${plain}</ul>`:'<p class="meta">Nothing is selected yet. Choose options in Step 4.</p>'}
+  <div class="stat" style="display:flex;gap:20px;flex-wrap:wrap">
+    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.yearly)}</strong><span class="meta">yearly cost</span></div>
+    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.once)}</strong><span class="meta">one-time cost</span></div>
+    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.gf)}</strong><span class="meta">from the general fund</span></div>
+  </div>
+  ${feeNote}
+  <h3>Starting bill text</h3>
+  <p class="meta">An AI-written starting point for a legislator's office. It is not final legal text.</p>
+  <div class="bill"><span class="c">A BILL FOR AN ACT</span><span class="c">RELATING TO BIOSECURITY.</span>
+<span class="c">BE IT ENACTED BY THE LEGISLATURE OF THE STATE OF HAWAII:</span>
+     SECTION 1.  The legislature finds that residents of every island have identified invasive species as an urgent threat to agriculture, natural resources, and daily life, and that residents with differing views share common ground on the measures in this Act.
+
+     SECTION 2.  The department of agriculture and biosecurity shall:
+${body||"     (no provisions yet)"}${feeSec}${fineSec}
+
+${approp}
+
+     SECTION ${next+1}.  This Act shall take effect on July 1, 2027.</div>
+  <button class="btn" id="go4">Prepare the hand-off</button>
+  </section>`;
+}
+
+function handoff(){
+  const list=all().map(s=>({...s,...tally(s)}));
+  const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
+  const people=92+(Object.keys(mine).length?1:0);
+  const votes=list.reduce((n,s)=>n+s.n,0);
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 6</div><h2>Hand off to your legislator</h2></div>
+  <p class="lede">The package goes to the state representative and senator for this district. They decide whether to introduce it. The public record stays open either way.</p>
+  <div class="pkg">
+    <div class="stat">
+      <div><strong>${people}</strong><span>verified residents</span></div>
+      <div><strong>${votes}</strong><span>votes cast</span></div>
+      <div><strong>${common.length}</strong><span>points of common ground</span></div>
+      <div><strong>${split.length}</strong><span>open disagreements</span></div>
+      <div><strong>${money(totals().yearly)}</strong><span>estimated yearly cost</span></div>
+    </div>
+    <div class="grp"><h3>What's in the package</h3>
+      <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
+    </div>
+    <div class="grp"><h3>Timing</h3><p class="meta">The 2027 session opens January 20. Bills are introduced in the first week or two, so packages should reach legislators by early January.</p></div>
+  </div>
+  <div class="row"><button class="btn" id="copy">Copy summary</button><span class="toast" id="copymsg" aria-live="polite"></span></div>
+  <textarea id="summarytext" rows="6" readonly hidden></textarea>
+  </section>`;
+}
+
+function render(){
+  renderJuris();renderIssues();renderSteps();
+  const p=document.getElementById("panel");
+  p.innerHTML=[learn,weigh,ground,costs,draft,handoff][step]();
+  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{step=n;render();window.scrollTo({top:0})}};
+  go("go1",1);go("go3",3);go("goC",4);go("go4",5);
+  if(step===3){
+    Object.keys(OPT).forEach(k=>{
+      const c=document.getElementById("c-"+k); c.onchange=()=>{budget[k].on=c.checked;updateBudget()};
+      const r=document.getElementById("r-"+k); if(r) r.oninput=()=>{budget[k].n=+r.value;if(!budget[k].on){budget[k].on=true;c.checked=true}updateBudget()};
+    });
+    const f=document.getElementById("fee"); f.oninput=()=>{fee=+f.value;updateBudget()};
+    const fi=document.getElementById("fines"); fi.onchange=()=>{fines=fi.checked;updateBudget()};
+    updateBudget();
+  }
+  p.querySelectorAll(".vote").forEach(row=>{
+    row.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const id=+row.dataset.id, v=+b.dataset.v;
+      mine[id]=mine[id]===v?undefined:v; if(mine[id]===undefined) delete mine[id];
+      const y=window.scrollY; render(); window.scrollTo({top:y});
+    });
+  });
+  const f=document.getElementById("addform");
+  if(f) f.onsubmit=(e)=>{e.preventDefault();const t=document.getElementById("newstmt").value.trim();
+    const m=document.getElementById("addmsg");
+    if(t.length<10){m.textContent="Write at least a short sentence so others can vote on it.";return}
+    const id=nextId++;added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});mine[id]=0;
+    const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added. Others can now vote on it.";};
+  const c=document.getElementById("copy");
+  if(c) c.onclick=()=>{
+    const list=all().map(s=>({...s,...tally(s)}));
+    const txt="Civic Accord summary: Invasive species (example data)\n\nCommon ground:\n"+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
+    const msg=document.getElementById("copymsg");
+    const fallback=()=>{const ta=document.getElementById("summarytext");ta.hidden=false;ta.value=txt;ta.select();msg.textContent="Select and copy the text below."};
+    try{navigator.clipboard.writeText(txt).then(()=>msg.textContent="Copied.",fallback)}catch(e){fallback()}
+  };
+}
+render();
+</script>
+</body></html>
