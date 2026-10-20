@@ -70,6 +70,21 @@ The conversation is with an office (a seat), not a person. Each seat carries the
 
 The tool pauses office-initiated deliberation requests during that window. Residents can still deliberate, and offices can still respond.
 
+#### legalReview
+
+Legal review happens in two layers. The **core** layer covers law that is the same everywhere (federal law, privacy, the host's obligations) and is reviewed once by the host's counsel. The **jurisdiction** layer covers each government's own rules and is reviewed by someone with local expertise, such as a law school clinic or bar pro bono program in that state.
+
+| Field | What it holds |
+| --- | --- |
+| `layer` | `core` or `jurisdiction` |
+| `status` | `needed`, `in review`, or `done` |
+| `reviewer`, `date` | Who reviewed it and when |
+| `suggested` | Who could review it, while unassigned |
+| `scope` | What the review covers |
+| `cadence` | When it is repeated, for example each election cycle |
+
+A pack can't go live until its legal review is `done`.
+
 ### issue
 
 | Field | What it holds |

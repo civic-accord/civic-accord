@@ -93,7 +93,19 @@
      "note": "Reporting says the Senate has no such rule. A reviewer must confirm this before launch."
     }
    }
-  ]
+  ],
+  "legalReview": {
+   "layer": "jurisdiction",
+   "status": "needed",
+   "reviewer": null,
+   "suggested": "A Hawaiʻi law school clinic or state bar pro bono program",
+   "scope": [
+    "Each seat's pre-election communication rule",
+    "Election dates",
+    "Hearing testimony format, once packages are submitted as testimony"
+   ],
+   "cadence": "Before launch and at the start of each election cycle"
+  }
  },
  "issue": {
   "key": "invasive",

@@ -70,7 +70,18 @@
      "note": "Counts as mass communication when 500 or more people receive substantially identical unsolicited content. Communications to people who subscribed are exempt."
     }
    }
-  ]
+  ],
+  "legalReview": {
+   "layer": "core",
+   "status": "needed",
+   "reviewer": null,
+   "suggested": "The host's counsel, reviewed once for every district, since federal law is the same everywhere",
+   "scope": [
+    "39 U.S.C. § 3210 and House and Senate communication rules",
+    "Federal election dates for each state"
+   ],
+   "cadence": "Before launch and at the start of each Congress"
+  }
  },
  "issue": {
   "key": "invasive",

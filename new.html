@@ -195,6 +195,7 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
         <div class="frow"><label for="g-gen">Next general election (date)</label><input type="text" id="g-gen" placeholder="2026-11-03"></div>
         <div class="frow"><label for="g-peurl">Source for the rule (https link)</label><input type="text" id="g-peurl" placeholder="https://"></div>
       </div>
+      <div class="frow"><label for="g-lr">Legal reviewer for this government</label><input type="text" id="g-lr" placeholder="A local law school clinic or bar pro bono program"><span class="hint">Checks every rule above against its source before launch and each election cycle</span></div>
       <div class="frow"><label for="g-pesum">The rule in one plain sentence</label><input type="text" id="g-pesum" placeholder="Council members may not send taxpayer-funded mass mailers in the 60 days before an election."></div>
     </div>
   </section>
@@ -253,9 +254,9 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const $=id=>document.getElementById(id);
 const KEY="civicaccord-builder";
 let templates={}, B=null;
-const GMAP={"g-name":"name","g-level":"level","g-title":"title","g-district":"district","g-session":"session","g-drafting":"drafting","g-res":"res","g-reslabel":"reslabel","g-popurl":"popurl","g-base":"base","g-baselabel":"baselabel","g-fund":"fund","g-pe":"pe","g-pebasis":"pebasis","g-pecand":"pecand","g-pedays":"pedays","g-pefrom":"pefrom","g-peto":"peto","g-prim":"prim","g-gen":"gen","g-peurl":"peurl","g-pesum":"pesum"};
+const GMAP={"g-name":"name","g-level":"level","g-title":"title","g-district":"district","g-session":"session","g-drafting":"drafting","g-res":"res","g-reslabel":"reslabel","g-popurl":"popurl","g-base":"base","g-baselabel":"baselabel","g-fund":"fund","g-pe":"pe","g-pebasis":"pebasis","g-pecand":"pecand","g-pedays":"pedays","g-pefrom":"pefrom","g-peto":"peto","g-prim":"prim","g-gen":"gen","g-peurl":"peurl","g-pesum":"pesum","g-lr":"lr"};
 const isDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||"");
-const empty=()=>({gov:"",custom:{name:"",level:"city",title:"",district:"",session:"",drafting:"",res:"",reslabel:"",popurl:"",base:"",baselabel:"",fund:"",pe:"",pebasis:"law",pecand:"",pedays:"",pefrom:"",peto:"",prim:"",gen:"",peurl:"",pesum:""},
+const empty=()=>({gov:"",custom:{name:"",level:"city",title:"",district:"",session:"",drafting:"",res:"",reslabel:"",popurl:"",base:"",baselabel:"",fund:"",pe:"",pebasis:"law",pecand:"",pedays:"",pefrom:"",peto:"",prim:"",gen:"",peurl:"",pesum:"",lr:""},
   name:"",title:"",facts:[{label:"",text:"",url:""}],stmts:["","","",""],costs:[],revs:[]});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(B))}catch(e){}};
 const slug=s=>String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"issue";
@@ -277,6 +278,7 @@ function buildPack(){
       representativeTitle:c.title||"representative",handoffTitle:"Hand off to your representatives",handoffText:`The package goes to the ${c.title||"representative"} for this district. They decide whether to take it up. The public record stays open either way.`,
       timing:c.session||"",receiptPrefix:(c.name.match(/\b[A-Za-z]/g)||["X","X"]).slice(0,2).join("").toUpperCase(),
       elections:[c.prim&&{name:"Primary election",date:c.prim},c.gen&&{name:"General election",date:c.gen}].filter(Boolean),
+      legalReview:{layer:"jurisdiction",status:"needed",reviewer:c.lr||null,suggested:"A local law school clinic or bar pro bono program",scope:["Each seat's pre-election communication rule","Election dates"],cadence:"Before launch and at the start of each election cycle"},
       offices:[{key:slug(c.name)+"-seat",title:`${c.name} seat`,where:c.district,holder:"Current officeholder",term:"",onBallot:true,
         preElection:c.pe?{basis:c.pe==="none"?"none":c.pebasis,summary:c.pesum||(c.pe==="none"?"No law or rule limits official mass communications before elections.":""),
           window:c.pe==="days"?{type:"daysBefore",days:+c.pedays}:c.pe==="range"?{type:"range",from:c.pefrom,to:c.peto,fromLabel:c.pefrom,toLabel:c.peto}:undefined,
@@ -305,7 +307,8 @@ function checks(){
     if(!pe) add("no","Research this government's rules on official communications before elections");
     else{const okw=pe==="none"||(pe==="days"&&+cu.pedays>0&&(isDate(cu.prim)||isDate(cu.gen)))||(pe==="range"&&isDate(cu.pefrom)&&isDate(cu.peto));
       add(okw?"ok":"no",okw?"Pre-election rule entered":pe==="days"?"Add the number of days and at least one election date (YYYY-MM-DD)":"Add the start and end dates (YYYY-MM-DD)");
-      add(isUrl(cu.peurl)?"ok":"no",isUrl(cu.peurl)?"Pre-election rule has a source":"Add an https link to the law or rule (or to where it says none exists)");}}
+      add(isUrl(cu.peurl)?"ok":"no",isUrl(cu.peurl)?"Pre-election rule has a source":"Add an https link to the law or rule (or to where it says none exists)");}
+    add(cu.lr&&cu.lr.trim()?"ok":"warn",cu.lr&&cu.lr.trim()?`Legal reviewer: ${cu.lr.trim()}`:"Name a legal reviewer for this government before launch");}
   else add("no","Choose a government");
   add(B.name.trim()&&B.title.trim()?"ok":"no",B.name.trim()&&B.title.trim()?"Issue named":"Give the issue a short name and a title");
   const facts=B.facts.filter(f=>f.label||f.text);

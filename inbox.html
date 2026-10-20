@@ -217,7 +217,10 @@ function renderSeat(){
     <p class="meta">Every rule the tool applies comes from this government's own law or chamber rules, with the source. Where no law applies, the tool adds none of its own.</p>
     <div class="record"><div class="recrow${ru&&ru.verified?"":" silent"}"><b>Before elections · ${esc(basis)}</b><span>${esc(ru?ru.summary:"Not yet researched.")}</span>
       ${ru&&ru.note?`<span class="meta">${esc(ru.note)}</span>`:""}
-      <span class="meta">${ru&&ru.verified?"✓ Checked against the source":"! Not yet confirmed by a reviewer"}${cites?" · "+cites:""}</span></div></div>
+      <span class="meta">${ru&&ru.verified?"✓ Checked against the source":"! Not yet confirmed by a reviewer"}${cites?" · "+cites:""}</span></div>
+      ${j.legalReview?`<div class="recrow${j.legalReview.status==="done"?"":" silent"}"><b>Legal review · ${j.legalReview.layer==="core"?"core (applies everywhere)":esc(j.name)}</b>
+        <span>${j.legalReview.reviewer?`Reviewed by ${esc(j.legalReview.reviewer)}${j.legalReview.date?" on "+esc(j.legalReview.date):""}`:"Reviewer not yet assigned. Suggested: "+esc(j.legalReview.suggested)}</span>
+        <span class="meta">Covers: ${j.legalReview.scope.map(esc).join("; ")}. ${esc(j.legalReview.cadence)}.</span></div>`:""}</div>
     <h3>Ask your district to weigh in</h3>
     <p class="meta">The office can ask constituents to deliberate on a pending bill or a trade-off it faces. A neutral host reviews every request for sourced facts, neutral wording, and cost methods before it opens, and the request itself is public.</p>
     ${q.paused?`<div class="paused" id="quiet"><b>Requests are paused ${q.election?`for the ${esc(q.election.name.toLowerCase())} on ${fmt(q.election.d)}`:`from ${esc(q.rule.window.fromLabel)} until ${esc(q.rule.window.toLabel)}`}.</b>
