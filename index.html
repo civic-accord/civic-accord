@@ -104,6 +104,10 @@ input[type=range]{width:100%;accent-color:var(--koa)}
 .cost-chip.rev{border-color:var(--koa);color:var(--koa)}
 .cost-chip.unknown{color:var(--muted);border-style:dashed}
 .costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
 .running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
 footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 @media (max-width:520px){nav.steps .step span{display:none}}
@@ -186,14 +190,14 @@ const S=[
  {id:8,t:"Farmers who report a new pest quickly should be protected from losing their whole crop without compensation.",a:[42,1,3],b:[30,9,7]},
  {id:9,t:"Schools should teach keiki to recognize the worst invasive pests.",a:[37,4,5],b:[40,2,4]}
 ];
-let mine={}; let added=[]; let issue="invasive"; let step=0; let nextId=100;
+let submitted=false, receipt=""; let mine={}; let added=[]; let issue="invasive"; let step=0; let nextId=100;
 
 const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
 const esc=(s)=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function tally(s){
   const a=[...s.a], b=[...s.b], v=mine[s.id];
-  if(v!==undefined){ a[v]++; } // the viewer's own vote joins group A in this demo
+  if(v!==undefined&&submitted){ a[v]++; } // the viewer's own vote joins group A in this demo
   const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
   const pa=pct(a), pb=pct(b);
   let kind="forming";
@@ -255,17 +259,40 @@ function agreedTotals(){
   all().forEach(s=>{if(mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}else if(c.kind==="rev"&&s.id===4){rev+=c.amt}});
   return {yearly,once,rev};
 }
+function voteCounts(){const v=Object.values(mine);return {agree:v.filter(x=>x===0).length,disagree:v.filter(x=>x===1).length,pass:v.filter(x=>x===2).length,total:v.length}}
+function makeReceipt(){
+  const str=JSON.stringify(Object.keys(mine).sort().map(k=>[k,mine[k]]))+Date.now();
+  let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
+  const x=(h>>>0).toString(36).toUpperCase().padStart(7,"0");
+  return `CA-${x.slice(0,4)}-${x.slice(4)}`;
+}
+function submitBox(){
+  const c=voteCounts(), t=agreedTotals(), n=all().length;
+  if(submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
+    <h3>✓ Your votes are recorded</h3>
+    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now count in the results on the next steps.</p>
+    <p class="meta">Your receipt</p><span class="receipt">${receipt}</span>
+    <p class="meta">In the live tool, you can look up this receipt in the public vote record to confirm your votes were counted exactly as cast, without revealing who you are.</p>
+    <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
+  </div>`;
+  if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;
+  return `<div class="submitbox"><h3>Review and submit</h3>
+    <p>You voted on ${c.total} of ${n} statements: ${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass.${c.total<n?` ${n-c.total} still have no vote, and that's fine.`:""}</p>
+    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}.</p>`:""}
+    <p class="meta">Your votes aren't counted until you submit.</p>
+    <button class="btn" id="submitvotes">Submit my votes</button></div>`;
+}
 function weigh(){
   const list=all(), voted=list.filter(s=>mine[s.id]!==undefined).length;
   const items=list.map(s=>{
     const v=mine[s.id];
-    return `<div class="stmt ${s.mine?"mine":""}">
+    return `<div class="stmt ${s.mine?"mine":""} ${submitted?"locked":""}">
       <p>${esc(s.t)}</p>
       ${costLine(s.id)}
       <div class="vote" data-id="${s.id}">
-        <button class="agree" aria-pressed="${v===0}" data-v="0">Agree</button>
-        <button class="disagree" aria-pressed="${v===1}" data-v="1">Disagree</button>
-        <button class="pass" aria-pressed="${v===2}" data-v="2">Pass / unsure</button>
+        <button class="agree" aria-pressed="${v===0}" data-v="0" ${submitted?"disabled":""}>Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${submitted?"disabled":""}>Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2" ${submitted?"disabled":""}>Pass / unsure</button>
       </div>
       ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
     </div>`}).join("");
@@ -281,6 +308,7 @@ function weigh(){
     <button class="btn" type="submit">Add statement</button>
     <span class="toast" id="addmsg" aria-live="polite"></span>
   </form>
+  ${submitBox()}
   </section>`;
 }
 
@@ -301,6 +329,7 @@ function ground(){
   </div>`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
+  ${!submitted&&Object.keys(mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
   <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
   <div class="groups">
     <div class="grp"><h3>Group A</h3><p class="meta">Leans toward protecting farms and keeping costs off residents. Skeptical of visitor fees and higher fines.</p></div>
@@ -449,7 +478,7 @@ ${approp}
 function handoff(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
-  const people=92+(Object.keys(mine).length?1:0);
+  const people=92+(submitted?1:0);
   const votes=list.reduce((n,s)=>n+s.n,0);
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 6</div><h2>Hand off to your legislator</h2></div>
@@ -494,11 +523,18 @@ function render(){
       const y=window.scrollY; render(); window.scrollTo({top:y});
     });
   });
+  const sv=document.getElementById("submitvotes");
+  if(sv) sv.onclick=()=>{submitted=true;receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
+  const us=document.getElementById("unsubmit");
+  if(us) us.onclick=()=>{submitted=false;receipt="";render()};
+  go("goNext",2);
+  const bs=document.getElementById("backsubmit");
+  if(bs) bs.onclick=(e)=>{e.preventDefault();step=1;render();const b=document.querySelector(".submitbox");if(b)b.scrollIntoView({block:"center"})};
   const f=document.getElementById("addform");
   if(f) f.onsubmit=(e)=>{e.preventDefault();const t=document.getElementById("newstmt").value.trim();
     const m=document.getElementById("addmsg");
     if(t.length<10){m.textContent="Write at least a short sentence so others can vote on it.";return}
-    const id=nextId++;added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});mine[id]=0;
+    const id=nextId++;added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});mine[id]=0;if(submitted){submitted=false;receipt=""}
     const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added. Others can now vote on it.";};
   const c=document.getElementById("copy");
   if(c) c.onclick=()=>{
