@@ -1,0 +1,61 @@
+{
+ "format": 1,
+ "state": "DC",
+ "stateName": "District of Columbia",
+ "maintainer": "Example entries; to be reviewed by a DC host",
+ "notes": [
+  "The District of Columbia is a federal district, not a state. Its Council and mayor act as both city and state government.",
+  "Congress reviews every Council act and can overturn it, and approves the local budget."
+ ],
+ "sources": [
+  [
+   "https://en.wikipedia.org/wiki/Council_of_the_District_of_Columbia",
+   "Council of the District of Columbia"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Non-voting_members_of_the_United_States_House_of_Representatives",
+   "Non-voting members of the U.S. House"
+  ]
+ ],
+ "state_offices": [
+  {
+   "id": "st-upper",
+   "name": "Council of the District of Columbia",
+   "branch": "Legislative",
+   "seat": "13 members: one for Ward {sldu}, plus 4 at-large members and a chair elected citywide",
+   "chosen": "Elected",
+   "term": "4-year terms",
+   "civic": "receives",
+   "pack": "dc-state"
+  },
+  {
+   "id": "st-exec",
+   "name": "Mayor and District agencies",
+   "branch": "Executive",
+   "seat": "Mayor, elected citywide",
+   "civic": "later",
+   "how": "District agencies take public comment on proposed rules."
+  },
+  {
+   "id": "st-courts",
+   "name": "DC courts",
+   "branch": "Judicial",
+   "seat": "Judges appointed by the President with Senate consent",
+   "civic": "never",
+   "how": "Courts decide cases. Civic Accord never sends anything to a court."
+  }
+ ],
+ "counties": {
+  "11001": []
+ },
+ "noLocal": true,
+ "noCounty": true,
+ "school": {
+  "id": "sch",
+  "name": "District of Columbia Public Schools",
+  "branch": "Education",
+  "seat": "Overseen by the mayor and the State Board of Education",
+  "civic": "possible"
+ },
+ "localNote": "The Council and mayor serve as the city government."
+}

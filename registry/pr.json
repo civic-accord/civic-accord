@@ -1,0 +1,83 @@
+{
+ "format": 1,
+ "state": "PR",
+ "stateName": "Puerto Rico",
+ "maintainer": "Example entries; to be reviewed by a Puerto Rico host",
+ "notes": [
+  "Puerto Rico is a U.S. territory. It elects a Resident Commissioner to the U.S. House and has no U.S. senators.",
+  "Its 78 municipalities each have an elected mayor and a municipal legislature."
+ ],
+ "sources": [
+  [
+   "https://en.wikipedia.org/wiki/Legislative_Assembly_of_Puerto_Rico",
+   "Legislative Assembly of Puerto Rico"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Municipalities_of_Puerto_Rico",
+   "Municipalities of Puerto Rico"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Non-voting_members_of_the_United_States_House_of_Representatives",
+   "Non-voting members of the U.S. House"
+  ]
+ ],
+ "state_offices": [
+  {
+   "id": "st-lower",
+   "name": "Puerto Rico House of Representatives",
+   "branch": "Legislative",
+   "seat": "Representative district {sldl}, plus 11 at-large members",
+   "chosen": "Elected",
+   "term": "4-year term",
+   "civic": "receives",
+   "pack": "pr-state"
+  },
+  {
+   "id": "st-upper",
+   "name": "Puerto Rico Senate",
+   "branch": "Legislative",
+   "seat": "Senatorial district {sldu}, plus 11 at-large senators",
+   "chosen": "Elected",
+   "term": "4-year term",
+   "civic": "receives",
+   "pack": "pr-state"
+  },
+  {
+   "id": "st-exec",
+   "name": "Governor and agencies",
+   "branch": "Executive",
+   "seat": "Governor, elected island-wide",
+   "civic": "later"
+  },
+  {
+   "id": "st-courts",
+   "name": "Courts of Puerto Rico",
+   "branch": "Judicial",
+   "seat": "Judges appointed",
+   "civic": "never",
+   "how": "Courts decide cases. Civic Accord never sends anything to a court."
+  }
+ ],
+ "countyLabel": "Municipality",
+ "countyOffices": [
+  {
+   "id": "co-council",
+   "name": "{county}: municipal legislature",
+   "branch": "Legislative",
+   "seat": "Municipal legislators",
+   "chosen": "Elected",
+   "term": "4-year terms",
+   "civic": "receives"
+  },
+  {
+   "id": "co-exec",
+   "name": "{county}: mayor",
+   "branch": "Executive",
+   "seat": "Mayor, elected",
+   "term": "4-year term",
+   "civic": "later"
+  }
+ ],
+ "noLocal": true,
+ "localNote": "Municipalities are the local governments in Puerto Rico. There are no separate city or town governments."
+}
