@@ -44,7 +44,7 @@ The two-way conversation is between residents and an **office** (a seat), not an
 - **Offices can ask.** An office can request a deliberation on a pending bill or a trade-off. A neutral host reviews it before it opens, and the request is public.
 - **Counter-drafts.** An office can answer "I will introduce it with changes" and say what would need to change. Residents weigh in on the revised version.
 - **Follow-through.** The office reports each step (introduced, heard, amended, voted, enacted, stalled) with its reasoning. Residents see the same timeline in the hand-off step.
-- **Election quiet period.** Offices can't start new deliberations in the days before an election (`quietPeriodDays`, default 60), modeled on the limits on official mass mailings before elections. Residents can still deliberate, and offices can still respond.
+- **Rules come from each government's law.** Each seat carries its own rules, cited, in its pack. For example, the U.S. House seat follows 39 U.S.C. § 3210 (no unsolicited mass communications in the 60 days before an election in which the member is a candidate), the Hawaiʻi State House seat follows the House rule on mass mailings after the candidate filing deadline, and the State Senate seat, which has no such rule, gets none. The tool pauses office-initiated requests during those windows; residents can still deliberate and offices can still respond.
 - **No campaign use.** No party branding, campaign links, photos, fundraising, or ratings of officials.
 
 ## Trust rules

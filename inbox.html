@@ -166,27 +166,32 @@ input[type=text],select{font:inherit;width:100%;border:1px solid var(--line);bor
 const words=n=>n.toLocaleString();
 const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const OFFICES=[
- {key:"state",title:"State House seat",where:"Maui district (example)",holder:"Current officeholder (example)",term:"Two-year term"},
- {key:"federal",title:"U.S. House seat",where:"Hawaiʻi 2nd District (example)",holder:"Current officeholder (example)",term:"Two-year term"}];
-let PK={}, office="state", open=null;
+let OFFICES=[];
+let PK={}, office=null, open=null;
 const SKEY="civicaccord-office";
 const load=()=>{try{const v=JSON.parse(localStorage.getItem(SKEY)||"{}");return {responses:v.responses||{},updates:v.updates||{},requests:v.requests||{}}}catch(e){return {responses:{},updates:{},requests:{}}}};
-const DB=load(); const responses=DB.responses;
+const DB=load(); const responses=DB.responses; const rk=id=>office+"|"+id;
 const persist=()=>{try{localStorage.setItem(SKEY,JSON.stringify(DB))}catch(e){}};
 const TODAY=(()=>{const q=new URLSearchParams(location.search).get("today");const d=q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?new Date(q+"T12:00:00"):new Date();d.setHours(12,0,0,0);return d})();
 const fmt=d=>d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
 const today=()=>fmt(TODAY);
 const day=s=>new Date(s+"T12:00:00");
-function quiet(j){
-  const days=j.quietPeriodDays||60, els=(j.elections||[]).map(e=>({...e,d:day(e.date)})).sort((a,b)=>a.d-b.d);
+function quiet(o,j){
+  const r=o.preElection;
+  if(!r||r.basis==="none") return {paused:false,none:true,rule:r};
+  if(r.onlyIfCandidate&&!o.onBallot) return {paused:false,notCandidate:true,rule:r};
+  if(r.window.type==="range"){const a=day(r.window.from),b=day(r.window.to);
+    if(TODAY>=a&&TODAY<=b){const re=new Date(b);re.setDate(re.getDate()+1);return {paused:true,rule:r,reopens:re}}
+    return {paused:false,rule:r,nextStart:a>TODAY?a:null}}
+  const days=r.window.days, els=(j.elections||[]).map(e=>({...e,d:day(e.date)})).sort((a,b)=>a.d-b.d);
   for(const e of els){const start=new Date(e.d);start.setDate(start.getDate()-days);
     if(TODAY>=start&&TODAY<=e.d){let end=e.d;for(const f of els){const fs=new Date(f.d);fs.setDate(fs.getDate()-days);if(f.d>end&&fs<=end)end=f.d}
-      const re=new Date(end);re.setDate(re.getDate()+1);return {paused:true,days,election:e,start,reopens:re}}}
+      const re=new Date(end);re.setDate(re.getDate()+1);return {paused:true,rule:r,days,election:e,start,reopens:re}}}
   const next=els.find(e=>e.d>TODAY);let nextStart=null;if(next){nextStart=new Date(next.d);nextStart.setDate(nextStart.getDate()-days)}
-  return {paused:false,days,next,nextStart};
+  return {paused:false,rule:r,days,next,nextStart};
 }
-const officeJ=()=>{const k=Object.keys(PK).find(k=>PK[k].jurisdiction.key===office);return k?PK[k].jurisdiction:null};
+const packsFor=key=>Object.keys(PK).filter(k=>(PK[k].jurisdiction.offices||[]).some(o=>o.key===key));
+const officeJ=()=>{const k=packsFor(office)[0];return k?PK[k].jurisdiction:null};
 const office$=()=>OFFICES.find(o=>o.key===office);
 const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?" · approved by "+r.approver:""}`;
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
@@ -202,21 +207,28 @@ function renderOffices(){
 }
 function renderSeat(){
   const o=office$(), j=officeJ(), el=document.getElementById("seat"); if(!j){el.innerHTML="";return}
-  const q=quiet(j), reqs=DB.requests[office]||[];
-  const pending=Object.keys(PK).filter(k=>PK[k].jurisdiction.key===office&&!responses[PK[k].id]).length;
+  const q=quiet(o,j), reqs=DB.requests[office]||[], ru=o.preElection;
+  const pending=packsFor(office).filter(k=>!responses[rk(PK[k].id)]).length;
+  const cites=ru&&ru.citations?ru.citations.map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.label)}</a>`).join(" · "):"";
+  const basis={law:"Law","chamber rule":"Chamber rule",none:"No rule in law"}[ru?ru.basis:"none"]||"Rule";
   el.innerHTML=`<div class="seat"><span class="eyebrow">The seat</span><h2>${esc(o.title)}, ${esc(o.where)}</h2>
-      <span class="holder">${esc(o.holder)} · ${esc(o.term)} · ${pending} package${pending===1?"":"s"} awaiting a response · ${Object.values(responses).length} answered</span></div>
+      <span class="holder">${esc(o.holder)} · ${esc(o.term)} · ${pending} package${pending===1?"":"s"} awaiting a response · ${Object.keys(responses).filter(k=>k.startsWith(office+"|")).length} answered</span></div>
+    <h3>Rules this office follows</h3>
+    <p class="meta">Every rule the tool applies comes from this government's own law or chamber rules, with the source. Where no law applies, the tool adds none of its own.</p>
+    <div class="record"><div class="recrow${ru&&ru.verified?"":" silent"}"><b>Before elections · ${esc(basis)}</b><span>${esc(ru?ru.summary:"Not yet researched.")}</span>
+      ${ru&&ru.note?`<span class="meta">${esc(ru.note)}</span>`:""}
+      <span class="meta">${ru&&ru.verified?"✓ Checked against the source":"! Not yet confirmed by a reviewer"}${cites?" · "+cites:""}</span></div></div>
     <h3>Ask your district to weigh in</h3>
     <p class="meta">The office can ask constituents to deliberate on a pending bill or a trade-off it faces. A neutral host reviews every request for sourced facts, neutral wording, and cost methods before it opens, and the request itself is public.</p>
-    ${q.paused?`<div class="paused" id="quiet"><b>Requests are paused for the ${esc(q.election.name.toLowerCase())} on ${fmt(q.election.d)}.</b>
-        <span>Offices can't start new deliberations in the ${q.days} days before an election, so the tool can't be used for campaigning. Requests reopen ${fmt(q.reopens)}.</span>
-        <span class="meta">Residents can still deliberate, and the office can still answer packages and report what happened to them. Election dates: <a href="${esc(j.electionsSource?j.electionsSource.url:"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.electionsSource?j.electionsSource.label:"election office")}</a>.</span></div>`
+    ${q.paused?`<div class="paused" id="quiet"><b>Requests are paused ${q.election?`for the ${esc(q.election.name.toLowerCase())} on ${fmt(q.election.d)}`:`from ${esc(q.rule.window.fromLabel)} until ${esc(q.rule.window.toLabel)}`}.</b>
+        <span>This office's ${esc(basis.toLowerCase())} limits official mass communications ${q.election?`in the ${q.days} days before an election${q.rule.onlyIfCandidate?" in which the officeholder is a candidate":""}`:"in this period"}, so the tool applies the same limit to new requests. Requests reopen ${fmt(q.reopens)}.</span>
+        <span class="meta">Residents can still deliberate, and the office can still answer packages and report what happened to them.${q.election?` Election dates: <a href="${esc(j.electionsSource?j.electionsSource.url:"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.electionsSource?j.electionsSource.label:"election office")}</a>.`:""}</span></div>`
     :`<form id="request" class="choices">
       <div class="grid2"><div><label for="rq-bill" class="meta">Bill or topic</label><input type="text" id="rq-bill" maxlength="120" placeholder="HB 1234, or a budget choice"></div>
       <div><label for="rq-by" class="meta">Approved by (name and role)</label><input type="text" id="rq-by" maxlength="80" placeholder="Chief of staff"></div></div>
       <label for="rq-q" class="meta">The question for constituents</label>
       <textarea id="rq-q" rows="2" maxlength="400" placeholder="Should the bill fund more inspectors or more rapid-response crews?"></textarea>
-      ${q.next?`<p class="meta">Requests pause on ${fmt(q.nextStart)}, ${q.days} days before the ${esc(q.next.name.toLowerCase())}.</p>`:""}
+      ${q.none?`<p class="meta">No law limits this office's communications before elections, so requests stay open year-round.</p>`:q.notCandidate?`<p class="meta">The pre-election limit applies only when the officeholder is a candidate, and this one isn't on the ballot.</p>`:q.nextStart?`<p class="meta">Requests pause on ${fmt(q.nextStart)}${q.next?`, ${q.days} days before the ${esc(q.next.name.toLowerCase())}`:""}.</p>`:`<p class="meta">The next election dates haven't been added for this office yet. A reviewer adds them each cycle.</p>`}
       <span class="toast" id="rqmsg" aria-live="polite"></span>
       <button class="btn" type="submit">Send request to the host</button></form>`}
     <h3>Public request record</h3>
@@ -228,7 +240,7 @@ function renderSeat(){
 }
 function renderList(){
   const o=OFFICES.find(x=>x.key===office);
-  const cards=Object.keys(PK).filter(k=>PK[k].jurisdiction.key===o.key).map(k=>{const d=PK[k],a=analyze(d),r=responses[d.id];
+  const cards=packsFor(o.key).map(k=>{const d=PK[k],a=analyze(d),r=responses[rk(d.id)];
     return `<button class="pkgcard" data-k="${k}" aria-pressed="${open===k}">
       <span class="eyebrow">${esc(d.jurisdiction.name)}</span>
       <h3>${esc(d.issue.name)}</h3>
@@ -244,7 +256,7 @@ function bar(v){return `<span class="mini"><span class="track"><span class="fill
 function renderDetail(){
   const m=document.getElementById("detail");
   if(!open||!PK[open]){m.innerHTML="";return}
-  const d=PK[open],a=analyze(d),j=d.jurisdiction,r=responses[d.id];
+  const d=PK[open],a=analyze(d),j=d.jurisdiction,r=responses[rk(d.id)];
   const common=a.st.filter(s=>s.kind==="common"),split=a.st.filter(s=>s.kind==="split");
   const per=x=>{const v=x/j.residents;return v<10?`$${v.toFixed(2)}`:`$${Math.round(v)}`};
   const costOf=s=>{const c=a.opt[s.id];return c?`${money(c.unitCost*c.default)}${c.recurring?" a year":" one time"}`:(d.issue.revenue.find(x=>x.statement===s.id)?"brings in revenue":"no cost estimate")};
@@ -291,7 +303,7 @@ function renderDetail(){
     <ol class="timeline">
       <li><b>Package received</b><span class="meta">From ${pt?pt.open.count:92} verified constituents and ${pn} panelists</span></li>
       ${r?`<li><b>${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}</span></li>`:`<li class="wait"><b>No response yet</b><span class="meta">Shown publicly after 30 days</span></li>`}
-      ${(DB.updates[d.id]||[]).map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)} · approved by ${esc(u.approver)}</span></li>`).join("")}
+      ${(DB.updates[rk(d.id)]||[]).map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)} · approved by ${esc(u.approver)}</span></li>`).join("")}
     </ol>
     ${r?`<form id="update" class="choices">
       <div class="grid2"><div><label for="up-stage" class="meta">Step</label><select id="up-stage">${["Introduced","Hearing scheduled","Heard in committee","Amended","Passed a chamber","The office voted","Enacted","Stalled"].map(x=>`<option>${x}</option>`).join("")}</select></div>
@@ -309,17 +321,19 @@ function renderDetail(){
     const approver=document.getElementById("approver").value.trim(), changes=v.value==="amend"?document.getElementById("changes").value.trim():"";
     if(!approver){document.getElementById("rmsg").textContent="Add who approved this response. It's signed by the office and names the approver.";return}
     if(v.value==="amend"&&changes.length<10){document.getElementById("rmsg").textContent="Describe the changes the office needs.";return}
-    responses[d.id]={value:v.value,label,reason,changes,approver,date:today()};persist();render()};
+    responses[rk(d.id)]={office:office$().title+", "+office$().where,value:v.value,label,reason,changes,approver,date:today()};persist();render()};
   if(f) f.onchange=()=>{document.getElementById("changesbox").hidden=f.querySelector("input[name=resp]:checked").value!=="amend"};
-  const c=document.getElementById("change");if(c)c.onclick=()=>{delete responses[d.id];persist();render()};
+  const c=document.getElementById("change");if(c)c.onclick=()=>{delete responses[rk(d.id)];persist();render()};
   const u=document.getElementById("update");
   if(u) u.onsubmit=e=>{e.preventDefault();const note=document.getElementById("up-note").value.trim(),by=document.getElementById("up-by").value.trim();
     if(note.length<10||!by){document.getElementById("upmsg").textContent="Add what happened and who approved it.";return}
-    (DB.updates[d.id]=DB.updates[d.id]||[]).push({stage:document.getElementById("up-stage").value,bill:document.getElementById("up-bill").value.trim(),note,approver:by,date:today()});persist();render()};
+    (DB.updates[rk(d.id)]=DB.updates[rk(d.id)]||[]).push({stage:document.getElementById("up-stage").value,bill:document.getElementById("up-bill").value.trim(),note,approver:by,date:today()});persist();render()};
 }
 function render(){renderOffices();renderSeat();renderList();renderDetail()}
 (async()=>{try{const idx=await (await fetch("packs/index.json")).json();
   for(const e of idx.packs){PK[e.file]=await (await fetch(e.file)).json()}
-  open=Object.keys(PK).find(k=>PK[k].jurisdiction.key===office)||null;render();}catch(e){document.getElementById("list").innerHTML='<h2>Couldn\'t load the inbox</h2><p class="meta">Reload the page to try again.</p>'}})();
+  const seen=new Set();Object.values(PK).forEach(d=>(d.jurisdiction.offices||[]).forEach(o=>{if(!seen.has(o.key)){seen.add(o.key);OFFICES.push(o)}}));
+  const want=new URLSearchParams(location.search).get("office");office=(OFFICES.find(o=>o.key===want)||OFFICES.find(o=>o.key==="state-house")||OFFICES[0]).key;
+  open=packsFor(office)[0]||null;render();}catch(e){document.getElementById("list").innerHTML='<h2>Couldn\'t load the inbox</h2><p class="meta">Reload the page to try again.</p>'}})();
 </script>
 </body></html>

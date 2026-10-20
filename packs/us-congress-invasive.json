@@ -40,7 +40,37 @@
    "url": "https://elections.hawaii.gov/?p=20785",
    "label": "Hawaiʻi Office of Elections, 2026 proclamation"
   },
-  "quietPeriodDays": 60
+  "offices": [
+   {
+    "key": "us-house-hi2",
+    "title": "U.S. House seat",
+    "where": "Hawaiʻi 2nd District (example)",
+    "holder": "Current officeholder (example)",
+    "term": "Two-year term",
+    "onBallot": true,
+    "preElection": {
+     "basis": "law",
+     "summary": "Members of Congress may not send unsolicited mass mailings or mass communications, including email and digital ads, in the 60 days before a primary or general election in which they are a candidate.",
+     "window": {
+      "type": "daysBefore",
+      "days": 60
+     },
+     "onlyIfCandidate": true,
+     "citations": [
+      {
+       "url": "https://www.law.cornell.edu/uscode/text/39/3210",
+       "label": "39 U.S.C. § 3210(a)(6)(A)"
+      },
+      {
+       "url": "https://democrats-cha.house.gov/house-communications-standards-commission/franking-blackout-rules",
+       "label": "House Communications Standards Commission: blackout rules"
+      }
+     ],
+     "verified": true,
+     "note": "Counts as mass communication when 500 or more people receive substantially identical unsolicited content. Communications to people who subscribed are exempt."
+    }
+   }
+  ]
  },
  "issue": {
   "key": "invasive",

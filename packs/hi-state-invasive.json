@@ -40,7 +40,60 @@
    "url": "https://elections.hawaii.gov/?p=20785",
    "label": "Hawaiʻi Office of Elections, 2026 proclamation"
   },
-  "quietPeriodDays": 60
+  "offices": [
+   {
+    "key": "state-house",
+    "title": "State House seat",
+    "where": "Maui district (example)",
+    "holder": "Current officeholder (example)",
+    "term": "Two-year term",
+    "onBallot": true,
+    "preElection": {
+     "basis": "chamber rule",
+     "summary": "House rules bar using legislative allowances for mass mailings from the candidate filing deadline until the general election.",
+     "window": {
+      "type": "range",
+      "from": "2026-06-02",
+      "to": "2026-11-03",
+      "fromLabel": "the June 2 candidate filing deadline",
+      "toLabel": "the November 3 general election"
+     },
+     "onlyIfCandidate": false,
+     "citations": [
+      {
+       "url": "https://civilbeat.org/2026/07/self-promotion-or-communication-taxpayer-funded-mailers-blur-lines/",
+       "label": "Honolulu Civil Beat, July 2026: taxpayer-funded mailers"
+      },
+      {
+       "url": "https://elections.hawaii.gov/?p=20884",
+       "label": "Hawaiʻi Office of Elections: 2026 candidate filing deadline"
+      }
+     ],
+     "verified": false,
+     "note": "Taken from news reporting on the House rule. A reviewer must confirm it against the House's own rule text before launch. The reporting doesn't say whether it applies only to members on the ballot, so until that's confirmed the tool applies it to the seat."
+    }
+   },
+   {
+    "key": "state-senate",
+    "title": "State Senate seat",
+    "where": "Maui district (example)",
+    "holder": "Current officeholder (example)",
+    "term": "Four-year term",
+    "onBallot": false,
+    "preElection": {
+     "basis": "none",
+     "summary": "No law or Senate rule limits official mass communications before elections.",
+     "citations": [
+      {
+       "url": "https://civilbeat.org/2026/07/self-promotion-or-communication-taxpayer-funded-mailers-blur-lines/",
+       "label": "Honolulu Civil Beat, July 2026: taxpayer-funded mailers"
+      }
+     ],
+     "verified": false,
+     "note": "Reporting says the Senate has no such rule. A reviewer must confirm this before launch."
+    }
+   }
+  ]
  },
  "issue": {
   "key": "invasive",

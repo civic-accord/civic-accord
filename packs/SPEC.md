@@ -42,9 +42,33 @@ The core reads every pack the same way. Pack text is always shown as plain text,
 | `representativeTitle` | For example "legislator", "council member" |
 | `handoffTitle`, `handoffText`, `timing` | Hand-off step wording |
 | `receiptPrefix` | Two letters on vote receipts, for example `HI` |
-| `elections` | Upcoming elections for this body: list of `{ "name", "date" }` (YYYY-MM-DD) |
+| `elections` | Upcoming elections for this body: list of `{ "name", "date" }` (YYYY-MM-DD). Updated each cycle |
 | `electionsSource` | `{ "url", "label" }` for those dates |
-| `quietPeriodDays` | Days before each election when offices can't start new deliberations (default 60). Residents can still deliberate and offices can still respond |
+| `offices` | The seats that receive packages (below) |
+
+#### offices
+
+The conversation is with an office (a seat), not a person. Each seat carries the rules its own law sets.
+
+| Field | What it holds |
+| --- | --- |
+| `key`, `title`, `where` | For example `state-house`, "State House seat", "Maui district" |
+| `holder`, `term`, `onBallot` | Current officeholder, term length, and whether they are a candidate in the next election |
+| `preElection` | The limit on official mass communications before elections (below) |
+
+`preElection`:
+
+| Field | What it holds |
+| --- | --- |
+| `basis` | `law`, `chamber rule`, or `none` when no law or rule applies |
+| `summary` | The rule in one plain sentence |
+| `window` | `{ "type": "daysBefore", "days" }` or `{ "type": "range", "from", "to", "fromLabel", "toLabel" }` |
+| `onlyIfCandidate` | `true` when the law applies only if the officeholder is on the ballot |
+| `citations` | List of `{ "url", "label" }` for the law or rule, or for where it says none exists |
+| `verified` | `true` only after a reviewer has checked the rule against its source |
+| `note` | Anything a reader needs: thresholds, exemptions, open questions |
+
+The tool pauses office-initiated deliberation requests during that window. Residents can still deliberate, and offices can still respond.
 
 ### issue
 
@@ -104,7 +128,8 @@ Templates you can use in `impact` and `billText`:
 
 ## Rules every pack must follow
 
-1. Every fact and every cost has a source or a stated method.
-2. Wording is neutral. Statements are written so people on different sides can vote on them honestly.
-3. Unknowns stay unknown. If a cost or revenue figure can't be estimated reliably, use `unestimated` rather than guessing.
-4. Packs are reviewed by a second person before they go live, and every change is kept in the public history.
+1. Every rule the tool applies comes from the government's own law or chamber rules, cited. Where no law applies, the tool adds no rule of its own. Rules not yet checked against their source are shown as unconfirmed.
+2. Every fact and every cost has a source or a stated method.
+3. Wording is neutral. Statements are written so people on different sides can vote on them honestly.
+4. Unknowns stay unknown. If a cost or revenue figure can't be estimated reliably, use `unestimated` rather than guessing.
+5. Packs are reviewed by a second person before they go live, and every change is kept in the public history.

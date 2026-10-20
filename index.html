@@ -502,12 +502,13 @@ function draft(){
 }
 function followThrough(){
   let rec={};try{rec=JSON.parse(localStorage.getItem("civicaccord-office")||"{}")}catch(e){}
-  const r=(rec.responses||{})[P.packId], ups=(rec.updates||{})[P.packId]||[];
+  const keys=Object.keys(rec.responses||{}).filter(k=>k.endsWith("|"+P.packId));
+  const r=keys.length?rec.responses[keys[0]]:null, ups=keys.length?((rec.updates||{})[keys[0]]||[]):[];
   return `<div class="grp"><h3>Follow it</h3>
     <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. You're notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
     <ol class="timeline">
       <li><b>Package sent to the office</b><span class="meta">${st.submitted?"Your votes are included":"Submit your votes in Step 2 to be included"}</span></li>
-      ${r?`<li><b>${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
+      ${r?`<li><b>${esc(r.office?r.office+": ":"")}${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
         ${r.changes?`<li class="wait"><b>The office asked for changes</b><span class="meta">${esc(r.changes)} Residents weigh in on the revised version once the host reviews it.</span></li>`:""}`
        :`<li class="wait"><b>Waiting for the office's response</b><span class="meta">If there's none after 30 days, the public record says "no response yet."</span></li>`}
       ${ups.map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)}</span></li>`).join("")}
