@@ -53,7 +53,8 @@ The core reads every pack the same way. Pack text is always shown as plain text,
 | `sources`, `costSources` | List of `[url, label]` |
 | `groups` | Two plain descriptions of the opinion groups (written after voting, from the votes) |
 | `exampleVotes` | `true` while the votes shown are invented examples |
-| `statements` | Seed statements: `{ "id", "text", "a": [agree, disagree, pass], "b": [...] }` |
+| `statements` | Seed statements: `{ "id", "text", "a": [agree, disagree, pass], "b": [...], "panel": [...] }`. `panel` is optional: citizen panel results |
+| `participation` | Optional: `{ "open", "panel", "makeup": { "columns", "rows" } }` comparing who took part with the district |
 | `costOptions` | What could be funded (below) |
 | `revenue` | How it could be paid for (below) |
 

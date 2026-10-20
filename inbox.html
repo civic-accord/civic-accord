@@ -156,12 +156,10 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const OFFICES=[
  {key:"state",title:"State Representative",where:"Maui district (example)",packs:["state"]},
  {key:"federal",title:"U.S. Representative",where:"Hawaiʻi 2nd District (example)",packs:["federal"]}];
-// Example participation makeup vs. the district. Illustrative only; the live tool reports real figures.
-const MAKEUP={ages:[["18–34",17,27],["35–54",34,33],["55+",49,40]],areas:[["Upcountry",44,31],["Central",30,38],["East and West",26,31]]};
 let PK={}, office="state", open=null; const responses={};
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
 function analyze(d){
-  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b);const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,kind,n:s.a.concat(s.b).reduce((x,y)=>x+y,0)}});
+  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:s.a.concat(s.b).reduce((x,y)=>x+y,0)}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
   let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
   return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
@@ -172,11 +170,11 @@ function renderOffices(){
 }
 function renderList(){
   const o=OFFICES.find(x=>x.key===office);
-  const cards=o.packs.filter(k=>PK[k]).map(k=>{const d=PK[k],a=analyze(d),r=responses[d.id];
+  const cards=Object.keys(PK).filter(k=>PK[k].jurisdiction.key===o.key).map(k=>{const d=PK[k],a=analyze(d),r=responses[d.id];
     return `<button class="pkgcard" data-k="${k}" aria-pressed="${open===k}">
       <span class="eyebrow">${esc(d.jurisdiction.name)}</span>
       <h3>${esc(d.issue.name)}</h3>
-      <span class="meta">92 verified constituents · ${words(a.votes)} votes · ${a.st.filter(s=>s.kind==="common").length} points of common ground · about ${money(a.yearly)} a year</span>
+      <span class="meta">${d.issue.participation?d.issue.participation.open.count+" verified constituents and "+d.issue.participation.panel.count+" panelists":"Verified constituents"} · ${words(a.votes)} votes · ${a.st.filter(s=>s.kind==="common").length} points of common ground · about ${money(a.yearly)} a year</span>
       <span class="tag ${r?"common":"forming"}">${r?"Responded: "+esc(r.label):"Awaiting your response"}</span>
     </button>`}).join("");
   document.getElementById("list").innerHTML=`<div><div class="eyebrow">Packages from your district</div><h2>${esc(o.title)}, ${esc(o.where)}</h2></div>
@@ -192,27 +190,29 @@ function renderDetail(){
   const common=a.st.filter(s=>s.kind==="common"),split=a.st.filter(s=>s.kind==="split");
   const per=x=>{const v=x/j.residents;return v<10?`$${v.toFixed(2)}`:`$${Math.round(v)}`};
   const costOf=s=>{const c=a.opt[s.id];return c?`${money(c.unitCost*c.default)}${c.recurring?" a year":" one time"}`:(d.issue.revenue.find(x=>x.statement===s.id)?"brings in revenue":"no cost estimate")};
-  const skew=MAKEUP.ages.some(([,p,dd])=>Math.abs(p-dd)>=8);
+  const pt=d.issue.participation, dims=pt&&pt.makeup?pt.makeup.dimensions:[];
+  const skew=dims.some(dm=>dm.rows.some(r=>Math.abs(r[1]-r[3])>=8));
+  const pn=pt?pt.panel.count:0;
   m.innerHTML=`<section class="panel">
     <div><div class="eyebrow">Package · ${esc(j.name)}</div><h2>${esc(d.issue.title)}</h2></div>
     <div class="stat">
-      <div><strong>92</strong><span>verified constituents</span></div>
+      <div><strong>${pt?pt.open.count:92}</strong><span>verified constituents</span></div>
+      ${pt?`<div><strong>${pn}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${words(a.votes)}</strong><span>votes</span></div>
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
       <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year</span></div>
     </div>
     <h3>Who took part</h3>
-    <p class="meta">Participants compared with the district's adult population. Shown so you can judge how well this reflects your constituents.</p>
-    <div class="cmp"><span class="h">Age</span><span class="h">Participants</span><span class="h">District</span>
-      ${MAKEUP.ages.map(([k,p,dd])=>`<span>${k}</span>${bar(p)}${bar(dd)}`).join("")}
-      <span class="h">Area</span><span></span><span></span>
-      ${MAKEUP.areas.map(([k,p,dd])=>`<span>${k}</span>${bar(p)}${bar(dd)}`).join("")}
+    <p class="meta">Open participants and the randomly selected citizen panel, compared with the district's adult population.${pt&&pt.example?" Example figures.":""}</p>
+    <div class="cmp" style="grid-template-columns:110px 1fr 1fr 1fr"><span></span>${pt?pt.makeup.columns.map(c=>`<span class="h">${esc(c)}</span>`).join(""):""}
+      ${dims.map(dm=>`<span class="h">${esc(dm.name)}</span><span></span><span></span><span></span>${dm.rows.map(r=>`<span>${esc(r[0])}</span>${bar(r[1])}${bar(r[2])}${bar(r[3])}`).join("")}`).join("")}
     </div>
-    ${skew?`<p class="flag">Participants skew older than the district. A randomly selected citizen panel could confirm whether the common ground holds across ages.</p>`:""}
+    ${skew?`<p class="flag">Open participants don't match the district on every measure. The citizen panel does, so where the two agree, the common ground is more likely to reflect your constituents.</p>`:""}
     <h3>Common ground (${common.length})</h3>
-    <ul class="plain">${common.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}% · ${costOf(s)}</span></li>`).join("")}</ul>
+    <ul class="plain">${common.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}%${s.pp!==null?`, citizen panel ${s.pp}%`:""} · ${costOf(s)}</span></li>`).join("")}</ul>
+    ${a.st.filter(s=>s.kind!=="common"&&s.pp!==null&&s.pp>=70).length?`<h3>Panel found more agreement</h3><ul class="plain">${a.st.filter(s=>s.kind!=="common"&&s.pp>=70).map(s=>`<li>${esc(s.text)} <span class="meta">Citizen panel ${s.pp}%, open groups ${s.pa}% and ${s.pb}% · ${costOf(s)}</span></li>`).join("")}</ul>`:""}
     <h3>Where constituents split (${split.length})</h3>
-    <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}% · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
+    <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}%${s.pp!==null?`, citizen panel ${s.pp}%`:""} · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
     <p class="meta">Every figure links back to the public vote record in the live tool. Starting bill text and cost methods come with the package.</p>
     <h3>Your public response</h3>
     ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p><p class="meta">Residents who took part are notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
@@ -238,7 +238,7 @@ function renderDetail(){
 }
 function render(){renderOffices();renderList();renderDetail()}
 (async()=>{try{const idx=await (await fetch("packs/index.json")).json();
-  for(const e of idx.packs){PK[e.jurisdiction]=await (await fetch(e.file)).json()}
-  open="state";render();}catch(e){document.getElementById("list").innerHTML='<h2>Couldn\'t load the inbox</h2><p class="meta">Reload the page to try again.</p>'}})();
+  for(const e of idx.packs){PK[e.file]=await (await fetch(e.file)).json()}
+  open=Object.keys(PK).find(k=>PK[k].jurisdiction.key===office)||null;render();}catch(e){document.getElementById("list").innerHTML='<h2>Couldn\'t load the inbox</h2><p class="meta">Reload the page to try again.</p>'}})();
 </script>
 </body></html>

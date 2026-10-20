@@ -2,11 +2,13 @@
  "packs": [
   {
    "file": "packs/hi-state-invasive.json",
-   "jurisdiction": "state"
+   "jurisdiction": "state",
+   "issue": "invasive"
   },
   {
    "file": "packs/us-congress-invasive.json",
-   "jurisdiction": "federal"
+   "jurisdiction": "federal",
+   "issue": "invasive"
   }
  ]
 }

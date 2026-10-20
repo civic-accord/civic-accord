@@ -33,6 +33,10 @@ Live packs:
 
 Packs are plain JSON files in [`packs/`](packs/). See [`packs/SPEC.md`](packs/SPEC.md). Anyone can author one without writing code; nothing in a pack can affect how votes are counted.
 
+The easiest way is the builder at [`new.html`](https://civicaccord.org/new.html) ("＋ Start a deliberation" in the app). Pick an existing government or enter a new one, add sourced facts, statements, and costs with their basis. It checks the pack rules as you go, previews the draft in the real tool, and exports the pack file for a second-person review.
+
+Every statement can also carry citizen panel results (`panel: [agree, disagree, pass]`) from a randomly selected, demographically balanced group, shown next to the open results so representatives can see whether self-selected participants match the wider public.
+
 ## Trust rules
 
 - AI never touches the vote count.

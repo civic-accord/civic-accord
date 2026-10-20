@@ -1,0 +1,366 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Start a Deliberation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#b07a12; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:var(--sun)}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.chip:empty{display:none}
+.issues{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.bsec{display:grid;gap:12px}
+.bsec h2 .num{font-family:var(--mono);font-size:.9rem;color:var(--muted);margin-right:8px}
+.frow{display:grid;gap:4px}
+.frow label{font-size:.85rem;font-weight:700}
+.frow .hint{font-size:.78rem;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:10px}
+input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
+.item{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;position:relative}
+.item .rm{position:absolute;top:8px;right:8px;font:inherit;font-size:.8rem;border:0;background:transparent;color:var(--lehua);cursor:pointer}
+.checks{display:grid;gap:6px;font-size:.88rem}
+.ck{display:flex;gap:8px;align-items:flex-start}
+.ck .i{font-family:var(--mono);width:1.2em;flex:0 0 auto}
+.ck.ok .i{color:var(--koa)} .ck.no .i{color:var(--lehua)} .ck.warn .i{color:var(--sun)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.sticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:3}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Civic Accord · pack builder</div>
+    <h1>Start a Deliberation</h1>
+    <p class="lede">Set up a deliberation on any issue, for any government. You fill in the facts, the statements people vote on, and what each option would cost. The tool checks the rules as you go, and you can preview it before it goes for review.</p>
+    <p class="note"><b>How it goes live.</b> A second person reviews every pack before residents see it. Your draft is saved only in this browser until you send it for review.</p>
+    <div class="actions"><button class="btn ghost" id="example" type="button">Start from the Hawaiʻi example</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="/" class="btn ghost" style="text-decoration:none">← Back to Civic Accord</a></div>
+  </header>
+
+  <section class="panel sticky" aria-live="polite"><h3>Pack checks</h3><div class="checks" id="checks"></div></section>
+
+  <section class="panel bsec">
+    <h2><span class="num">1</span>Government</h2>
+    <div class="frow"><label for="gov">Who will receive the proposal?</label><select id="gov"></select></div>
+    <div id="govcustom" class="bsec" hidden>
+      <div class="grid3">
+        <div class="frow"><label for="g-name">Name</label><input type="text" id="g-name" placeholder="Boise City Council"></div>
+        <div class="frow"><label for="g-level">Level</label><select id="g-level"><option value="city">City</option><option value="county">County</option><option value="state">State</option><option value="school">School district</option><option value="special">Special district</option><option value="federal">Federal</option></select></div>
+        <div class="frow"><label for="g-title">Representative title</label><input type="text" id="g-title" placeholder="council member"></div>
+      </div>
+      <div class="grid3">
+        <div class="frow"><label for="g-district">District shown to residents</label><input type="text" id="g-district" placeholder="Boise · Council District 3"></div>
+        <div class="frow"><label for="g-session">When it next takes up proposals</label><input type="text" id="g-session" placeholder="Council meets weekly"></div>
+        <div class="frow"><label for="g-drafting">Who writes final legal text</label><input type="text" id="g-drafting" placeholder="The city attorney's office"></div>
+      </div>
+      <div class="grid3">
+        <div class="frow"><label for="g-res">Population</label><input type="number" id="g-res" min="1" placeholder="237000"><span class="hint">Used for per-resident costs</span></div>
+        <div class="frow"><label for="g-reslabel">Resident label</label><input type="text" id="g-reslabel" placeholder="Boise resident"></div>
+        <div class="frow"><label for="g-popurl">Population source (https link)</label><input type="text" id="g-popurl" placeholder="https://"></div>
+      </div>
+      <div class="grid3">
+        <div class="frow"><label for="g-base">Current spending to compare against ($)</label><input type="number" id="g-base" min="0"></div>
+        <div class="frow"><label for="g-baselabel">What that spending is</label><input type="text" id="g-baselabel" placeholder="the city's current parks budget of $12M (FY26)"></div>
+        <div class="frow"><label for="g-fund">Where general money comes from</label><input type="text" id="g-fund" placeholder="the city general fund"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">2</span>Issue</h2>
+    <div class="grid3">
+      <div class="frow"><label for="i-name">Short name</label><input type="text" id="i-name" placeholder="Public transit"></div>
+      <div class="frow" style="grid-column:span 2"><label for="i-title">Page title</label><input type="text" id="i-title" placeholder="Bus service in Boise"></div>
+    </div>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">3</span>Shared facts</h2>
+    <p class="meta">What everyone reads before voting. Every fact needs a source link.</p>
+    <div id="facts" class="bsec"></div>
+    <button class="btn ghost" id="addfact" type="button">Add a fact</button>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">4</span>Statements to vote on</h2>
+    <p class="meta">Write each as one clear idea that people on different sides could honestly agree or disagree with. Aim for 6 to 12.</p>
+    <div id="stmts" class="bsec"></div>
+    <button class="btn ghost" id="addstmt" type="button">Add a statement</button>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">5</span>Costs</h2>
+    <p class="meta">Put a price on statements that would cost money. Every cost needs a short explanation of how it was estimated.</p>
+    <div id="costs" class="bsec"></div>
+    <button class="btn ghost" id="addcost" type="button">Add a cost option</button>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">6</span>Ways to pay (optional)</h2>
+    <p class="meta">Fees, fines, or other revenue tied to a statement. If you can't estimate the amount reliably, mark it as not yet estimated.</p>
+    <div id="revs" class="bsec"></div>
+    <button class="btn ghost" id="addrev" type="button">Add a revenue source</button>
+  </section>
+
+  <section class="panel bsec">
+    <h2><span class="num">7</span>Preview and send for review</h2>
+    <div class="actions">
+      <button class="btn" id="preview" type="button">Preview in Civic Accord</button>
+      <button class="btn ghost" id="download" type="button">Download pack file</button>
+      <button class="btn ghost" id="copy" type="button">Copy pack</button>
+    </div>
+    <span class="toast" id="amsg" aria-live="polite"></span>
+    <textarea id="copytext" rows="5" readonly hidden></textarea>
+    <p class="meta">To send it for review, give the pack file to your local host, or open an issue on the <a href="https://github.com/liebeskind8301/civic-accord/issues/new" target="_blank" rel="noopener" style="color:var(--koa)">project's GitHub</a> and attach it. A reviewer checks sources, costs, and neutral wording before it opens.</p>
+  </section>
+  <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Pack format: packs/SPEC.md</span></footer>
+</div>
+<script>
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const KEY="civicaccord-builder";
+let templates={}, B=null;
+const empty=()=>({gov:"",custom:{name:"",level:"city",title:"",district:"",session:"",drafting:"",res:"",reslabel:"",popurl:"",base:"",baselabel:"",fund:""},
+  name:"",title:"",facts:[{label:"",text:"",url:""}],stmts:["","","",""],costs:[],revs:[]});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(B))}catch(e){}};
+const slug=s=>String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"issue";
+const isUrl=u=>/^https:\/\/\S+\.\S+/.test(u||"");
+const LOADED=/\b(obviously|clearly|disastrous|outrageous|so-called|radical|extremist|common sense|everyone knows)\b|!/i;
+
+function buildPack(){
+  const t=templates[B.gov]; let j, bill;
+  const nm=B.name.trim()||"Issue";
+  if(t){j=JSON.parse(JSON.stringify(t.jurisdiction)); bill=JSON.parse(JSON.stringify(t.bill));
+    if(j.level==="federal"){bill.centerLines=["H. R. ____","IN THE HOUSE OF REPRESENTATIVES","A BILL",`To address ${nm.toLowerCase()}, and for other purposes.`];
+      bill.preamble=["Be it enacted by the Senate and House of Representatives of the United States of America in Congress assembled,",`SECTION 1.  SHORT TITLE.\n     This Act may be cited as the "${nm} Act of 2027".`,"SEC. 2.  ACTIONS.\n     The appropriate Federal agencies shall:"];}
+    else {bill.centerLines=[bill.centerLines[0],`RELATING TO ${nm.toUpperCase()}.`,bill.centerLines[bill.centerLines.length-1]];
+      bill.preamble=[`SECTION 1.  The legislature finds that residents have identified ${nm.toLowerCase()} as a priority, and that residents with differing views share common ground on the measures in this Act.`,"SECTION 2.  The appropriate state agencies shall:"];}
+  } else {const c=B.custom;
+    j={key:slug(c.name)||"custom",name:c.name,level:c.level,district:c.district,session:c.session,drafting:`AI organizes and drafts. People decide. ${c.drafting||"Staff"} write final text for any ${c.title||"representative"} who takes it up.`,
+      residents:+c.res||0,residentLabel:c.reslabel||"resident",residentNote:`${(+c.res||0).toLocaleString()} residents`,populationSource:{url:c.popurl,label:"Population source"},
+      baseline:{amount:+c.base||0,label:c.baselabel||"current spending"},generalFundName:c.fund||"the general fund",generalFundTradeoff:`${c.fund||"the general fund"}, where it competes with everything else the government pays for`,
+      representativeTitle:c.title||"representative",handoffTitle:"Hand off to your representatives",handoffText:`The package goes to the ${c.title||"representative"} for this district. They decide whether to take it up. The public record stays open either way.`,
+      timing:c.session||"",receiptPrefix:(c.name.match(/\b[A-Za-z]/g)||["X","X"]).slice(0,2).join("").toUpperCase()};
+    bill={centerLines:[`A PROPOSAL TO THE ${c.name.toUpperCase()}`,`RELATING TO ${nm.toUpperCase()}.`],preamble:[`SECTION 1.  Residents with differing views share common ground on the measures below.`,"SECTION 2.  The appropriate departments shall:"],sectionWord:"SECTION",firstSection:3,appropriation:{style:"authorization",text:"FUNDING.\n     There is authorized {amount} to carry out these measures."},effective:"This measure takes effect upon adoption."};
+  }
+  const stmts=B.stmts.map((x,i)=>({id:i+1,text:x.trim(),a:[0,0,0],b:[0,0,0]})).filter(x=>x.text);
+  return {id:`${j.key}-${slug(nm)}`,format:1,jurisdiction:j,
+    issue:{key:slug(nm),name:nm,title:B.title.trim()||nm,
+      facts:B.facts.filter(f=>f.label||f.text).map(f=>[f.label.trim(),f.text.trim()]),lists:[],
+      sources:B.facts.filter(f=>isUrl(f.url)).map(f=>[f.url.trim(),f.label.trim()||f.url.trim()]),
+      costSources:B.costs.filter(c=>isUrl(c.url)).map(c=>[c.url.trim(),c.name.trim()]),
+      exampleVotes:false,statements:stmts,
+      costOptions:B.costs.map(c=>{const min=+c.min||0,max=Math.max(+c.max||0,+c.def||1),fixed=!c.unit;
+        return {statement:+c.stmt,name:c.name.trim(),unit:c.unit.trim(),min:fixed?1:min,max:fixed?1:max,step:+c.step||1,default:fixed?1:(+c.def||1),unitCost:+c.cost||0,recurring:!!c.yr,impact:c.impact.trim()||c.name.trim(),basis:c.basis.trim(),billText:(c.bill.trim()||c.name.trim()).replace(/[.;]\s*$/,"")}}),
+      revenue:B.revs.map(r=>r.type==="fixed"?{statement:+r.stmt,type:"fixed",name:r.name.trim(),amount:+r.amount||0,note:r.note.trim(),billText:r.bill.trim()||r.name.trim()}:{statement:+r.stmt,type:"unestimated",name:`${r.name.trim()} (not yet estimated)`,note:r.note.trim()})},
+    bill,copyTitle:`${nm}, ${j.name}`};
+}
+function checks(){
+  const c=[], t=templates[B.gov], cu=B.custom;
+  const add=(state,txt)=>c.push([state,txt]);
+  if(t) add("ok",`Government: ${t.jurisdiction.name}`);
+  else if(B.gov==="custom"){const okc=cu.name&&cu.district&&+cu.res>0&&cu.title;add(okc?"ok":"no",okc?`Government: ${cu.name}`:"Fill in the government's name, district, population, and representative title");
+    add(isUrl(cu.popurl)?"ok":"no",isUrl(cu.popurl)?"Population has a source":"Add an https link for the population figure");}
+  else add("no","Choose a government");
+  add(B.name.trim()&&B.title.trim()?"ok":"no",B.name.trim()&&B.title.trim()?"Issue named":"Give the issue a short name and a title");
+  const facts=B.facts.filter(f=>f.label||f.text);
+  add(facts.length>=2?"ok":"no",`${facts.length} shared fact${facts.length===1?"":"s"} (at least 2)`);
+  const nosrc=facts.filter(f=>!isUrl(f.url)).length;
+  add(nosrc?"no":"ok",nosrc?`${nosrc} fact${nosrc===1?" needs":"s need"} an https source link`:"Every fact has a source");
+  const st=B.stmts.map(x=>x.trim()).filter(Boolean);
+  add(st.length>=4?"ok":"no",`${st.length} statements (at least 4)`);
+  const bad=st.filter(x=>x.length<15||x.length>200).length;
+  if(bad) add("no",`${bad} statement${bad===1?" is":"s are"} too short or too long (15 to 200 characters)`);
+  const loaded=st.filter(x=>LOADED.test(x)).length;
+  add(loaded?"warn":"ok",loaded?`${loaded} statement${loaded===1?" uses":"s use"} loaded wording. Rewrite so both sides can vote honestly`:"Wording reads as neutral");
+  B.costs.forEach((k,i)=>{const n=k.name.trim()||`Cost option ${i+1}`;
+    if(!k.stmt) add("no",`${n}: link it to a statement`);
+    if(!(+k.cost>0)) add("no",`${n}: add a unit cost`);
+    if((k.basis||"").trim().length<20) add("no",`${n}: explain how the cost was estimated`);});
+  if(B.costs.length) add(B.costs.every(k=>k.stmt&&+k.cost>0&&(k.basis||"").trim().length>=20)?"ok":"warn","Every cost is linked, priced, and explained");
+  else add("warn","No costs yet. Add them for any statement that would cost money");
+  B.revs.forEach((r,i)=>{if(!r.stmt||!r.name.trim()||!r.note.trim()||(r.type==="fixed"&&!(+r.amount>0))) add("no",`Revenue ${i+1}: needs a statement, name, note${r.type==="fixed"?", and amount":""}`)});
+  add("warn","A second person must review the pack before it goes live");
+  return c;
+}
+function renderChecks(){const c=checks();$("checks").innerHTML=c.map(([s,t])=>`<div class="ck ${s}"><span class="i">${s==="ok"?"✓":s==="no"?"✗":"!"}</span><span>${esc(t)}</span></div>`).join("");
+  const ready=!c.some(x=>x[0]==="no");$("preview").disabled=false;$("download").textContent=ready?"Download pack file":"Download draft (not ready for review)";}
+const stmtOptions=sel=>`<option value="">Choose a statement</option>`+B.stmts.map((x,i)=>x.trim()?`<option value="${i+1}" ${+sel===i+1?"selected":""}>${i+1}. ${esc(x.trim().slice(0,70))}</option>`:"").join("");
+function renderLists(){
+  $("facts").innerHTML=B.facts.map((f,i)=>`<div class="item"><button class="rm" data-rm="facts" data-i="${i}" type="button">Remove</button>
+    <div class="grid3"><div class="frow"><label for="f-l-${i}">Label</label><input type="text" id="f-l-${i}" data-l="facts" data-i="${i}" data-k="label" value="${esc(f.label)}" placeholder="Current funding"></div>
+    <div class="frow" style="grid-column:span 2"><label for="f-u-${i}">Source (https link)</label><input type="text" id="f-u-${i}" data-l="facts" data-i="${i}" data-k="url" value="${esc(f.url)}" placeholder="https://"></div></div>
+    <div class="frow"><label for="f-t-${i}">Fact</label><textarea id="f-t-${i}" rows="2" data-l="facts" data-i="${i}" data-k="text">${esc(f.text)}</textarea></div></div>`).join("");
+  $("stmts").innerHTML=B.stmts.map((x,i)=>`<div class="item"><button class="rm" data-rm="stmts" data-i="${i}" type="button">Remove</button><div class="frow"><label for="s-${i}">Statement ${i+1}</label><textarea id="s-${i}" rows="2" maxlength="200" data-l="stmts" data-i="${i}">${esc(x)}</textarea></div></div>`).join("");
+  $("costs").innerHTML=B.costs.map((c,i)=>`<div class="item"><button class="rm" data-rm="costs" data-i="${i}" type="button">Remove</button>
+    <div class="frow"><label for="c-s-${i}">Prices statement</label><select id="c-s-${i}" data-l="costs" data-i="${i}" data-k="stmt">${stmtOptions(c.stmt)}</select></div>
+    <div class="grid3"><div class="frow"><label for="c-n-${i}">Name</label><input type="text" id="c-n-${i}" data-l="costs" data-i="${i}" data-k="name" value="${esc(c.name)}" placeholder="More bus drivers"></div>
+    <div class="frow"><label for="c-u-${i}">Unit (blank for a single item)</label><input type="text" id="c-u-${i}" data-l="costs" data-i="${i}" data-k="unit" value="${esc(c.unit)}" placeholder="drivers"></div>
+    <div class="frow"><label for="c-c-${i}">Cost per unit ($)</label><input type="number" id="c-c-${i}" min="0" data-l="costs" data-i="${i}" data-k="cost" value="${esc(c.cost)}"></div></div>
+    <div class="grid3"><div class="frow"><label for="c-d-${i}">Starting amount</label><input type="number" id="c-d-${i}" min="0" data-l="costs" data-i="${i}" data-k="def" value="${esc(c.def)}"></div>
+    <div class="frow"><label for="c-x-${i}">Most allowed</label><input type="number" id="c-x-${i}" min="0" data-l="costs" data-i="${i}" data-k="max" value="${esc(c.max)}"></div>
+    <div class="frow"><label for="c-y-${i}">Repeats every year?</label><select id="c-y-${i}" data-l="costs" data-i="${i}" data-k="yr"><option value="1" ${c.yr?"selected":""}>Yes, yearly</option><option value="" ${c.yr?"":"selected"}>No, one time</option></select></div></div>
+    <div class="frow"><label for="c-b-${i}">How this cost was estimated</label><textarea id="c-b-${i}" rows="2" data-l="costs" data-i="${i}" data-k="basis" placeholder="About $78,000 per driver for wages and benefits, from the transit agency's FY26 budget.">${esc(c.basis)}</textarea></div>
+    <div class="frow"><label for="c-r-${i}">Source for the estimate (https link, optional)</label><input type="text" id="c-r-${i}" data-l="costs" data-i="${i}" data-k="url" value="${esc(c.url)}" placeholder="https://"></div>
+    <div class="frow"><label for="c-i-${i}">What it buys (use {n} for the amount chosen)</label><input type="text" id="c-i-${i}" data-l="costs" data-i="${i}" data-k="impact" value="${esc(c.impact)}" placeholder="{n} more drivers, enough for 15-minute service on two routes."></div>
+    <div class="frow"><label for="c-t-${i}">Bill clause (use {n} or {dollars})</label><input type="text" id="c-t-${i}" data-l="costs" data-i="${i}" data-k="bill" value="${esc(c.bill)}" placeholder="hire {n} additional bus operators"></div></div>`).join("");
+  $("revs").innerHTML=B.revs.map((r,i)=>`<div class="item"><button class="rm" data-rm="revs" data-i="${i}" type="button">Remove</button>
+    <div class="grid3"><div class="frow"><label for="r-s-${i}">Tied to statement</label><select id="r-s-${i}" data-l="revs" data-i="${i}" data-k="stmt">${stmtOptions(r.stmt)}</select></div>
+    <div class="frow"><label for="r-t-${i}">Type</label><select id="r-t-${i}" data-l="revs" data-i="${i}" data-k="type"><option value="fixed" ${r.type==="fixed"?"selected":""}>Fixed yearly amount</option><option value="unestimated" ${r.type!=="fixed"?"selected":""}>Not yet estimated</option></select></div>
+    <div class="frow"><label for="r-a-${i}">Yearly amount ($)</label><input type="number" id="r-a-${i}" min="0" data-l="revs" data-i="${i}" data-k="amount" value="${esc(r.amount)}" ${r.type==="fixed"?"":"disabled"}></div></div>
+    <div class="frow"><label for="r-n-${i}">Name</label><input type="text" id="r-n-${i}" data-l="revs" data-i="${i}" data-k="name" value="${esc(r.name)}" placeholder="Raise parking fines downtown"></div>
+    <div class="frow"><label for="r-o-${i}">Note on the estimate</label><input type="text" id="r-o-${i}" data-l="revs" data-i="${i}" data-k="note" value="${esc(r.note)}"></div></div>`).join("");
+}
+function renderGov(){
+  const g=$("gov");g.innerHTML=`<option value="">Choose a government</option>`+Object.keys(templates).map(k=>`<option value="${esc(k)}" ${B.gov===k?"selected":""}>${esc(templates[k].jurisdiction.name)}</option>`).join("")+`<option value="custom" ${B.gov==="custom"?"selected":""}>Another government (enter details)</option>`;
+  $("govcustom").hidden=B.gov!=="custom";
+  const map={"g-name":"name","g-level":"level","g-title":"title","g-district":"district","g-session":"session","g-drafting":"drafting","g-res":"res","g-reslabel":"reslabel","g-popurl":"popurl","g-base":"base","g-baselabel":"baselabel","g-fund":"fund"};
+  Object.entries(map).forEach(([id,k])=>{$(id).value=B.custom[k]??""});
+  $("i-name").value=B.name;$("i-title").value=B.title;
+}
+function renderAll(){renderGov();renderLists();renderChecks()}
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.dataset.l){const arr=B[t.dataset.l],i=+t.dataset.i; if(t.dataset.l==="stmts") arr[i]=t.value; else arr[i][t.dataset.k]=t.value;
+    if(t.dataset.k==="type"){renderLists()} if(t.dataset.l==="stmts"){/* refresh statement pickers without stealing focus */document.querySelectorAll('select[data-k="stmt"]').forEach(s=>{const it=B[s.dataset.l][+s.dataset.i];s.innerHTML=stmtOptions(it.stmt)})}}
+  else if(t.id.startsWith("g-")){const map={"g-name":"name","g-level":"level","g-title":"title","g-district":"district","g-session":"session","g-drafting":"drafting","g-res":"res","g-reslabel":"reslabel","g-popurl":"popurl","g-base":"base","g-baselabel":"baselabel","g-fund":"fund"};B.custom[map[t.id]]=t.value}
+  else if(t.id==="i-name") B.name=t.value; else if(t.id==="i-title") B.title=t.value;
+  save();renderChecks();});
+document.addEventListener("change",e=>{const t=e.target; if(t.id==="gov"){B.gov=t.value;save();renderAll()} else if(t.dataset.k==="yr"){B[t.dataset.l][+t.dataset.i].yr=!!t.value;save()} else if(t.dataset.k==="type"||t.dataset.k==="stmt"){B[t.dataset.l][+t.dataset.i][t.dataset.k]=t.value;save();if(t.dataset.k==="type")renderLists();renderChecks()}});
+document.addEventListener("click",e=>{const t=e.target; if(t.dataset.rm){B[t.dataset.rm].splice(+t.dataset.i,1);save();renderLists();renderChecks()}});
+$("addfact").onclick=()=>{B.facts.push({label:"",text:"",url:""});save();renderLists();renderChecks()};
+$("addstmt").onclick=()=>{if(B.stmts.length>=15)return;B.stmts.push("");save();renderLists();renderChecks()};
+$("addcost").onclick=()=>{B.costs.push({stmt:"",name:"",unit:"",cost:"",def:"1",max:"",yr:true,basis:"",url:"",impact:"",bill:""});save();renderLists();renderChecks()};
+$("addrev").onclick=()=>{B.revs.push({stmt:"",type:"fixed",name:"",amount:"",note:"",bill:""});save();renderLists();renderChecks()};
+$("clear").onclick=()=>{B=empty();save();renderAll();$("amsg").textContent="Cleared."};
+$("example").onclick=()=>{const t=templates["state"];if(!t)return;const is=t.issue;
+  B={gov:"state",custom:empty().custom,name:is.name,title:is.title,
+    facts:is.facts.map((f,i)=>({label:f[0],text:f[1],url:(is.sources[i]||is.sources[0]||[""])[0]})),
+    stmts:is.statements.map(s=>s.text),
+    costs:is.costOptions.map(c=>({stmt:String(c.statement),name:c.name,unit:c.unit==="million dollars"?"":c.unit,cost:String(c.unit==="million dollars"?c.unitCost*c.default:c.unitCost),def:String(c.unit==="million dollars"?1:c.default),max:String(c.unit==="million dollars"?1:c.max),yr:c.recurring,basis:c.basis,url:"",impact:c.impact.replace("{total}","this"),bill:c.billText.replace("{dollars}","$"+(c.unitCost*c.default).toLocaleString())})),
+    revs:is.revenue.filter(r=>r.type!=="fee").map(r=>({stmt:String(r.statement),type:r.type==="fixed"?"fixed":"unestimated",name:r.name,amount:String(r.amount||""),note:r.note,bill:r.billText||""}))};
+  save();renderAll();$("amsg").textContent="Loaded the Hawaiʻi example. Edit anything.";window.scrollTo({top:0})};
+$("preview").onclick=()=>{try{localStorage.setItem("civicaccord-draft",JSON.stringify(buildPack()));location.href="index.html?preview=draft"}catch(e){$("amsg").textContent="Preview needs browser storage, which is blocked here. Try another browser."}};
+$("download").onclick=()=>{const p=buildPack();const blob=new Blob([JSON.stringify(p,null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${p.id}.json`;document.body.appendChild(a);a.click();a.remove();$("amsg").textContent=`Downloaded ${p.id}.json.`};
+$("copy").onclick=()=>{const txt=JSON.stringify(buildPack(),null,1);const fb=()=>{const ta=$("copytext");ta.hidden=false;ta.value=txt;ta.select();$("amsg").textContent="Select and copy the text below."};try{navigator.clipboard.writeText(txt).then(()=>$("amsg").textContent="Copied.",fb)}catch(e){fb()}};
+(async()=>{
+  try{const raw=localStorage.getItem(KEY);B=raw?JSON.parse(raw):empty()}catch(e){B=empty()}
+  try{const idx=await (await fetch("packs/index.json")).json();for(const e of idx.packs){const d=await (await fetch(e.file)).json();if(!templates[d.jurisdiction.key])templates[d.jurisdiction.key]=d}}catch(e){}
+  renderAll();
+})();
+</script>
+</body></html>

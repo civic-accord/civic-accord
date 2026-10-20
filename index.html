@@ -36,6 +36,14 @@ header{display:grid;gap:10px}
 .issue small{display:block;color:var(--muted);font-size:.75rem}
 .issue:disabled{cursor:not-allowed;opacity:.65}
 .issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
 .gstatus{margin-top:4px;color:var(--muted)}
 .gstatus.live{color:var(--koa)!important;font-weight:700}
 nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
@@ -163,8 +171,10 @@ const words=n=>n.toLocaleString();
 // ---------- Jurisdiction packs ----------
 // Packs are plain data files (see packs/SPEC.md). The core compiles them; nothing in a pack can run code or touch the vote count.
 const fill=(tpl,o,n)=>String(tpl).replace(/\{n\}/g,words(n)).replace(/\{total\}/g,money(o.per*n)).replace(/\{dollars\}/g,"$"+words(Math.round(o.per*n)));
-function compilePack(d){
+function compilePack(d,opts={}){
   const j=d.jurisdiction, is=d.issue, OPT={};
+  ["costOptions","revenue","facts","lists","sources","costSources","statements"].forEach(k=>{if(!Array.isArray(is[k]))is[k]=[]});
+  if(!Array.isArray(is.groups)||is.groups.length<2) is.groups=["Described from the votes once enough people take part.","Described from the votes once enough people take part."];
   is.costOptions.forEach(c=>{const o={name:c.name,unit:c.unit,min:c.min,max:c.max,step:c.step,def:c.default,per:c.unitCost,yr:c.recurring,basis:c.basis};
     o.impact=n=>fill(c.impact,o,n); o.bill=n=>fill(c.billText,o,n); OPT[c.statement]=o;});
   const feeR=is.revenue.find(r=>r.type==="fee"), fixR=is.revenue.find(r=>r.type==="fixed");
@@ -180,7 +190,8 @@ function compilePack(d){
     fines:fixR?{label:fixR.name,amt:fixR.amount,statement:fixR.statement,note:fixR.note,billText:fixR.billText}:null,
     revUnknown,
     issueTitle:is.title, facts:is.facts, lists:is.lists, sources:is.sources, costSources:is.costSources, groups:is.groups,
-    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a,b:x.b})), OPT,
+    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null})), OPT,
+    participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
     billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
     secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
     handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix
@@ -189,9 +200,10 @@ function compilePack(d){
 let PACKS={};
 
 // ---------- Per-pack state ----------
-const blank=(P)=>{const b={};Object.keys(P.OPT).forEach(k=>b[k]={on:false,n:P.OPT[k].def});return {mine:{},added:[],budget:b,fee:0,fines:false,budgetSeeded:false,submitted:false,receipt:"",nextId:100,step:0}};
-let ST={}; let cur="state", P=null, st=null;
-const ISSUES=[{id:"invasive",name:"Invasive species",sub:"Pilot issue",live:true},{id:"food",name:"Food self-sufficiency",sub:"Issue pack later"},{id:"wildfire",name:"Wildfire resilience",sub:"Issue pack later"},{id:"housing",name:"Housing",sub:"Issue pack later"},{id:"water",name:"Water",sub:"Issue pack later"}];
+const blank=(P)=>{if(!P)return null;const b={};Object.keys(P.OPT).forEach(k=>b[k]={on:false,n:P.OPT[k].def});return {mine:{},added:[],budget:b,fee:0,fines:false,budgetSeeded:false,submitted:false,receipt:"",nextId:100,step:0}};
+let ST={}; let cur="state/invasive", P=null, st=null;
+const packsFor=jk=>Object.values(PACKS).filter(x=>x.key===jk);
+const selectPack=k=>{cur=k;P=PACKS[k];st=ST[k];render();window.scrollTo({top:0})};
 const JURIS=[{key:"federal",name:"U.S. Congress",sub:"1 representative, 2 senators"},{key:"state",name:"Hawaiʻi State Legislature",sub:"1 state representative, 1 senator"},{key:"county",name:"Maui County Council",sub:"Council members"}];
 const requested={};
 const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
@@ -211,8 +223,14 @@ function tally(s){
   if(a[0]+a[1]+a[2]+b[0]+b[1]+b[2]>=10){
     if(pa>=70&&pb>=70) kind="common"; else if(Math.min(pa,pb)<50&&Math.max(pa,pb)>=70) kind="split";
   }
-  return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2]};
+  const pp=s.panel?pct(s.panel):null, pn=s.panel?s.panel[0]+s.panel[1]+s.panel[2]:0;
+  const pkind=pp===null?null:pp>=70?"agrees":pp>=40?"divided":"disagrees";
+  return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2],pp,pn,pkind};
 }
+function panelNote(s){if(s.pp===null)return "";
+  const label=s.pkind==="agrees"?"Citizen panel agrees":s.pkind==="divided"?"Citizen panel divided":"Citizen panel disagrees";
+  const story=s.kind==="common"&&s.pkind==="agrees"?"Confirms the common ground.":s.kind==="common"?"The open group agreed, but the panel did not. Worth a closer look.":s.pkind==="agrees"?"The panel found agreement the open group didn't.":"";
+  return `<p class="panelnote ${s.pkind}"><b>${label}: ${s.pp}%</b> of ${s.pn} panelists. ${story}</p>`}
 function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
 function seedBudget(){if(!st.budgetSeeded){Object.keys(P.OPT).forEach(k=>{const s=statusOf(k);st.budget[k].on=!!s&&s.kind==="common"});st.budgetSeeded=true}}
 function totals(){
@@ -252,12 +270,14 @@ function renderHeader(){
   document.getElementById("chip-session").textContent=P.session;
   document.getElementById("footnote").textContent=P.footnote;
   const jb=document.getElementById("juris");jb.innerHTML="";
-  JURIS.forEach(j=>{const live=!!PACKS[j.key];
+  const jl=[...JURIS];Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
+  jl.forEach(j=>{const live=packsFor(j.key).length>0;
     const status=live?"● Deliberation open":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
-    const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===cur}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
-    b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===cur)return;cur=j.key;P=PACKS[cur];st=ST[cur];render();window.scrollTo({top:0})};jb.appendChild(b)});
+    const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
+    b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
   const ib=document.getElementById("issues");ib.innerHTML="";
-  ISSUES.forEach(i=>ib.appendChild(el(`<button class="issue" aria-pressed="${i.live?"true":"false"}" ${i.live?"":"disabled"}>${esc(i.name)}<small>${esc(i.sub)}</small></button>`)));
+  packsFor(P.key).forEach(x=>{const b=el(`<button class="issue" aria-pressed="${x.packKey===cur}">${esc(x.issueName)}<small>${x.draft?"Draft preview":"Deliberation open"}</small></button>`);b.onclick=()=>{if(x.packKey!==cur)selectPack(x.packKey)};ib.appendChild(b)});
+  ib.appendChild(el(`<a class="issue newissue" href="new.html">＋ Start a deliberation<small>On any issue, for any government</small></a>`));
   const n=document.getElementById("steps");n.innerHTML="";
   STEPS.forEach(([name,num],i)=>{const b=el(`<button class="step ${i<st.step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===st.step}"><b>Step ${num}</b><span>${name}</span></button>`);b.onclick=()=>{st.step=i;render()};n.appendChild(b)});
 }
@@ -332,12 +352,14 @@ function ground(){
       <div class="bar"><span>Group A</span><div class="track"><div class="fill ${s.pa<50?"low":""}" style="width:${s.pa}%"></div></div><span>${s.pa}%</span></div>
       <div class="bar"><span>Group B</span><div class="track"><div class="fill ${s.pb<50?"low":""}" style="width:${s.pb}%"></div></div><span>${s.pb}%</span></div>
     </div>
+    ${panelNote(s)}
     <details><summary>See the ${s.n} votes behind this</summary><p class="meta" style="margin-top:6px">In the live tool this opens every vote and the original statement, so no one has to take the summary on trust.</p></details>
   </div>`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
   ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
   <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
+  ${participationBox()}
   <div class="groups">
     <div class="grp"><h3>Group A</h3><p class="meta">${esc(P.groups[0])}</p></div>
     <div class="grp"><h3>Group B</h3><p class="meta">${esc(P.groups[1])}</p></div>
@@ -351,6 +373,14 @@ function ground(){
   <button class="btn" id="go3">Weigh the costs</button>
   </section>`;
 }
+function participationBox(){const pt=P.participation;if(!pt)return "";
+  const dims=pt.makeup&&pt.makeup.dimensions||[];
+  return `<div class="twoways">
+    <div class="grp"><h3>${esc(pt.open.label)} · ${pt.open.count}</h3><p class="meta">${esc(pt.open.how)}</p></div>
+    <div class="grp"><h3>${esc(pt.panel.label)} · ${pt.panel.count}</h3><p class="meta">${esc(pt.panel.how)}</p></div>
+  </div>
+  ${dims.length?`<details><summary>Who took part compared with the district</summary><div style="overflow-x:auto;margin-top:8px"><table class="mk"><tr><th></th>${pt.makeup.columns.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>${dims.map(dm=>`<tr><th colspan="4" class="mkh">${esc(dm.name)}</th></tr>${dm.rows.map(r=>`<tr><td>${esc(r[0])}</td>${r.slice(1).map(v=>`<td>${v}%</td>`).join("")}</tr>`).join("")}`).join("")}</table></div>${pt.example?'<p class="meta">Example figures.</p>':""}</details>`:""}
+  <p class="meta">Each statement shows both. When they agree, the common ground is likely real. When they differ, the open group may not reflect the district.</p>`}
 function tagFor(s){return s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:""}
 function costs(){
   seedBudget();
@@ -431,7 +461,7 @@ function draft(){
   const t=totals();
   const picked=Object.keys(P.OPT).filter(k=>st.budget[k].on);
   const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n));
-  const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}</li>`}).join("");
+  const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
   const sf=P.fee?statusOf(P.fee.statement):null;
   const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
   const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)};`).join("\n");
@@ -475,6 +505,7 @@ function handoff(){
   <div class="pkg">
     <div class="stat">
       <div><strong>${people}</strong><span>verified residents</span></div>
+      ${P.participation?`<div><strong>${P.participation.panel.count}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${votes}</strong><span>votes cast</span></div>
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
       <div><strong>${split.length}</strong><span>open disagreements</span></div>
@@ -482,7 +513,7 @@ function handoff(){
       <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
-      <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
+      <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
     </div>
     <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
   </div>
@@ -496,7 +527,7 @@ function handoff(){
 function render(){
   renderHeader();
   const p=document.getElementById("panel");
-  p.innerHTML=[learn,weigh,ground,costs,draft,handoff][st.step]();
+  p.innerHTML=(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
   const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
   go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
   if(st.step===3){
@@ -541,7 +572,8 @@ async function boot(){
   panel.innerHTML='<section class="panel"><p class="meta">Loading the deliberation…</p></section>';
   try{
     const idx=await (await fetch("packs/index.json")).json();
-    for(const e of idx.packs){const d=await (await fetch(e.file)).json(); PACKS[e.jurisdiction]=compilePack(d); ST[e.jurisdiction]=blank(PACKS[e.jurisdiction]);}
+    for(const e of idx.packs){const d=await (await fetch(e.file)).json(); const c=compilePack(d); PACKS[c.packKey]=c; ST[c.packKey]=blank(c);}
+    if(/[?&]preview=draft/.test(location.search)){try{const raw=localStorage.getItem("civicaccord-draft");if(raw){const c=compilePack(JSON.parse(raw),{draft:true});c.packKey="draft:"+c.packKey;PACKS[c.packKey]=c;ST[c.packKey]=blank(c);cur=c.packKey}}catch(e){}}
     P=PACKS[cur]; st=ST[cur]; render();
   }catch(err){panel.innerHTML='<section class="panel"><h2>Couldn\'t load this deliberation</h2><p class="meta">Check your connection and reload the page.</p></section>'}
 }

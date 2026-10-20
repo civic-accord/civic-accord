@@ -109,6 +109,11 @@
      36,
      6,
      4
+    ],
+    "panel": [
+     30,
+     4,
+     2
     ]
    },
    {
@@ -123,6 +128,11 @@
      40,
      3,
      3
+    ],
+    "panel": [
+     26,
+     7,
+     3
     ]
    },
    {
@@ -135,6 +145,11 @@
     ],
     "b": [
      41,
+     2,
+     3
+    ],
+    "panel": [
+     31,
      2,
      3
     ]
@@ -151,6 +166,11 @@
      37,
      6,
      3
+    ],
+    "panel": [
+     29,
+     5,
+     2
     ]
    },
    {
@@ -165,6 +185,11 @@
      39,
      4,
      3
+    ],
+    "panel": [
+     21,
+     11,
+     4
     ]
    },
    {
@@ -179,6 +204,11 @@
      40,
      2,
      4
+    ],
+    "panel": [
+     29,
+     4,
+     3
     ]
    },
    {
@@ -193,6 +223,11 @@
      38,
      4,
      4
+    ],
+    "panel": [
+     17,
+     16,
+     3
     ]
    },
    {
@@ -207,6 +242,11 @@
      33,
      7,
      6
+    ],
+    "panel": [
+     29,
+     4,
+     3
     ]
    },
    {
@@ -221,6 +261,11 @@
      39,
      3,
      4
+    ],
+    "panel": [
+     25,
+     8,
+     3
     ]
    }
   ],
@@ -339,7 +384,75 @@
     "name": "Importer fee revenue not yet estimated",
     "note": "Would bring in money rather than cost it, but the amount depends on fee design and import volumes. Analysts would estimate it before it could be counted."
    }
-  ]
+  ],
+  "participation": {
+   "open": {
+    "label": "Open participation",
+    "count": 92,
+    "how": "Verified residents who chose to join."
+   },
+   "panel": {
+    "label": "Citizen panel",
+    "count": 36,
+    "how": "Chosen by lottery from verified residents, balanced to match the district by age and area, and paid a stipend for their time."
+   },
+   "makeup": {
+    "dimensions": [
+     {
+      "name": "Age",
+      "rows": [
+       [
+        "18–34",
+        17,
+        28,
+        27
+       ],
+       [
+        "35–54",
+        34,
+        33,
+        33
+       ],
+       [
+        "55+",
+        49,
+        39,
+        40
+       ]
+      ]
+     },
+     {
+      "name": "Area",
+      "rows": [
+       [
+        "Upcountry",
+        44,
+        31,
+        31
+       ],
+       [
+        "Central",
+        30,
+        39,
+        38
+       ],
+       [
+        "East and West",
+        26,
+        30,
+        31
+       ]
+      ]
+     }
+    ],
+    "columns": [
+     "Open participation",
+     "Citizen panel",
+     "District"
+    ]
+   },
+   "example": true
+  }
  },
  "bill": {
   "centerLines": [
