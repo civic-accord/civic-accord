@@ -5,6 +5,9 @@
 .timeline li:last-child{border-left-color:transparent}
 .timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
 .timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+.viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
 </style></head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
@@ -196,7 +199,7 @@ function compilePack(d,opts={}){
     fines:fixR?{label:fixR.name,amt:fixR.amount,statement:fixR.statement,note:fixR.note,billText:fixR.billText}:null,
     revUnknown,
     issueTitle:is.title, facts:is.facts, lists:is.lists, sources:is.sources, costSources:is.costSources, groups:is.groups,
-    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null})), OPT,
+    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null,rv:x.registered||null})), OPT,
     participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
     billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
     secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
@@ -220,9 +223,12 @@ function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
   return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
 const all=()=>[...P.S,...st.added];
 
+let VIEW="all";
+const myStatus=()=>VER&&VER.voterStatus||null;
 function tally(s){
-  const a=[...s.a], b=[...s.b], v=st.mine[s.id];
-  if(v!==undefined&&st.submitted){ a[v]++; }
+  const reg=VIEW==="registered", src=reg&&s.rv?s.rv:s;
+  const a=[...src.a], b=[...src.b], v=st.mine[s.id];
+  if(v!==undefined&&st.submitted&&(!reg||myStatus()==="registered")){ a[v]++; }
   const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
   const pa=pct(a), pb=pct(b);
   let kind="forming";
@@ -372,6 +378,7 @@ function ground(){
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
   ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
   <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
+  ${viewToggle()}
   ${participationBox()}
   <div class="groups">
     <div class="grp"><h3>Group A</h3><p class="meta">${esc(P.groups[0])}</p></div>
@@ -386,6 +393,11 @@ function ground(){
   <button class="btn" id="go3">Weigh the costs</button>
   </section>`;
 }
+function viewToggle(){const r=P.participation&&P.participation.registered;if(!r)return "";
+  return `<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span>
+    <button type="button" id="view-all" aria-pressed="${VIEW==="all"}">All participants · ${P.participation.open.count+(st.submitted?1:0)}</button>
+    <button type="button" id="view-reg" aria-pressed="${VIEW==="registered"}">Registered voters · ${r.count+(st.submitted&&myStatus()==="registered"?1:0)}</button></div>
+    ${VIEW==="registered"?`<p class="meta">${esc(r.how)}</p>`:""}`}
 function participationBox(){const pt=P.participation;if(!pt)return "";
   const dims=pt.makeup&&pt.makeup.dimensions||[];
   return `<div class="twoways">
@@ -492,6 +504,7 @@ function draft(){
   const eff=`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
+  ${viewToggle()}
   <p class="lede">The proposal is built from your choices in Step 4, starting from what both groups agreed on. Anything you added that lacks common ground is flagged.</p>
   <h3>Plain-language proposal</h3>
   ${plain?`<ul class="plain">${plain}</ul>`:'<p class="meta">Nothing is selected yet. Choose options in Step 4.</p>'}
@@ -525,13 +538,15 @@ function followThrough(){
 function handoff(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
-  const people=92+(st.submitted?1:0), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
+  const people=(VIEW==="registered"&&P.participation&&P.participation.registered?P.participation.registered.count+(st.submitted&&myStatus()==="registered"?1:0):92+(st.submitted?1:0)), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 6</div><h2>${esc(P.handoffTitle)}</h2></div>
   <p class="lede">${esc(P.handoffLede)}</p>
+  ${viewToggle()}
+  <p class="meta">The office receives both views: everyone who took part, and registered voters only.</p>
   <div class="pkg">
     <div class="stat">
-      <div><strong>${people}</strong><span>verified residents</span></div>
+      <div><strong>${people}</strong><span>${VIEW==="registered"?"registered voters":"verified residents"}</span></div>
       ${P.participation?`<div><strong>${P.participation.panel.count}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${votes}</strong><span>votes cast</span></div>
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
@@ -576,6 +591,9 @@ function render(){
   });
   const sv=document.getElementById("submitvotes");
   if(sv) sv.onclick=()=>{st.submitted=true;st.receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
+  const va=document.getElementById("view-all"),vr=document.getElementById("view-reg");
+  if(va) va.onclick=()=>{VIEW="all";const y=window.scrollY;render();window.scrollTo({top:y})};
+  if(vr) vr.onclick=()=>{VIEW="registered";const y=window.scrollY;render();window.scrollTo({top:y})};
   const us=document.getElementById("unsubmit");
   if(us) us.onclick=()=>{st.submitted=false;st.receipt="";render()};
   const bs=document.getElementById("backsubmit");

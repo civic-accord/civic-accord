@@ -170,7 +170,19 @@
      30,
      4,
      2
-    ]
+    ],
+    "registered": {
+     "a": [
+      37,
+      2,
+      2
+     ],
+     "b": [
+      30,
+      5,
+      3
+     ]
+    }
    },
    {
     "id": 2,
@@ -189,7 +201,19 @@
      26,
      7,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      24,
+      8,
+      5
+     ],
+     "b": [
+      32,
+      3,
+      2
+     ]
+    }
    },
    {
     "id": 3,
@@ -208,7 +232,19 @@
      31,
      2,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      33,
+      4,
+      3
+     ],
+     "b": [
+      35,
+      2,
+      3
+     ]
+    }
    },
    {
     "id": 4,
@@ -227,7 +263,19 @@
      29,
      5,
      2
-    ]
+    ],
+    "registered": {
+     "a": [
+      30,
+      4,
+      2
+     ],
+     "b": [
+      29,
+      4,
+      2
+     ]
+    }
    },
    {
     "id": 5,
@@ -246,7 +294,19 @@
      21,
      11,
      4
-    ]
+    ],
+    "registered": {
+     "a": [
+      20,
+      14,
+      5
+     ],
+     "b": [
+      32,
+      3,
+      2
+     ]
+    }
    },
    {
     "id": 6,
@@ -265,7 +325,19 @@
      29,
      4,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      30,
+      5,
+      4
+     ],
+     "b": [
+      34,
+      2,
+      3
+     ]
+    }
    },
    {
     "id": 7,
@@ -284,7 +356,19 @@
      17,
      16,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      12,
+      20,
+      3
+     ],
+     "b": [
+      30,
+      3,
+      3
+     ]
+    }
    },
    {
     "id": 8,
@@ -303,7 +387,19 @@
      29,
      4,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      36,
+      1,
+      2
+     ],
+     "b": [
+      27,
+      6,
+      5
+     ]
+    }
    },
    {
     "id": 9,
@@ -322,7 +418,19 @@
      25,
      8,
      3
-    ]
+    ],
+    "registered": {
+     "a": [
+      27,
+      7,
+      4
+     ],
+     "b": [
+      32,
+      3,
+      3
+     ]
+    }
    }
   ],
   "costOptions": [
@@ -507,7 +615,12 @@
      "District"
     ]
    },
-   "example": true
+   "example": true,
+   "registered": {
+    "count": 74,
+    "label": "Registered voters",
+    "how": "Open participants whose voter registration was confirmed during the residency check. Preregistered 16- and 17-year-olds are counted with all participants, not here."
+   }
   }
  },
  "bill": {

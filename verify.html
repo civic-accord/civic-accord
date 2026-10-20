@@ -169,8 +169,8 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const STEPS=["Address","Your governments","How to confirm","Enter code","Done"];
-let step=0, geo=null, method="mail", code="", OPEN=[];
+const STEPS=["Address","Your governments","Age and voter status","How to confirm","Enter code","Done"];
+let step=0, geo=null, method="mail", code="", OPEN=[], vstatus=null, ELIG=null;
 const rnd=n=>{let s="";const a=new Uint32Array(n);crypto.getRandomValues(a);a.forEach(x=>s+=x%10);return s};
 const cred=()=>{const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",a=new Uint32Array(8);crypto.getRandomValues(a);return "CA-V-"+[...a].map(x=>c[x%c.length]).join("").replace(/(.{4})/,"$1-")};
 function bar(){$("vsteps").innerHTML=STEPS.map((s,i)=>`<span class="${i===step?"on":i<step?"done":""}">${i+1}. ${s}</span>`).join("")}
@@ -179,7 +179,7 @@ async function render(){bar();const p=$("p");
    <p>Your address decides which deliberations count your voice: your congressional district, state house and senate districts, county, and more.</p>
    <div class="addr"><label for="addr" class="meta">Home address</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. In the live tool, it is used once to mail your code, then deleted. Only your districts are kept.</p>
-   <div class="grp"><h3>Who can take part</h3><p class="meta">People who live in the district. Taking part is advisory, not voting in an election, so no election law sets who can join. The minimum age is an open question for the host to decide, and the host's choice will be shown here.</p></div>
+   <div class="grp"><h3>Who can take part</h3><p class="meta">Anyone 16 or older who lives in the district. Your voter registration status is confirmed too, so results can be shown for everyone who took part and for registered voters only.</p></div>
    <div class="actions"><button class="btn" id="go" type="button">Find my districts</button><button class="btn ghost" id="ex" type="button">Use the example address in Haʻikū</button></div>
    <span class="toast" id="msg" aria-live="polite"></span>`;
    $("ex").onclick=()=>{geo=CA_REG.EXAMPLE;step=1;render()};
@@ -196,34 +196,56 @@ async function render(){bar();const p=$("p");
    <p>Once you're verified, your voice counts in every deliberation open for these governments.</p>
    <div class="actions"><button class="btn" id="yes" type="button">This is where I live</button><button class="btn ghost" id="back" type="button">Change address</button></div>`;
    $("yes").onclick=()=>{step=2;render()};$("back").onclick=()=>{step=0;render()};return}
- if(step===2){p.innerHTML=`<div><div class="eyebrow">Step 3</div><h2>How to confirm you live there</h2></div>
+ if(step===2){
+   if(!ELIG){const reg=geo.state?await (await fetch("registry/"+geo.state.toLowerCase()+".json").catch(()=>null))?.json?.().catch(()=>null):null;
+     const us=await (await fetch("registry/us.json")).json();ELIG=(reg&&reg.eligibility)||us.eligibilityDefault}
+   const vs=ELIG.voterStatus, law=vs.basis==="law";
+   const vals=law?["registered","preregistered","not registered"]:["registered","not registered"];
+   p.innerHTML=`<div><div class="eyebrow">Step 3</div><h2>Age and voter registration</h2></div>
+   <label class="choice"><input type="checkbox" id="age"><span><b>I am ${ELIG.minimumAge} or older</b><br><span class="meta">${esc(ELIG.ageNote)}</span></span></label>
+   <h3>Your voter registration status</h3>
+   <p class="meta">${esc(vs.method)}</p>
+   <div class="record"><div class="recrow${vs.verified?"":" silent"}"><b>${law?"Based on state law":"Not yet in the registry"}</b><span>${esc(vs.summary)}</span>
+     <span class="meta">${vs.verified?"✓ Checked by a reviewer":"! Not yet confirmed in this state's legal review"}${vs.citations.length?" · "+vs.citations.map(c=>`<a href="${esc(c[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c[1])}</a>`).join(" · "):""}</span></div></div>
+   ${law?`<div class="addr"><label for="vname" class="meta">Your name as it appears on your voter registration</label><input type="text" id="vname" autocomplete="name"></div>
+   <p class="privacy">Your name is used once for this match, then deleted. Only the result is kept: registered, preregistered, or not registered.</p>`:""}
+   <p class="meta">${law?"In this prototype there's no real match. Choose what the check would find:":"Choose your status. It will be labeled self-reported."}</p>
+   <form id="vs" style="display:grid;gap:8px">${vals.map((v,i)=>`<label class="choice"><input type="radio" name="vs" value="${v}" ${i===0?"checked":""}><span><b>${esc(vs.statuses[i])}</b></span></label>`).join("")}</form>
+   <span class="toast" id="msg" aria-live="polite"></span>
+   <div class="actions"><button class="btn" id="next" type="button">Continue</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
+   $("next").onclick=()=>{if(!$("age").checked){$("msg").textContent=`Civic Accord is open to people ${ELIG.minimumAge} and older.`;return}
+     vstatus={status:document.querySelector("input[name=vs]:checked").value,how:law?"matched against the public voter list":"self-reported"};step=3;render()};
+   $("back").onclick=()=>{step=1;render()};return}
+ if(step===3){p.innerHTML=`<div><div class="eyebrow">Step 4</div><h2>How to confirm you live there</h2></div>
    <form id="m" class="choices" style="display:grid;gap:8px">
     <label class="choice"><input type="radio" name="m" value="mail" ${method==="mail"?"checked":""}><span><b>Mail a code to my address</b><br><span class="meta">A postcard with a 6-digit code arrives in about 3 to 7 days. Anyone who can receive mail there can take part, with no ID needed.</span></span></label>
     <label class="choice"><input type="radio" name="m" value="library" ${method==="library"?"checked":""}><span><b>At a public library</b><br><span class="meta">Library staff look at an ID or a bill showing your address and give you a code. Nothing is copied. This also helps people without a computer, with library staff assisting.</span></span></label>
     <label class="choice off"><input type="radio" name="m" value="digital" disabled><span><b>State digital ID</b><br><span class="meta">Offered only where state law provides a digital ID that can confirm an address. Not set up for this state yet.</span></span></label>
    </form>
    <div class="actions"><button class="btn" id="send" type="button">Continue</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
-   $("send").onclick=()=>{method=document.querySelector("input[name=m]:checked").value;code=rnd(6);step=3;render()};$("back").onclick=()=>{step=1;render()};return}
- if(step===3){p.innerHTML=`<div><div class="eyebrow">Step 4</div><h2>Enter your code</h2></div>
+   $("send").onclick=()=>{method=document.querySelector("input[name=m]:checked").value;code=rnd(6);step=4;render()};$("back").onclick=()=>{step=2;render()};return}
+ if(step===4){p.innerHTML=`<div><div class="eyebrow">Step 5</div><h2>Enter your code</h2></div>
    <p>${method==="mail"?"Your postcard is on its way. In this prototype, here's what it would look like:":"Library staff give you a slip with your code. In this prototype, here's what it would look like:"}</p>
    <div class="postcard"><span class="eyebrow">${method==="mail"?"Civic Accord · postcard":"Civic Accord · library slip"}</span><span>Your residency code</span><span class="code">${code}</span><span class="meta">Expires in 30 days. Works once.</span></div>
    <div class="addr"><label for="code" class="meta">6-digit code</label><input type="text" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
    <span class="toast" id="msg" aria-live="polite"></span>
    <div class="actions"><button class="btn" id="check" type="button">Verify</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
    $("check").onclick=()=>{if($("code").value.trim()!==code){$("msg").textContent="That code doesn't match. Check it and try again.";return}
-     const v={districts:{state:geo.state,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null},method,date:new Date().toISOString().slice(0,10),credential:cred(),example:!!geo.example};
+     const v={districts:{state:geo.state,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null},voterStatus:vstatus.status,voterStatusHow:vstatus.how,method,date:new Date().toISOString().slice(0,10),credential:cred(),example:!!geo.example};
      try{localStorage.setItem("civicaccord-verified",JSON.stringify(v))}catch(e){}
-     window.__ver=v;step=4;render()};
-   $("back").onclick=()=>{step=2;render()};return}
+     window.__ver=v;step=5;render()};
+   $("back").onclick=()=>{step=3;render()};return}
  const v=window.__ver||{};
  p.innerHTML=`<div class="submitbox"><h3>✓ You're verified</h3><p>Your voice now counts in deliberations for ${esc([geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).join(", "))}.</p>
    <p class="meta">Verification receipt</p><span class="receipt">${esc(v.credential)}</span>
+   <p class="meta">Voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in both views: all participants and registered voters.":"Your votes count with all participants."}</p>
+   ${v.voterStatus==="not registered"&&ELIG&&ELIG.voterStatus.registerUrl?`<p class="meta">Want to register? <a href="${esc(ELIG.voterStatus.registerUrl)}" target="_blank" rel="noopener" style="color:var(--koa)">Hawaiʻi Office of Elections</a>.</p>`:""}
    <p class="meta">This proves you're a verified resident. It says nothing about how you vote.</p></div>
    <h3>How your privacy is protected</h3>
    <div class="flow">
-    <div><b>1. Residency check</b><span class="meta">Confirms you live in these districts and that you haven't verified before. Keeps only your districts and a one-way fingerprint to stop duplicates. Your address is deleted.</span></div>
+    <div><b>1. Residency check</b><span class="meta">Confirms you live in these districts, your voter status, and that you haven't verified before. Keeps only your districts, your status, and a one-way fingerprint to stop duplicates. Your name and address are deleted.</span></div>
     <div><b>2. Your sealed voting key</b><span class="meta">Issued to your device in a way the checker can't see, so even the host can't match the key to you. One key per person per district.</span></div>
-    <div><b>3. The public vote record</b><span class="meta">Sees only the key and the votes. Anyone can recount, and you can find your own votes with your receipt.</span></div>
+    <div><b>3. The public vote record</b><span class="meta">Sees only the key, a registered-voter flag, and the votes. Results by status are shown only for groups large enough that no one can be singled out. Anyone can recount, and you can find your own votes with your receipt.</span></div>
    </div>
    <p class="meta">Verification lasts one year, or until you move. What's kept, and for how long, follows each state's privacy law and is checked in that state's legal review.</p>
    <div class="actions"><a class="btn" href="/" style="text-decoration:none">Start taking part</a></div>`;

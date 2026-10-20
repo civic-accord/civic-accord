@@ -13,3 +13,7 @@ Census-designated places are statistical areas, not governments, so they are ign
 ## Adding a state
 
 Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs a source in `sources`, and the file is reviewed in that state's legal review like any pack. `civic` is one of `receives`, `possible`, `later`, or `never` (courts are always `never`).
+
+## Who can take part
+
+`eligibility` in a state file sets the minimum age (16 by host policy, since taking part is advisory, not voting) and how voter registration status is confirmed under that state's law. In Hawaiʻi, a voter's name, district or precinct, and voter status are public for any purpose (HRS § 11-97, HAR § 3-177-160), so the check matches only those. States without an entry fall back to `us.json`'s `eligibilityDefault`, where status is self-reported and labeled that way. Results can then be shown for all participants or for registered voters only.

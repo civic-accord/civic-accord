@@ -183,5 +183,36 @@
   "seat": "The only school district in the state, overseen by the appointed Board of Education",
   "civic": "possible"
  },
- "noLocal": true
+ "noLocal": true,
+ "eligibility": {
+  "minimumAge": 16,
+  "ageBasis": "host policy",
+  "ageNote": "Taking part is advisory, not voting, so no law sets a minimum age. The host set it at 16, the age Hawaiʻi allows people to preregister to vote.",
+  "voterStatus": {
+   "method": "Match the name and district a resident gives against the public part of the state voter list: name, district or precinct, and voter status.",
+   "statuses": [
+    "Registered voter",
+    "Preregistered (16 or 17)",
+    "Not registered"
+   ],
+   "basis": "law",
+   "verified": false,
+   "summary": "Hawaiʻi makes a voter's name, district or precinct, and voter status public for any purpose. Everything else on the registration record is limited to election or government purposes, so Civic Accord never uses it.",
+   "citations": [
+    [
+     "https://www.capitol.hawaii.gov/hrscurrent/Vol01_Ch0001-0042F/HRS0011/HRS_0011-0097.htm",
+     "HRS § 11-97: confidentiality of voter registration"
+    ],
+    [
+     "https://www.law.cornell.edu/regulations/hawaii/Haw-Code-R-SS-3-177-160",
+     "HAR § 3-177-160: permitted and prohibited uses"
+    ],
+    [
+     "https://ncsl.org/research/elections-and-campaigns/preregistration-for-young-voters.aspx",
+     "NCSL: preregistration at 16 (HRS § 11-12(b))"
+    ]
+   ],
+   "registerUrl": "https://elections.hawaii.gov/"
+  }
+ }
 }

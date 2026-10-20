@@ -131,6 +131,9 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 .record{display:grid;gap:8px}
 .recrow{border-left:3px solid var(--koa);padding:4px 0 4px 12px;display:grid;gap:2px}
 .recrow.silent{border-color:var(--sun)}
+.viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
 .flag{background:var(--sun-soft);border-radius:8px;padding:8px 12px;font-size:.85rem}
 .seat{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
 .seat .holder{font-size:.85rem;color:var(--muted)}
@@ -195,8 +198,9 @@ const officeJ=()=>{const k=packsFor(office)[0];return k?PK[k].jurisdiction:null}
 const office$=()=>OFFICES.find(o=>o.key===office);
 const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?" · approved by "+r.approver:""}`;
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+let IVIEW="all";
 function analyze(d){
-  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:s.a.concat(s.b).reduce((x,y)=>x+y,0)}});
+  const st=d.issue.statements.map(s=>{const src=IVIEW==="registered"&&s.registered?s.registered:s;const pa=pct(src.a),pb=pct(src.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:src.a.concat(src.b).reduce((x,y)=>x+y,0)}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
   let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
   return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
@@ -268,8 +272,9 @@ function renderDetail(){
   const pn=pt?pt.panel.count:0;
   m.innerHTML=`<section class="panel">
     <div><div class="eyebrow">Package · ${esc(j.name)}</div><h2>${esc(d.issue.title)}</h2></div>
+    ${pt&&pt.registered?`<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span><button type="button" id="iv-all" aria-pressed="${IVIEW==="all"}">All participants · ${pt.open.count}</button><button type="button" id="iv-reg" aria-pressed="${IVIEW==="registered"}">Registered voters · ${pt.registered.count}</button></div>`:""}
     <div class="stat">
-      <div><strong>${pt?pt.open.count:92}</strong><span>verified constituents</span></div>
+      <div><strong>${IVIEW==="registered"&&pt&&pt.registered?pt.registered.count:(pt?pt.open.count:92)}</strong><span>${IVIEW==="registered"?"registered voters":"verified constituents"}</span></div>
       ${pt?`<div><strong>${pn}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${words(a.votes)}</strong><span>votes</span></div>
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
@@ -317,6 +322,8 @@ function renderDetail(){
       <span class="toast" id="upmsg" aria-live="polite"></span>
       <button class="btn ghost" type="submit">Add to the public record</button></form>`:""}
   </section>`;
+  const ia=document.getElementById("iv-all"),ir=document.getElementById("iv-reg");
+  if(ia) ia.onclick=()=>{IVIEW="all";render()}; if(ir) ir.onclick=()=>{IVIEW="registered";render()};
   const f=document.getElementById("respond");
   if(f) f.onsubmit=e=>{e.preventDefault();const reason=document.getElementById("reason").value.trim();
     if(reason.length<10){document.getElementById("rmsg").textContent="Add a short reason. Residents see it with your response.";return}
