@@ -250,6 +250,7 @@ async function load(){
   $("count").textContent="Loading what's open…";
   try{DATA=await (await fetch("/api/open"+(st?"?state="+st:""))).json()}catch(e){$("count").textContent="Couldn't load the feed. Check your connection and try again.";return}
   $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");
+  if(DATA.quiet) $("sources").innerHTML+=`<li class="meta">${esc(DATA.quiet)}</li>`;
   $("notconn").innerHTML=DATA.notConnected.length?`<h3>Not connected yet</h3><ul class="plain">${DATA.notConnected.map(n=>`<li>${esc(n.label)}. ${esc(n.how)} (<a href="${esc(safe(n.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">get one</a>), added by the site's host.</li>`).join("")}</ul>`:"";
   $("fetched").textContent="Fetched "+new Date(DATA.fetchedAt).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"});
   const kinds=[...new Set(DATA.items.map(i=>i.kind))], cur=$("kind").value;

@@ -46,9 +46,16 @@ async function congressBills(key) {
 
 async function stateBills(key, st) {
   const name = STATE_NAMES[st]; if (!name) return [];
-  const q = new URLSearchParams({ jurisdiction: name, sort: "updated_desc", per_page: "20" });
-  const j = await getJSON(`https://v3.openstates.org/bills?${q}`, { "X-API-KEY": key });
-  return (j.results || []).map(b => ({
+  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|effective date|sine die/i;
+  let results = [];
+  for (let page = 1; page <= 3; page++) {
+    const q = new URLSearchParams({ jurisdiction: name, sort: "updated_desc", per_page: "20", page: String(page) });
+    const j = await getJSON(`https://v3.openstates.org/bills?${q}`, { "X-API-KEY": key });
+    results.push(...(j.results || []));
+    if (!j.pagination || page >= j.pagination.max_page) break;
+  }
+  results = results.filter(b => !DONE.test(b.latest_action_description || ""));
+  return results.map(b => ({
     id: "os-" + b.id, level: "state", kind: "Bill in the " + (b.jurisdiction && b.jurisdiction.name ? b.jurisdiction.name : name) + " legislature",
     title: `${b.identifier}: ${b.title}`, who: b.from_organization ? b.from_organization.name : name + " Legislature",
     summary: b.latest_action_description ? `Latest action (${b.latest_action_date}): ${b.latest_action_description}` : "",
@@ -64,7 +71,8 @@ module.exports = async (req, res) => {
   if (process.env.CONGRESS_API_KEY) await run("Congress.gov: recently active bills", "https://api.congress.gov/", () => congressBills(process.env.CONGRESS_API_KEY));
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: recently active bills in ${STATE_NAMES[st] || st}`, "https://docs.openstates.org/api-v3/", () => stateBills(process.env.OPENSTATES_API_KEY, st));
+    if (process.env.OPENSTATES_API_KEY) { await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", () => stateBills(process.env.OPENSTATES_API_KEY, st));
+      if (!out.items.some(i => i.level === "state") && !out.errors.length) out.quiet = `No bills are moving in the ${STATE_NAMES[st] || st} legislature right now. It may be between sessions. New bills appear here as soon as they're filed.`; }
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st] || st} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   res.setHeader("Content-Type", "application/json; charset=utf-8");
