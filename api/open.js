@@ -44,22 +44,31 @@ async function congressBills(key) {
   }));
 }
 
-async function stateBills(key, st) {
+async function stateBills(key, st, out) {
   const name = STATE_NAMES[st]; if (!name) return [];
-  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|effective date|sine die/i;
-  let results = [];
-  for (let page = 1; page <= 3; page++) {
-    const q = new URLSearchParams({ jurisdiction: name, sort: "updated_desc", per_page: "20", page: String(page) });
-    const j = await getJSON(`https://v3.openstates.org/bills?${q}`, { "X-API-KEY": key });
-    results.push(...(j.results || []));
-    if (!j.pagination || page >= j.pagination.max_page) break;
+  const H = { "X-API-KEY": key };
+  const today = new Date().toISOString().slice(0, 10);
+  // 1. Is the legislature in session? Ask Open States for its sessions.
+  const jur = await getJSON(`https://v3.openstates.org/jurisdictions/${encodeURIComponent(name)}?include=legislative_sessions`, H);
+  const sessions = (jur.legislative_sessions || []).filter(x => x.start_date);
+  const active = sessions.filter(x => x.start_date.slice(0, 10) <= today && (!x.end_date || x.end_date.slice(0, 10) >= today))
+    .sort((a, b) => b.start_date.localeCompare(a.start_date));
+  if (!active.length) {
+    const next = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
+    out.quiet = `The ${name} legislature isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
+    return [];
   }
-  results = results.filter(b => !DONE.test(b.latest_action_description || ""));
+  // 2. Bills from the current session that are still moving.
+  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|\beffective\b|sine die/i;
+  const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20" });
+  const j = await getJSON(`https://v3.openstates.org/bills?${q}`, H);
+  const results = (j.results || []).filter(b => !DONE.test(b.latest_action_description || ""));
+  if (!results.length) out.quiet = `No bills are moving in the ${name} legislature right now. New bills appear here as soon as they're filed.`;
   return results.map(b => ({
-    id: "os-" + b.id, level: "state", kind: "Bill in the " + (b.jurisdiction && b.jurisdiction.name ? b.jurisdiction.name : name) + " legislature",
+    id: "os-" + b.id, level: "state", kind: "Bill in the " + name + " legislature",
     title: `${b.identifier}: ${b.title}`, who: b.from_organization ? b.from_organization.name : name + " Legislature",
-    summary: b.latest_action_description ? `Latest action (${b.latest_action_date}): ${b.latest_action_description}` : "",
-    opened: b.first_action_date || null, closes: null, read: b.openstates_url, act: null, actLabel: null, source: "Open States"
+    summary: b.latest_action_description ? `Latest action (${String(b.latest_action_date).slice(0, 10)}): ${b.latest_action_description}` : "",
+    opened: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, closes: null, read: b.openstates_url, act: null, actLabel: null, source: "Open States"
   }));
 }
 
@@ -71,12 +80,13 @@ module.exports = async (req, res) => {
   if (process.env.CONGRESS_API_KEY) await run("Congress.gov: recently active bills", "https://api.congress.gov/", () => congressBills(process.env.CONGRESS_API_KEY));
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) { await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", () => stateBills(process.env.OPENSTATES_API_KEY, st));
-      if (!out.items.some(i => i.level === "state") && !out.errors.length) out.quiet = `No bills are moving in the ${STATE_NAMES[st] || st} legislature right now. It may be between sessions. New bills appear here as soon as they're filed.`; }
+    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", () => stateBills(process.env.OPENSTATES_API_KEY, st, out));
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st] || st} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "public, s-maxage=10800, stale-while-revalidate=86400");
+  const limited = out.errors.some(e => /^.*429/.test(e));
+  if (limited) out.errors = out.errors.map(e => /429/.test(e) ? "State bills: the free data source is busy. Try again in a minute." : e);
+  res.setHeader("Cache-Control", limited || out.errors.length ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=172800");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(200).send(JSON.stringify(out));
 };
