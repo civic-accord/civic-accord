@@ -7,7 +7,7 @@ const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"Cal
 
 async function getJSON(url, headers) {
   const r = await fetch(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)", ...(headers || {}) } });
-  if (!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`);
+  if (!r.ok) { let why = ""; try { why = (await r.text()).replace(/[A-Za-z0-9]{24,}/g, "[hidden]").slice(0, 160); } catch (e) {} throw new Error(`${r.status} from ${new URL(url).host}${why ? ": " + why : ""}`); }
   return r.json();
 }
 
@@ -46,7 +46,7 @@ async function congressBills(key) {
 
 async function stateBills(key, st) {
   const name = STATE_NAMES[st]; if (!name) return [];
-  const q = new URLSearchParams({ jurisdiction: name, sort: "updated_desc", per_page: "50" });
+  const q = new URLSearchParams({ jurisdiction: name, sort: "updated_desc", per_page: "20" });
   const j = await getJSON(`https://v3.openstates.org/bills?${q}`, { "X-API-KEY": key });
   return (j.results || []).map(b => ({
     id: "os-" + b.id, level: "state", kind: "Bill in the " + (b.jurisdiction && b.jurisdiction.name ? b.jurisdiction.name : name) + " legislature",
