@@ -239,7 +239,10 @@ async function find(){
   if(people.rep) OFFICES.push({who:people.rep.name,title:`U.S. Representative, ${GEO.stateLabel} ${GEO.cd==="at-large"?"at large":"District "+GEO.cd}`,salutation:`Representative ${people.rep.name.split(" ").slice(-1)[0]}`,districtText:`${GEO.stateLabel}'s ${GEO.cd==="at-large"?"at-large":"District "+GEO.cd} congressional district`,url:people.rep.contact||people.rep.url,phone:people.rep.phone});
   (people.sen||[]).forEach(p=>OFFICES.push({who:p.name,title:`U.S. Senator for ${GEO.stateLabel}`,salutation:`Senator ${p.name.split(" ").slice(-1)[0]}`,districtText:GEO.stateLabel,url:p.contact||p.url,phone:p.phone}));
   const lvl=map.levels[1].offices.filter(o=>o.civic==="receives");
-  lvl.forEach(o=>OFFICES.push({who:null,title:`${o.name}, ${o.seat}`,salutation:/Council/.test(o.name)?"Councilmembers":o.id==="st-upper"?"Senator":"Representative",districtText:o.seat.replace(/^State /,"state ").replace(/^Legislative/,"legislative"),url:sx&&(sx.findLegislatorUrl||sx.legislatureUrl)||null,urlLabel:sx&&sx.findLegislatorUrl?"Find their contact page":"State legislature website"}));
+  let leg=null;try{leg=await CA_REG.stateLegislators(CA_REG.districtsOf(GEO))}catch(e){}
+  const lastName=n=>String(n||"").trim().split(/\s+/).filter(x=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(x)).slice(-1)[0]||"";
+  if(leg&&leg.legislators&&leg.legislators.length) leg.legislators.forEach(p=>OFFICES.push({who:p.name,title:`${GEO.stateLabel} ${p.title}, district ${p.district}`,salutation:`${p.title} ${lastName(p.name)}`,districtText:`${p.chamber==="upper"?"senate":"house"} district ${p.district}`,email:p.email,url:p.url,phone:p.phone,urlLabel:"Official page"}));
+  else lvl.forEach(o=>OFFICES.push({who:null,title:`${o.name}, ${o.seat}`,salutation:/Council/.test(o.name)?"Councilmembers":o.id==="st-upper"?"Senator":"Representative",districtText:o.seat.replace(/^State /,"state ").replace(/^Legislative/,"legislative"),url:sx&&(sx.findLegislatorUrl||sx.legislatureUrl)||null,urlLabel:sx&&sx.findLegislatorUrl?"Find their contact page":"State legislature website"}));
   map.levels[2].offices.filter(o=>o.civic==="receives").forEach(o=>OFFICES.push({who:null,title:o.name,salutation:/ government$/.test(o.name)?o.name.replace(/ government$/," officials"):"members of the "+o.name,districtText:GEO.county?GEO.county.name:"",url:null,local:true}));
   map.levels[3].offices.filter(o=>o.civic==="receives").forEach(o=>OFFICES.push({who:null,title:`${o.name}: ${o.seat}`,salutation:`${o.name} officials`,districtText:o.name,url:null,local:true}));
   $("s2").hidden=false;
@@ -254,9 +257,10 @@ async function find(){
    <div class="two"><div class="addr2"><label for="nm" class="meta">Your name</label><input id="nm" autocomplete="name"></div><div class="addr2"><label for="tw" class="meta">Your town (optional)</label><input id="tw" autocomplete="address-level2"></div></div>
    <label for="lt" class="meta">Message</label><textarea class="letter" id="lt" rows="16"></textarea>
    <h3>Send it to each office</h3>
-   <p class="meta">Copy the message, then open each office's contact page and paste it. Offices usually ask for your address so they can confirm you're a constituent.</p>
+   <p class="meta">Where an office publishes an email address, the Email button opens your own email app with the message ready to send. Otherwise, copy the message and paste it into the office's contact page. Offices usually ask for your address so they can confirm you're a constituent.</p>
    ${OFFICES.map((o,i)=>`<div class="off"><b>${esc(o.title)}</b>${o.who?`<span class="meta">${esc(o.who)}</span>`:""}<div class="acts">
-     <button type="button" class="primary" data-copy="${i}">Copy message</button>
+     ${o.email?`<a class="primary" href="#" data-mail="${i}">Email ${esc(o.salutation)}</a>`:""}
+     <button type="button" class="${o.email?"":"primary"}" data-copy="${i}">Copy message</button>
      ${o.url?`<a href="${esc(o.url)}" target="_blank" rel="noopener" data-sent="${i}">${esc(o.urlLabel||"Open contact page")}</a>`:""}
      ${o.phone?`<a href="tel:${esc(o.phone.replace(/[^0-9+]/g,""))}">Call ${esc(o.phone)}</a>`:""}
      <span class="toast" id="cm-${i}" aria-live="polite"></span></div></div>`).join("")}
@@ -270,6 +274,9 @@ async function find(){
     const m=$("cm-"+b.dataset.copy);
     const fb=()=>{$("lt").value=txt;$("lt").select();m.textContent="Selected. Copy it with your keyboard."};
     try{navigator.clipboard.writeText(txt).then(()=>m.textContent="Copied, addressed to this office.",fb)}catch(e){fb()}});
+  document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();const o=OFFICES[+a.dataset.mail];
+    const txt=$("lt").value.replace("Dear [Office],",`Dear ${o.salutation},`).replace("I'm a constituent.",o.districtText?`I'm a constituent in ${o.districtText}.`:"I'm a constituent.");
+    location.href=`mailto:${encodeURIComponent(o.email)}?subject=${encodeURIComponent("A public, checkable way for constituents to work with your office")}&body=${encodeURIComponent(txt)}`});
   $("s2").scrollIntoView({behavior:"smooth"});
 }
 $("go").onclick=find;$("addr").onkeydown=e=>{if(e.key==="Enter")find()};

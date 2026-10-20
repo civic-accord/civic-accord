@@ -177,6 +177,14 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .filters input,.filters select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
 .filters input{flex:1;min-width:min(100%,220px)}
 .list{display:grid;gap:10px}
+.compose{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;display:grid;gap:8px}
+.compose textarea,.compose input,.me input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
+.compose .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px}
+.rep{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;background:var(--bg)}
+.rep .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.me{display:grid;gap:8px}
+.me .row{display:flex;flex-wrap:wrap;gap:8px}
+.me input{flex:1;min-width:min(100%,240px)}
 </style>
 <div class="wrap">
 <noscript><p class="note"><b>This page needs JavaScript</b> to look up your address and load live information. Turn it on in your browser settings, or use a library computer. All the data is also open on <a href="https://github.com/liebeskind8301/civic-accord">GitHub</a>.</p></noscript>
@@ -187,6 +195,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p class="lede">What your governments have open for public input right now, pulled straight from official sources and refreshed through the day. Read it, use the government's own channel to comment, or start a deliberation with your neighbors.</p>
     <p class="note" id="where"></p>
   </header>
+  <section class="panel me" id="me"></section>
   <section class="panel">
     <div class="filters">
       <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search</label><input id="q" type="search" placeholder="Search, for example: water, schools, farms">
@@ -207,6 +216,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   </section>
   <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span id="fetched"></span></footer>
 </div>
+<script src="lib/registry.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -214,7 +224,79 @@ const safe=u=>/^https:\/\//.test(u||"")?u:null;
 const STATES=["","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
 let VER=null;try{VER=JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){}
 const REKEY="civicaccord-reactions";let REACT={};try{REACT=JSON.parse(localStorage.getItem(REKEY)||"{}")}catch(e){}
-let DATA=null, shown=20;
+let DATA=null, shown=20, OPENID=null; const COMMENT={};
+window.__openMail=window.__openMail||(u=>{location.href=u});
+const DKEY="civicaccord-districts", SKEY="civicaccord-signer";
+let DIST=(VER&&VER.districts&&VER.districts.state)?VER.districts:(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){return null}})();
+let SIGNER=(()=>{try{return JSON.parse(localStorage.getItem(SKEY)||"null")||{name:"",town:""}}catch(e){return {name:"",town:""}}})();
+let FED=null, STATELEG=null;
+async function loadReps(){
+  FED=null;STATELEG=null;if(!DIST)return;
+  try{FED=await CA_REG.officeholders(DIST)}catch(e){FED={}}
+  try{STATELEG=await CA_REG.stateLegislators(DIST)}catch(e){STATELEG={legislators:[],errors:["Couldn't reach the legislator lookup."]}}
+  if(OPENID)render();
+}
+function renderMe(){
+  const m=$("me");
+  if(DIST){m.innerHTML=`<div><div class="eyebrow">Your representatives</div><p style="margin:4px 0 0">Writing as a resident of ${esc(DIST.stateName||DIST.state)}${DIST.cd?` · congressional district ${esc(DIST.cd)}`:""}${DIST.sldl?` · state house ${esc(DIST.sldl)}`:""}${DIST.sldu?` · state senate ${esc(DIST.sldu)}`:""}. <a href="#" id="chg" style="color:var(--koa)">Change</a></p></div>`;
+    $("chg").onclick=e=>{e.preventDefault();DIST=null;try{localStorage.removeItem(DKEY)}catch(x){}renderMe();render()};return}
+  m.innerHTML=`<div><div class="eyebrow">Your representatives</div><p style="margin:4px 0 0">To tell your representatives what you think, enter your address once. Only your districts are kept on this device. The address goes from your browser straight to the U.S. Census Bureau.</p></div>
+   <div class="row"><label for="addr" style="position:absolute;left:-9999px">Home address</label><input id="addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="findme" type="button">Find my representatives</button></div>
+   <span class="toast" id="memsg" aria-live="polite"></span>`;
+  const go=async()=>{const a=$("addr").value.trim();if(a.length<8){$("memsg").textContent="Enter a full street address, including city and state.";return}
+    $("memsg").textContent="Looking up your districts with the Census Bureau…";
+    try{const g=await CA_REG.lookup(a);DIST=CA_REG.districtsOf(g);try{localStorage.setItem(DKEY,JSON.stringify(DIST))}catch(x){}
+      if(DIST.state&&STATES.includes(DIST.state)&&$("st").value!==DIST.state){$("st").value=DIST.state;load()}
+      renderMe();loadReps();render()}
+    catch(e){$("memsg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau. Try again in a moment."}};
+  $("findme").onclick=go;$("addr").onkeydown=e=>{if(e.key==="Enter")go()};
+}
+const last=n=>String(n||"").trim().split(/\s+/).filter(x=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(x)).slice(-1)[0]||"";
+function recipients(it){
+  const out=[];
+  if(it.level==="federal"){
+    if(FED&&FED.rep)out.push({name:FED.rep.name,title:`U.S. Representative${DIST&&DIST.cd?`, ${DIST.state} ${DIST.cd==="at-large"?"at large":"district "+DIST.cd}`:""}`,sal:`Representative ${last(FED.rep.name)}`,url:FED.rep.contact||FED.rep.url,phone:FED.rep.phone});
+    (FED&&FED.sen||[]).forEach(p=>out.push({name:p.name,title:`U.S. Senator for ${DIST.stateName||DIST.state}`,sal:`Senator ${last(p.name)}`,url:p.contact||p.url,phone:p.phone}));
+  }else if(STATELEG){
+    STATELEG.legislators.forEach(p=>out.push({name:p.name,title:`${p.title}, district ${p.district}`,sal:`${p.title} ${last(p.name)}`,email:p.email,url:p.url,phone:p.phone}));
+  }
+  return out;
+}
+function message(it,sal){
+  const v=REACT[it.id], c=COMMENT[it.id]||"";
+  const stance=v==="Support"?"I support it, and I'd like you to support it too.":v==="Oppose"?"I oppose it, and I'd like you to oppose it too.":"I haven't decided yet. I'd like to know where you stand, and why.";
+  const d=DIST?` in ${DIST.stateName||DIST.state}${it.level==="federal"&&DIST.cd?`'s ${DIST.cd==="at-large"?"at-large":"district "+DIST.cd}`:it.level==="state"&&DIST.sldl?`, state house district ${DIST.sldl}`:""}`:"";
+  const subject=`${v==="Support"?"Please support":v==="Oppose"?"Please oppose":"Question about"}: ${it.title}`.slice(0,180);
+  const body=`Dear ${sal},
+
+I'm a constituent${d}. I'm writing about ${it.title}.
+
+${stance}${c.trim()?"\n\n"+c.trim():""}
+
+Official text: ${it.read||""}
+
+Thank you,
+${SIGNER.name||"[Your name]"}${SIGNER.town?"\n"+SIGNER.town:""}`;
+  return {subject,body};
+}
+function composeBox(it){
+  const v=REACT[it.id];
+  const reps=DIST?recipients(it):[];
+  const loading=DIST&&((it.level==="federal"&&!FED)||(it.level==="state"&&!STATELEG));
+  const errs=it.level==="state"&&STATELEG&&STATELEG.errors.length?STATELEG.errors:[];
+  return `<div class="compose">
+    <b>Tell your representatives you ${v==="Support"?"support":v==="Oppose"?"oppose":"have questions about"} this</b>
+    ${it.kind==="Proposed rule"?`<p class="meta">For a proposed rule, the agency decides. Your official comment goes through <b>Comment officially</b> above. You can also let your members of Congress know.</p>`:""}
+    <label for="cm" class="meta">Add your own words (optional)</label><textarea id="cm" rows="3" maxlength="1200" placeholder="Why it matters to you, in a sentence or two.">${esc(COMMENT[it.id]||"")}</textarea>
+    <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
+    ${!DIST?`<p class="meta">Enter your address at the top of the page to see who represents you.</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
+        ${r.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(r.sal)}</a>`:""}
+        ${!r.email&&r.url?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
+        ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9+]/g,""))}">Call ${esc(r.phone)}</a>`:""}
+        <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">${errs.length?esc(errs.join(" ")):"We couldn't find contact details for these offices yet."} Your legislature's website lists them.</p>`}
+    <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them, copy the message and paste it into their contact form. Civic Accord never sees what you send.</p>
+  </div>`;
+}
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
 const daysLeft=d=>{if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/864e5)};
 function card(it){
@@ -234,6 +316,7 @@ function card(it){
     <div class="acts" role="group" aria-label="Your quick reaction"><span class="meta">Your reaction:</span>
       ${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}
       ${VER?"":`<a href="verify.html" class="meta" style="border:0;padding:0;color:var(--koa)">Verify so it counts</a>`}</div>
+    ${OPENID===it.id&&r?composeBox(it):""}
   </article>`;
 }
 function render(){
@@ -243,7 +326,18 @@ function render(){
   $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${q?` matching "${$("q").value.trim()}"`:""}. ${kd||!items.some(i=>!i.closes)?"":" Comment deadlines first, then bills."}`;
   $("list").innerHTML=items.slice(0,shown).map(card).join("")||`<p class="meta">Nothing matches. Try another word.</p>`;
   $("more").hidden=items.length<=shown;
-  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}render()});
+  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;OPENID=REACT[id]?id:null;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}const y=window.scrollY;render();window.scrollTo({top:y})});
+  const it=OPENID&&DATA.items.find(x=>x.id===OPENID);
+  if(it){
+    const keep=()=>{SIGNER={name:$("sn").value.trim(),town:$("stw").value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}};
+    $("sn").oninput=keep;$("stw").oninput=keep;$("cm").oninput=()=>{COMMENT[it.id]=$("cm").value};
+    const reps=recipients(it);
+    document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal);
+      window.__openMail(`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`);
+      $("rm-"+a.dataset.mail).textContent="Opening your email app…"});
+    document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);const txt=`Subject: ${m.subject}\n\n${m.body}`;
+      const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
+  }
 }
 async function load(){
   const st=$("st").value;
@@ -257,8 +351,9 @@ async function load(){
   $("kind").innerHTML=`<option value="">All types</option>`+kinds.map(k=>`<option ${k===cur?"selected":""}>${esc(k)}</option>`).join("");
   shown=20;render();
 }
+renderMe();loadReps();
 $("st").innerHTML=STATES.map(s=>`<option value="${s}">${s?s:"Choose your state"}</option>`).join("");
-const vs=VER&&VER.districts&&VER.districts.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
+const vs=DIST&&DIST.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
 $("where").innerHTML=vs?`Showing federal items and items for your state. Reactions here are a prototype and stay on this device.`:`Showing federal items. Choose your state, or <a href="verify.html" style="color:var(--koa)">verify</a> to see your own governments. Reactions here are a prototype and stay on this device.`;
 $("q").oninput=()=>{shown=20;render()};$("lvl").onchange=()=>{shown=20;render()};$("kind").onchange=()=>{shown=20;render()};$("st").onchange=load;$("more").onclick=()=>{shown+=20;render()};
 load();
