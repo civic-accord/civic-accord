@@ -1,0 +1,244 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Representative Inbox</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#b07a12; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:var(--sun)}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.issues{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.pkgcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px;cursor:pointer;background:var(--surface);text-align:left;font:inherit;color:var(--ink)}
+.pkgcard[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.pkgcard.empty{cursor:default;border-style:dashed;color:var(--muted)}
+.cmp{display:grid;grid-template-columns:110px 1fr 1fr;gap:6px 10px;align-items:center;font-size:.82rem;font-variant-numeric:tabular-nums}
+.cmp .h{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.mini{display:flex;align-items:center;gap:6px}
+.mini .track{flex:1}
+.choices{display:grid;gap:8px}
+.choice{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer}
+.choice input{margin-top:3px;accent-color:var(--koa)}
+.record{display:grid;gap:8px}
+.recrow{border-left:3px solid var(--koa);padding:4px 0 4px 12px;display:grid;gap:2px}
+.recrow.silent{border-color:var(--sun)}
+.flag{background:var(--sun-soft);border-radius:8px;padding:8px 12px;font-size:.85rem}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Civic Accord · representative inbox · working prototype</div>
+    <h1>Representative Inbox</h1>
+    <p class="lede">What an elected official receives: verified constituents' common ground, their disagreements, who took part, and what it would cost. Every response is recorded in public.</p>
+    <p class="note"><b>Example data.</b> The office, participants, and votes are invented to show how the inbox works. Responses here are not sent anywhere.</p>
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px">Viewing as</div>
+      <div class="issues" id="offices"></div>
+    </div>
+    <p class="meta"><a href="/" style="color:var(--koa)">← Back to the resident view</a></p>
+  </header>
+  <section class="panel" id="list"></section>
+  <main id="detail"></main>
+  <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Officials see the same public record residents do. No private channel, no hidden data.</span></footer>
+</div>
+<script>
+const words=n=>n.toLocaleString();
+const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const OFFICES=[
+ {key:"state",title:"State Representative",where:"Maui district (example)",packs:["state"]},
+ {key:"federal",title:"U.S. Representative",where:"Hawaiʻi 2nd District (example)",packs:["federal"]}];
+// Example participation makeup vs. the district. Illustrative only; the live tool reports real figures.
+const MAKEUP={ages:[["18–34",17,27],["35–54",34,33],["55+",49,40]],areas:[["Upcountry",44,31],["Central",30,38],["East and West",26,31]]};
+let PK={}, office="state", open=null; const responses={};
+const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+function analyze(d){
+  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b);const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,kind,n:s.a.concat(s.b).reduce((x,y)=>x+y,0)}});
+  const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
+  let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
+  return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
+}
+function renderOffices(){
+  const b=document.getElementById("offices");b.innerHTML="";
+  OFFICES.forEach(o=>{const e=document.createElement("button");e.className="issue";e.setAttribute("aria-pressed",o.key===office);e.innerHTML=`${esc(o.title)}<small>${esc(o.where)}</small>`;e.onclick=()=>{office=o.key;open=null;render()};b.appendChild(e)});
+}
+function renderList(){
+  const o=OFFICES.find(x=>x.key===office);
+  const cards=o.packs.filter(k=>PK[k]).map(k=>{const d=PK[k],a=analyze(d),r=responses[d.id];
+    return `<button class="pkgcard" data-k="${k}" aria-pressed="${open===k}">
+      <span class="eyebrow">${esc(d.jurisdiction.name)}</span>
+      <h3>${esc(d.issue.name)}</h3>
+      <span class="meta">92 verified constituents · ${words(a.votes)} votes · ${a.st.filter(s=>s.kind==="common").length} points of common ground · about ${money(a.yearly)} a year</span>
+      <span class="tag ${r?"common":"forming"}">${r?"Responded: "+esc(r.label):"Awaiting your response"}</span>
+    </button>`}).join("");
+  document.getElementById("list").innerHTML=`<div><div class="eyebrow">Packages from your district</div><h2>${esc(o.title)}, ${esc(o.where)}</h2></div>
+    ${cards}
+    <div class="pkgcard empty"><span>Other deliberations in your district arrive here as residents complete them.</span></div>`;
+  document.querySelectorAll(".pkgcard[data-k]").forEach(c=>c.onclick=()=>{open=c.dataset.k;render();document.getElementById("detail").scrollIntoView({behavior:"smooth"})});
+}
+function bar(v){return `<span class="mini"><span class="track"><span class="fill" style="display:block;width:${v}%"></span></span><span>${v}%</span></span>`}
+function renderDetail(){
+  const m=document.getElementById("detail");
+  if(!open||!PK[open]){m.innerHTML="";return}
+  const d=PK[open],a=analyze(d),j=d.jurisdiction,r=responses[d.id];
+  const common=a.st.filter(s=>s.kind==="common"),split=a.st.filter(s=>s.kind==="split");
+  const per=x=>{const v=x/j.residents;return v<10?`$${v.toFixed(2)}`:`$${Math.round(v)}`};
+  const costOf=s=>{const c=a.opt[s.id];return c?`${money(c.unitCost*c.default)}${c.recurring?" a year":" one time"}`:(d.issue.revenue.find(x=>x.statement===s.id)?"brings in revenue":"no cost estimate")};
+  const skew=MAKEUP.ages.some(([,p,dd])=>Math.abs(p-dd)>=8);
+  m.innerHTML=`<section class="panel">
+    <div><div class="eyebrow">Package · ${esc(j.name)}</div><h2>${esc(d.issue.title)}</h2></div>
+    <div class="stat">
+      <div><strong>92</strong><span>verified constituents</span></div>
+      <div><strong>${words(a.votes)}</strong><span>votes</span></div>
+      <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
+      <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year</span></div>
+    </div>
+    <h3>Who took part</h3>
+    <p class="meta">Participants compared with the district's adult population. Shown so you can judge how well this reflects your constituents.</p>
+    <div class="cmp"><span class="h">Age</span><span class="h">Participants</span><span class="h">District</span>
+      ${MAKEUP.ages.map(([k,p,dd])=>`<span>${k}</span>${bar(p)}${bar(dd)}`).join("")}
+      <span class="h">Area</span><span></span><span></span>
+      ${MAKEUP.areas.map(([k,p,dd])=>`<span>${k}</span>${bar(p)}${bar(dd)}`).join("")}
+    </div>
+    ${skew?`<p class="flag">Participants skew older than the district. A randomly selected citizen panel could confirm whether the common ground holds across ages.</p>`:""}
+    <h3>Common ground (${common.length})</h3>
+    <ul class="plain">${common.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}% · ${costOf(s)}</span></li>`).join("")}</ul>
+    <h3>Where constituents split (${split.length})</h3>
+    <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}% · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
+    <p class="meta">Every figure links back to the public vote record in the live tool. Starting bill text and cost methods come with the package.</p>
+    <h3>Your public response</h3>
+    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p><p class="meta">Residents who took part are notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
+    <p class="meta">Residents see your response, or "no response yet" after 30 days. A reason is required for every choice.</p>
+    <form id="respond" class="choices">
+      ${[["introduce","I will introduce a bill"],["cosponsor","I will support or co-sponsor an existing bill"],["amend","I will introduce it with changes"],["info","I need more information"],["decline","I decline"]].map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}
+      <label for="reason" class="meta">Your reason, shown publicly</label>
+      <textarea id="reason" rows="3" maxlength="600" placeholder="For example: I'll introduce the common-ground items and hold a hearing on the visitor fee."></textarea>
+      <span class="toast" id="rmsg" aria-live="polite"></span>
+      <button class="btn" type="submit">Record my response</button>
+    </form>`}
+    <h3>Public response record</h3>
+    <div class="record">
+      ${r?`<div class="recrow"><b>${esc(OFFICES.find(o=>o.key===office).title)}</b><span>${esc(r.label)} · ${esc(r.date)}</span><span class="meta">${esc(r.reason)}</span></div>`:`<div class="recrow silent"><b>${esc(OFFICES.find(o=>o.key===office).title)}</b><span class="meta">No response yet</span></div>`}
+    </div>
+  </section>`;
+  const f=document.getElementById("respond");
+  if(f) f.onsubmit=e=>{e.preventDefault();const reason=document.getElementById("reason").value.trim();
+    if(reason.length<10){document.getElementById("rmsg").textContent="Add a short reason. Residents see it with your response.";return}
+    const v=f.querySelector("input[name=resp]:checked");const label=v.parentElement.textContent.trim();
+    responses[d.id]={label,reason,date:new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})};render()};
+  const c=document.getElementById("change");if(c)c.onclick=()=>{delete responses[d.id];render()};
+}
+function render(){renderOffices();renderList();renderDetail()}
+(async()=>{try{const idx=await (await fetch("packs/index.json")).json();
+  for(const e of idx.packs){PK[e.jurisdiction]=await (await fetch(e.file)).json()}
+  open="state";render();}catch(e){document.getElementById("list").innerHTML='<h2>Couldn\'t load the inbox</h2><p class="meta">Reload the page to try again.</p>'}})();
+</script>
+</body></html>

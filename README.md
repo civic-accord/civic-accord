@@ -25,6 +25,14 @@ Live packs:
 - **Hawaiʻi State Legislature** (pilot): invasive species, 2027 session.
 - **U.S. Congress**: the same issue at the federal level, with federal facts, cost options, per-U.S.-resident costs, congressional bill format, and hand-off to a member's representative and senators.
 
+## For representatives
+
+[`inbox.html`](inbox.html) shows what an official receives: who took part compared with the district, common ground, disagreements, costs, and a public response that every participant can see.
+
+## Writing a pack
+
+Packs are plain JSON files in [`packs/`](packs/). See [`packs/SPEC.md`](packs/SPEC.md). Anyone can author one without writing code; nothing in a pack can affect how votes are counted.
+
 ## Trust rules
 
 - AI never touches the vote count.

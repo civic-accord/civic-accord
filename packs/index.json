@@ -1,0 +1,12 @@
+{
+ "packs": [
+  {
+   "file": "packs/hi-state-invasive.json",
+   "jurisdiction": "state"
+  },
+  {
+   "file": "packs/us-congress-invasive.json",
+   "jurisdiction": "federal"
+  }
+ ]
+}

@@ -1,0 +1,365 @@
+{
+ "id": "us-congress-invasive",
+ "format": 1,
+ "jurisdiction": {
+  "key": "federal",
+  "name": "U.S. Congress",
+  "level": "federal",
+  "district": "Hawaiʻi 2nd Congressional District (example)",
+  "session": "120th Congress convenes Jan 3, 2027",
+  "drafting": "AI organizes and drafts. People decide. The House and Senate Offices of Legislative Counsel draft final bill text for any member who introduces it.",
+  "residents": 341800000,
+  "residentLabel": "U.S. resident",
+  "residentNote": "about 341.8 million U.S. residents (2025 estimate)",
+  "populationSource": {
+   "url": "https://www.worldatlas.com/society/how-many-people-are-in-the-us.html",
+   "label": "2025 U.S. population estimate"
+  },
+  "baseline": {
+   "amount": 1158000000,
+   "label": "APHIS's enacted FY2026 budget of $1.16B"
+  },
+  "generalFundName": "federal general funds",
+  "generalFundTradeoff": "federal general funds, where it competes with every other federal program or adds to borrowing",
+  "representativeTitle": "member of Congress",
+  "handoffTitle": "Hand off to your members of Congress",
+  "handoffText": "The package goes to your U.S. representative and both of your state's senators. They decide whether to introduce it. The public record stays open either way.",
+  "timing": "The 120th Congress convenes January 3, 2027. Bills can be introduced at any time in the two-year Congress, but early introduction gives more time for hearings.",
+  "receiptPrefix": "US"
+ },
+ "issue": {
+  "key": "invasive",
+  "name": "Invasive species",
+  "title": "Invasive species and the federal government",
+  "facts": [
+   [
+    "Lead agency",
+    "USDA's Animal and Plant Health Inspection Service (APHIS) keeps foreign pests and diseases out and works with states on eradication."
+   ],
+   [
+    "Main laws",
+    "The Plant Protection Act (2000) covers plant pests; the Lacey Act bans listed injurious animals; Executive Order 13112 (1999) created the National Invasive Species Council."
+   ],
+   [
+    "Current funding",
+    "Congress enacted $1.16 billion for APHIS for fiscal year 2026."
+   ],
+   [
+    "The gap at the border",
+    "Customs and Border Protection's own staffing model calls for 721 more agriculture specialists at ports of entry."
+   ]
+  ],
+  "lists": [
+   [
+    "Scale of the problem",
+    [
+     "Federal agencies reported spending about $2.3 billion on invasive species in FY2016",
+     "Selected invasive species cost the U.S. economy an estimated $127 billion a year",
+     "Islands and territories like Hawaiʻi face the highest risk of new arrivals"
+    ]
+   ],
+   [
+    "Where bills go",
+    [
+     "House Committee on Agriculture",
+     "Senate Committee on Agriculture, Nutrition, and Forestry",
+     "Funding passes through the House and Senate Appropriations subcommittees on Agriculture"
+    ]
+   ]
+  ],
+  "sources": [
+   [
+    "https://www.everycrsreport.com/files/2026-02-17_R48564_45f28ce6892b90da209990438daba52630de5044.pdf",
+    "CRS, FY2026 Agriculture appropriations"
+   ],
+   [
+    "https://www.everycrsreport.com/files/20170117_R43258_d499696c0ebea864567b3effeb4e4f3b5575ddaa.html",
+    "CRS, invasive species laws and agencies"
+   ],
+   [
+    "https://www.freightwaves.com/news/additional-cbp-ag-specialists-wanted-at-us-ports",
+    "FreightWaves, CBP agriculture specialists"
+   ]
+  ],
+  "costSources": [
+   [
+    "https://www.everycrsreport.com/files/2026-02-17_R48564_45f28ce6892b90da209990438daba52630de5044.pdf",
+    "CRS, FY2026 APHIS funding"
+   ],
+   [
+    "https://www.freightwaves.com/news/additional-cbp-ag-specialists-wanted-at-us-ports",
+    "CBP specialist shortfall"
+   ]
+  ],
+  "groups": [
+   "Leans toward border enforcement and protecting farmers, wary of new costs on business.",
+   "Leans toward steady funding for states, research, and having importers share the cost."
+  ],
+  "exampleVotes": true,
+  "statements": [
+   {
+    "id": 1,
+    "text": "Hire the extra agriculture specialists that Customs and Border Protection says it needs at ports of entry.",
+    "a": [
+     44,
+     2,
+     2
+    ],
+    "b": [
+     36,
+     6,
+     4
+    ]
+   },
+   {
+    "id": 2,
+    "text": "States and territories should get steady federal grants for rapid response to new pests.",
+    "a": [
+     30,
+     10,
+     6
+    ],
+    "b": [
+     40,
+     3,
+     3
+    ]
+   },
+   {
+    "id": 3,
+    "text": "APHIS should publish a public national map of confirmed pest detections.",
+    "a": [
+     38,
+     4,
+     4
+    ],
+    "b": [
+     41,
+     2,
+     3
+    ]
+   },
+   {
+    "id": 4,
+    "text": "Penalties for knowingly importing banned species should go up.",
+    "a": [
+     39,
+     5,
+     2
+    ],
+    "b": [
+     37,
+     6,
+     3
+    ]
+   },
+   {
+    "id": 5,
+    "text": "Invasive species work should have a dedicated trust fund instead of depending on yearly appropriations.",
+    "a": [
+     24,
+     16,
+     6
+    ],
+    "b": [
+     39,
+     4,
+     3
+    ]
+   },
+   {
+    "id": 6,
+    "text": "Fund more research on biological controls, like natural predators of pests.",
+    "a": [
+     35,
+     6,
+     5
+    ],
+    "b": [
+     40,
+     2,
+     4
+    ]
+   },
+   {
+    "id": 7,
+    "text": "Importers and shippers should pay more of the cost of inspections.",
+    "a": [
+     15,
+     27,
+     4
+    ],
+    "b": [
+     38,
+     4,
+     4
+    ]
+   },
+   {
+    "id": 8,
+    "text": "Farmers hit by federal pest quarantines should get prompt compensation.",
+    "a": [
+     43,
+     1,
+     2
+    ],
+    "b": [
+     33,
+     7,
+     6
+    ]
+   },
+   {
+    "id": 9,
+    "text": "Islands and territories should get extra federal help because they face the highest risk.",
+    "a": [
+     33,
+     8,
+     5
+    ],
+    "b": [
+     39,
+     3,
+     4
+    ]
+   }
+  ],
+  "costOptions": [
+   {
+    "statement": 1,
+    "name": "More agriculture specialists at ports",
+    "unit": "specialists",
+    "min": 0,
+    "max": 720,
+    "step": 40,
+    "default": 240,
+    "unitCost": 120000,
+    "recurring": true,
+    "impact": "{n} more specialists, against a stated need of 721.",
+    "basis": "About $120,000 per specialist for salary, benefits, and training, estimated. 240 a year matches the hiring pace a 2019 bill authorized.",
+    "billText": "hire not fewer than {n} additional agriculture specialists for assignment to ports of entry"
+   },
+   {
+    "statement": 2,
+    "name": "Rapid-response grants to states and territories",
+    "unit": "million dollars",
+    "min": 0,
+    "max": 300,
+    "step": 25,
+    "default": 100,
+    "unitCost": 1000000,
+    "recurring": true,
+    "impact": "{total} a year shared among states and territories.",
+    "basis": "Set by Congress; no standard cost.",
+    "billText": "make grants totaling {dollars} each fiscal year to States and territories for rapid response to newly detected plant pests"
+   },
+   {
+    "statement": 3,
+    "name": "National public pest map",
+    "unit": "",
+    "min": 1,
+    "max": 1,
+    "step": 1,
+    "default": 1,
+    "unitCost": 5000000,
+    "recurring": true,
+    "impact": "A public national map of confirmed pest detections run by APHIS.",
+    "basis": "Systems, staff, and data sharing with states, estimated.",
+    "billText": "publish and maintain a public national map of confirmed detections of regulated plant pests, updated at least weekly"
+   },
+   {
+    "statement": 5,
+    "name": "Study a dedicated trust fund",
+    "unit": "",
+    "min": 1,
+    "max": 1,
+    "step": 1,
+    "default": 1,
+    "unitCost": 2000000,
+    "recurring": false,
+    "impact": "One-time study of a dedicated, recurring funding source.",
+    "basis": "One-time study, estimated.",
+    "billText": "study the establishment of a dedicated trust fund for invasive species prevention and control and report to Congress within one year"
+   },
+   {
+    "statement": 6,
+    "name": "Biological control research",
+    "unit": "million dollars",
+    "min": 0,
+    "max": 200,
+    "step": 10,
+    "default": 50,
+    "unitCost": 1000000,
+    "recurring": true,
+    "impact": "{total} a year for research on natural predators and other biological controls.",
+    "basis": "Set by Congress; no standard cost.",
+    "billText": "carry out research on biological control of invasive species, with {dollars} for each fiscal year"
+   },
+   {
+    "statement": 8,
+    "name": "Quarantine compensation for farmers",
+    "unit": "million dollars",
+    "min": 0,
+    "max": 500,
+    "step": 25,
+    "default": 200,
+    "unitCost": 1000000,
+    "recurring": true,
+    "impact": "{total} a year for farmers who lose crops to federal pest quarantines.",
+    "basis": "Set by Congress; no standard cost.",
+    "billText": "compensate agricultural producers for losses resulting from Federal plant pest quarantines, with {dollars} for each fiscal year"
+   },
+   {
+    "statement": 9,
+    "name": "Extra help for islands and territories",
+    "unit": "million dollars",
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "default": 25,
+    "unitCost": 1000000,
+    "recurring": true,
+    "impact": "{total} a year for Hawaiʻi, Pacific and Caribbean territories.",
+    "basis": "Set by Congress; no standard cost.",
+    "billText": "provide {dollars} each fiscal year in additional assistance to Hawaii and the territories for biosecurity"
+   }
+  ],
+  "revenue": [
+   {
+    "statement": 4,
+    "type": "fixed",
+    "name": "Raise penalties for importing banned species",
+    "amount": 1000000,
+    "note": "Penalties mainly deter. The revenue estimate is rough.",
+    "billText": "The maximum civil and criminal penalties for knowingly importing an injurious species or a prohibited plant pest are increased."
+   },
+   {
+    "statement": 7,
+    "type": "unestimated",
+    "name": "Importer fee revenue not yet estimated",
+    "note": "Would bring in money rather than cost it, but the amount depends on fee design and import volumes. Analysts would estimate it before it could be counted."
+   }
+  ]
+ },
+ "bill": {
+  "centerLines": [
+   "H. R. ____",
+   "IN THE HOUSE OF REPRESENTATIVES",
+   "A BILL",
+   "To strengthen the prevention and control of invasive species, and for other purposes."
+  ],
+  "preamble": [
+   "Be it enacted by the Senate and House of Representatives of the United States of America in Congress assembled,",
+   "SECTION 1.  SHORT TITLE.\n     This Act may be cited as the \"Invasive Species Prevention Act of 2027\".",
+   "SEC. 2.  ACTIONS.\n     The Secretary of Agriculture and the Commissioner of U.S. Customs and Border Protection, as appropriate, shall:"
+  ],
+  "sectionWord": "SEC.",
+  "firstSection": 3,
+  "appropriation": {
+   "style": "authorization",
+   "text": "AUTHORIZATION OF APPROPRIATIONS.\n     There are authorized to be appropriated {amount} for fiscal year 2028 to carry out this Act."
+  },
+  "effective": "EFFECTIVE DATE.\n     This Act shall take effect 90 days after the date of enactment."
+ },
+ "copyTitle": "Invasive species, U.S. Congress"
+}
