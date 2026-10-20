@@ -99,7 +99,8 @@
     "term": "2-year terms",
     "civic": "receives",
     "pack": "county",
-    "note": "Haʻikū is in the Makawao-Haʻikū-Pāʻia residency area."
+    "note": "You vote for all 9 seats wherever you live in the county.",
+    "exampleNote": "Haʻikū is in the Makawao-Haʻikū-Pāʻia residency area."
    },
    {
     "id": "co-exec",
