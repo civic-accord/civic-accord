@@ -165,6 +165,13 @@ const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs"
 // Cost model. Illustrative estimates anchored to recent Hawaiʻi appropriations; the live tool would use agency and independent estimates.
 const VISITORS=9640000; // 2025 visitor arrivals, preliminary state data
 const HISC_BASE=4780378; // HISC FY26 base budget
+const RESIDENTS=1432820; // Hawaii resident population, July 1, 2025 (state estimate)
+const perRes=v=>{const x=v/RESIDENTS;return x<=0?"$0":x<10?`$${x.toFixed(2)}`:`$${Math.round(x)}`};
+const netYearly=t=>Math.max(0,t.yearly-t.feeRev-t.fineRev);
+const unitMoney=v=>v>=1e6?`$${+(v/1e6).toFixed(2)}M`:v>=1000?`$${+(v/1000).toFixed(1)}K`:`$${v}`;
+function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
+  const math=o.unit&&o.unit!=="million dollars"?`${n.toLocaleString()} ${o.unit} × ${unitMoney(o.per)} = ${money(tot)}${when}`:`${money(tot)}${when}`;
+  return `${math} · about ${perRes(tot)} per Hawaiʻi resident${when}`}
 const OPT={
  1:{name:"Rapid-response crews",unit:"crews",min:0,max:12,step:1,def:5,per:400000,yr:true,impact:n=>`${n} crew${n===1?"":"s"} of 4 staff with gear. ${n>=5?"Every major island covered.":"Some islands share a crew."}`,basis:"About $73,000 per biosecurity position, based on the 2024 law that funded 44 positions for $3.2 million, plus equipment."},
  2:{name:"Interisland plant and soil inspections",unit:"inspectors",min:0,max:30,step:2,def:12,per:85000,yr:true,impact:n=>`${n} inspectors at interisland ports and cargo hubs.`,basis:"Inspector salary and benefits, estimated."},
@@ -248,9 +255,9 @@ function learn(){
 
 function costInfo(id){
   const o=OPT[id];
-  if(o){const b=budget[id];const n=b?b.n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. cost ${money(o.per*n)}${o.yr?" a year":" one time"}`,basis:`${o.impact(n)} ${o.basis}`}}
+  if(o){const b=budget[id];const n=b?b.n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. ${money(o.per*n)}${o.yr?" a year":" one time"} · ${perRes(o.per*n)} per resident`,basis:`${breakdown(o,n)}. ${o.impact(n)} ${o.basis}`}}
   if(id===4) return {kind:"rev",amt:100000,yr:true,text:"Brings in about $100K a year",basis:"Rough estimate of added fine revenue. Fines mainly deter."};
-  if(id===7) return {kind:"rev",amt:VISITORS,yr:true,text:`Brings in about ${money(VISITORS)} a year per $1 fee`,basis:"Based on about 9.64 million visitor arrivals in 2025. The fee amount is chosen in Step 4."};
+  if(id===7) return {kind:"rev",amt:VISITORS,yr:true,text:`Brings in about ${money(VISITORS)} a year per $1 fee · paid by visitors, not residents`,basis:"Based on about 9.64 million visitor arrivals in 2025. The fee amount is chosen in Step 4."};
   return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas are sent to analysts for a cost estimate before they can be funded."};
 }
 function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
@@ -278,7 +285,7 @@ function submitBox(){
   if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;
   return `<div class="submitbox"><h3>Review and submit</h3>
     <p>You voted on ${c.total} of ${n} statements: ${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass.${c.total<n?` ${n-c.total} still have no vote, and that's fine.`:""}</p>
-    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}.</p>`:""}
+    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per resident a year.</p>`:""}
     <p class="meta">Your votes aren't counted until you submit.</p>
     <button class="btn" id="submitvotes">Submit my votes</button></div>`;
 }
@@ -300,7 +307,7 @@ function weigh(){
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
   <p class="progress">You've voted on ${voted} of ${list.length} statements.</p>
-  ${(()=>{const t=agreedTotals();const any=Object.values(mine).some(v=>v===0);return `<div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}.${mine[7]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>`})()}
+  ${(()=>{const t=agreedTotals();const any=Object.values(mine).some(v=>v===0);return `<div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per Hawaiʻi resident a year</b>.${mine[7]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>`})()}
   ${items}
   <form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
@@ -364,6 +371,7 @@ function costs(){
       <div class="opthead"><label><input type="checkbox" id="c-${k}" ${b.on?"checked":""}><span>${esc(o.name)}</span></label><span class="cost" id="cost-${k}"></span></div>
       ${tag}
       ${slider}
+      <p class="meta" id="br-${k}" style="font-family:var(--mono)"></p>
       <p class="meta" id="imp-${k}"></p>
       <details><summary>How this cost was estimated</summary><p class="meta" style="margin-top:6px">${esc(o.basis)}</p></details>
     </div>`}).join("");
@@ -377,6 +385,7 @@ function costs(){
       <div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>
       <div class="r"><span>Higher fines bring in</span><span id="t-fines"></span></div>
       <div class="r total"><span>Still needed from the general fund</span><span id="t-gf"></span></div>
+      <div class="r"><span>Your share as a Hawaiʻi resident</span><span id="t-per"></span></div>
     </div>
     <div class="gauge" title="Compared with the Invasive Species Council's current base budget"><div class="g" id="g-bar"></div></div>
     <p class="meta" id="t-compare"></p>
@@ -389,7 +398,7 @@ function costs(){
     <div class="opthead"><label for="fee">Visitor biosecurity fee</label><span class="cost" id="fee-v"></span></div>
     ${s7?`<span class="tag ${s7.kind}">${s7.kind==="split"?"Divides groups":s7.kind==="common"?"Common ground":"Still forming"} · A ${s7.pa}% B ${s7.pb}%</span>`:""}
     <input type="range" id="fee" min="0" max="10" step="0.5" value="${fee}">
-    <p class="meta">Per visitor, based on about 9.64 million visitor arrivals in 2025.</p>
+    <p class="meta">Per visitor, based on about 9.64 million visitor arrivals in 2025. Paid by visitors, not residents.</p>
   </div>
   <div class="opt">
     <div class="opthead"><label><input type="checkbox" id="fines" ${fines?"checked":""}><span>Raise fines for moving infested material</span></label><span class="cost">about $100K/yr</span></div>
@@ -397,8 +406,9 @@ function costs(){
     <p class="meta">Fines mainly deter. The revenue estimate is rough.</p>
   </div>
   <p class="meta">Whatever fees and fines don't cover comes from the general fund, where it competes with schools, health care, housing, and everything else the state pays for.</p>
+  <p class="meta">"Per resident" divides the cost by Hawaiʻi's 1,432,820 residents (2025 estimate). It shows scale, not a bill: state costs are paid through taxes, which people pay in different amounts.</p>
   <p class="note"><b>Estimates.</b> These costs are rough figures built from recent Hawaiʻi appropriations, for illustration. In the live tool, agencies and independent analysts would supply the estimates, with sources shown.</p>
-  <p class="src">Sources: <a href="https://mikegabbard.com/in-print/bmeo0i3o5xgizpgglzzwjtf15zb15n" target="_blank" rel="noopener">2024 biosecurity funding, Hawaiʻi Public Radio</a> · <a href="https://dlnr.hawaii.gov/hisc/files/2025/09/Submittal-2_HISC-FY26-Recommended-Budget-for-Council-Approval.pdf" target="_blank" rel="noopener">HISC FY26 budget</a> · <a href="https://www.thegardenisland.com/2026/02/02/business/hawaii-visitor-arrivals-end-2025-well-below-pre-pandemic-peak/" target="_blank" rel="noopener">2025 visitor arrivals</a></p>
+  <p class="src">Sources: <a href="https://mikegabbard.com/in-print/bmeo0i3o5xgizpgglzzwjtf15zb15n" target="_blank" rel="noopener">2024 biosecurity funding, Hawaiʻi Public Radio</a> · <a href="https://dlnr.hawaii.gov/hisc/files/2025/09/Submittal-2_HISC-FY26-Recommended-Budget-for-Council-Approval.pdf" target="_blank" rel="noopener">HISC FY26 budget</a> · <a href="https://www.thegardenisland.com/2026/02/02/business/hawaii-visitor-arrivals-end-2025-well-below-pre-pandemic-peak/" target="_blank" rel="noopener">2025 visitor arrivals</a> · <a href="https://census.hawaii.gov/?p=11686" target="_blank" rel="noopener">2025 population estimate</a></p>
   <button class="btn" id="goC">Draft the proposal</button>
   </section>`;
 }
@@ -409,6 +419,7 @@ function updateBudget(){
     c.textContent=b.on?`${money(o.per*b.n)}${o.yr?"/yr":" once"}`:"off";
     const n=document.getElementById("n-"+k); if(n) n.textContent=`${b.n.toLocaleString()} ${o.unit}`;
     document.getElementById("imp-"+k).textContent=o.impact(b.n);
+    document.getElementById("br-"+k).textContent=b.on?breakdown(o,b.n):`Off. Would be ${breakdown(o,b.n)}`;
     document.getElementById("o-"+k).classList.toggle("off",!b.on);
   });
   const t=totals();
@@ -417,6 +428,7 @@ function updateBudget(){
   set("t-fee",fee?`− ${money(t.feeRev)}`:"$0"); set("t-fines",fines?`− ${money(t.fineRev)}`:"$0");
   set("t-gf",t.surplus?`$0 (fees exceed costs by ${money(t.surplus)})`:money(t.gf));
   set("fee-v",fee?`$${fee.toFixed(2)} per visitor`:"none");
+  set("t-per",`about ${perRes(netYearly(t))} a year${t.once?` + ${perRes(t.once)} one time`:""}`);
   const share=(t.yearly)/HISC_BASE;
   const bar=document.getElementById("g-bar");
   if(bar){bar.style.width=Math.min(100,share*50)+"%";bar.classList.toggle("over",share>1)}
@@ -438,7 +450,7 @@ function draft(){
   if(has(8)) secs.push(`establish a compensation fund of $${words(budget[8].n*1000000)} each year for farmers who promptly report a new pest and suffer crop losses from required control measures`);
   const t=totals();
   const picked=Object.keys(OPT).filter(k=>budget[k].on).map(k=>({k,o:OPT[k],s:statusOf(k)}));
-  const plain=picked.map(p=>`<li>${esc(p.o.name)}: ${money(p.o.per*budget[p.k].n)}${p.o.yr?" a year":" once"}${p.s&&p.s.kind!=="common"?` <span class="warn">(not common ground: A ${p.s.pa}%, B ${p.s.pb}%)</span>`:""}</li>`).join("");
+  const plain=picked.map(p=>`<li>${esc(p.o.name)}: ${breakdown(p.o,budget[p.k].n)}${p.s&&p.s.kind!=="common"?` <span class="warn">(not common ground: A ${p.s.pa}%, B ${p.s.pb}%)</span>`:""}</li>`).join("");
   const s7=statusOf(7);
   const feeNote=fee&&s7&&s7.kind!=="common"?`<p class="warn">The visitor fee divides participants (A ${s7.pa}%, B ${s7.pb}%). It goes to the legislator flagged as a disagreement.</p>`:"";
   const body=secs.map((s,i)=>`     (${i+1}) ${s};`).join("\n");
@@ -457,6 +469,7 @@ function draft(){
     <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.yearly)}</strong><span class="meta">yearly cost</span></div>
     <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.once)}</strong><span class="meta">one-time cost</span></div>
     <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${money(t.gf)}</strong><span class="meta">from the general fund</span></div>
+    <div style="display:grid"><strong style="font-family:var(--display);font-size:1.4rem">${perRes(netYearly(t))}</strong><span class="meta">per resident a year</span></div>
   </div>
   ${feeNote}
   <h3>Starting bill text</h3>
@@ -490,6 +503,7 @@ function handoff(){
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
       <div><strong>${split.length}</strong><span>open disagreements</span></div>
       <div><strong>${money(totals().yearly)}</strong><span>estimated yearly cost</span></div>
+      <div><strong>${perRes(netYearly(totals()))}</strong><span>per resident a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
       <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
