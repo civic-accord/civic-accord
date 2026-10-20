@@ -12,7 +12,7 @@
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
   --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
-  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#b07a12; --sun-soft:#f5ecd7;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#8a5d00; --sun-soft:#f5ecd7;
   --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -105,7 +105,7 @@ summary{cursor:pointer;color:var(--koa);font-size:.85rem}
 .toast{font-size:.85rem;color:var(--koa)}
 nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
 .opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
-.opt.off{opacity:.7}
+.opt.off{border-style:dashed;background:transparent}
 .opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
 .opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
 .opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
