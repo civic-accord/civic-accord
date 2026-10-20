@@ -621,7 +621,11 @@
    "registered": {
     "count": 74,
     "label": "Registered voters",
-    "how": "Open participants whose voter registration was confirmed during the residency check. Preregistered 16- and 17-year-olds are counted with all participants, not here."
+    "how": "Participants whose voter registration was confirmed during the residency check. Their votes form the official result that goes to the office."
+   },
+   "others": {
+    "label": "Other residents",
+    "how": "Residents 16 and up who aren't registered to vote, including 16- and 17-year-olds. Their views are shown separately and labeled. They aren't part of the official result."
    }
   }
  },

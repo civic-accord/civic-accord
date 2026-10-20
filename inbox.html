@@ -204,7 +204,7 @@ const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
 let IVIEW="registered";
 function analyze(d){
-  const st=d.issue.statements.map(s=>{const src=IVIEW==="registered"&&s.registered?s.registered:s;const pa=pct(src.a),pb=pct(src.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:src.a.concat(src.b).reduce((x,y)=>x+y,0)}});
+  const st=d.issue.statements.map(s=>{const src=!s.registered?s:IVIEW==="registered"?s.registered:{a:s.a.map((x,i)=>Math.max(0,x-s.registered.a[i])),b:s.b.map((x,i)=>Math.max(0,x-s.registered.b[i]))};const pa=pct(src.a),pb=pct(src.b),pp=s.panel?pct(s.panel):null;const kind=pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n:src.a.concat(src.b).reduce((x,y)=>x+y,0)}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
   let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
   return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
@@ -276,9 +276,9 @@ function renderDetail(){
   const pn=pt?pt.panel.count:0;
   m.innerHTML=`<section class="panel">
     <div><div class="eyebrow">Package · ${esc(j.name)}</div><h2>${esc(d.issue.title)}</h2></div>
-    ${pt&&pt.registered?`<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span><button type="button" id="iv-reg" aria-pressed="${IVIEW==="registered"}">Registered voters · ${pt.registered.count}</button><button type="button" id="iv-all" aria-pressed="${IVIEW==="all"}">All participants · ${pt.open.count}</button></div>`:""}
+    ${pt&&pt.registered?`<div class="viewtoggle" role="group" aria-label="Whose votes to show"><span class="meta">Show results from</span><button type="button" id="iv-reg" aria-pressed="${IVIEW==="registered"}">Official result: registered voters · ${pt.registered.count}</button><button type="button" id="iv-all" aria-pressed="${IVIEW==="others"}">Other residents · ${pt.open.count-pt.registered.count}</button></div><p class="meta">${IVIEW==="registered"?"The official result comes from registered voters in your district.":"Residents 16 and up who aren't registered to vote. Shown separately; not part of the official result."}</p>`:""}
     <div class="stat">
-      <div><strong>${IVIEW==="registered"&&pt&&pt.registered?pt.registered.count:(pt?pt.open.count:92)}</strong><span>${IVIEW==="registered"?"registered voters":"verified constituents"}</span></div>
+      <div><strong>${pt&&pt.registered?(IVIEW==="registered"?pt.registered.count:pt.open.count-pt.registered.count):(pt?pt.open.count:92)}</strong><span>${IVIEW==="registered"?"registered voters":"other residents"}</span></div>
       ${pt?`<div><strong>${pn}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${words(a.votes)}</strong><span>votes</span></div>
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
@@ -327,7 +327,7 @@ function renderDetail(){
       <button class="btn ghost" type="submit">Add to the public record</button></form>`:""}
   </section>`;
   const ia=document.getElementById("iv-all"),ir=document.getElementById("iv-reg");
-  if(ia) ia.onclick=()=>{IVIEW="all";render()}; if(ir) ir.onclick=()=>{IVIEW="registered";render()};
+  if(ia) ia.onclick=()=>{IVIEW="others";render()}; if(ir) ir.onclick=()=>{IVIEW="registered";render()};
   const f=document.getElementById("respond");
   if(f) f.onsubmit=e=>{e.preventDefault();const reason=document.getElementById("reason").value.trim();
     if(reason.length<10){document.getElementById("rmsg").textContent="Add a short reason. Residents see it with your response.";return}

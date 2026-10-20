@@ -182,7 +182,7 @@ async function render(){bar();const p=$("p");
    <p>Your address decides which deliberations count your voice: your congressional district, state house and senate districts, county, and more.</p>
    <div class="addr"><label for="addr" class="meta">Home address</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. In the live tool, it is used once to mail your code, then deleted. Only your districts are kept.</p>
-   <div class="grp"><h3>Who can take part</h3><p class="meta">Anyone 16 or older who lives in the district. Your voter registration status is confirmed too, so results can be shown for everyone who took part and for registered voters only.</p></div>
+   <div class="grp"><h3>Who decides</h3><p class="meta">Registered voters in the district make up the official result that goes to the office. Other residents 16 and up can take part too. Their views are shown separately and labeled, and aren't part of the official result. Your voter registration status is confirmed during this check.</p></div>
    <div class="actions"><button class="btn" id="go" type="button">Find my districts</button></div>
    <p class="meta">No address handy? Try a state capitol: ${CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ")}</p>
    <span class="toast" id="msg" aria-live="polite"></span>`;
@@ -242,7 +242,7 @@ async function render(){bar();const p=$("p");
  const v=window.__ver||{};
  p.innerHTML=`<div class="submitbox"><h3>✓ You're verified</h3><p>Your voice now counts in deliberations for ${esc([geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).join(", "))}.</p>
    <p class="meta">Verification receipt</p><span class="receipt">${esc(v.credential)}</span>
-   <p class="meta">Voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in both views: all participants and registered voters.":"Your votes count with all participants."}</p>
+   <p class="meta">Voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in the official result.":"Your views are shown with other residents, separately from the official result. If you register to vote, they will count in the official result."}</p>
    ${v.voterStatus==="not registered"?`<p class="meta">Want to register? <a href="${esc(ELIG&&ELIG.voterStatus.registerUrl||"https://vote.gov/")}" target="_blank" rel="noopener" style="color:var(--koa)">${ELIG&&ELIG.voterStatus.registerUrl?"Your state election office":"Vote.gov"}</a>.</p>`:""}
    <p class="meta">This proves you're a verified resident. It says nothing about how you vote.</p></div>
    <h3>How your privacy is protected</h3>
