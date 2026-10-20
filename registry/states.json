@@ -34,12 +34,18 @@
   [
    "https://files.hawaii.gov/dbedt/economic/databook/2022-individual/09/narr09.pdf",
    "State of Hawaii Data Book: \"Separate municipal governments do not exist\""
+  ],
+  [
+   "https://www.ncsl.org/aboutus/ncslservice/state-legislative-websites-directory.aspx",
+   "NCSL: State legislative websites directory (interactive; homepages and lookup pages were checked by opening each legislature site)"
   ]
  ],
  "states": {
   "AK": {
    "name": "Alaska",
    "legislature": "Alaska Legislature",
+   "legislatureUrl": "https://akleg.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -62,6 +68,8 @@
   "AL": {
    "name": "Alabama",
    "legislature": "Alabama Legislature",
+   "legislatureUrl": "https://alison.legislature.state.al.us/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -82,6 +90,8 @@
   "AR": {
    "name": "Arkansas",
    "legislature": "Arkansas General Assembly",
+   "legislatureUrl": "https://www.arkleg.state.ar.us/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -102,6 +112,8 @@
   "AZ": {
    "name": "Arizona",
    "legislature": "Arizona State Legislature",
+   "legislatureUrl": "https://www.azleg.gov/",
+   "findLegislatorUrl": "https://www.azleg.gov/findmylegislator/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -122,6 +134,8 @@
   "CA": {
    "name": "California",
    "legislature": "California State Legislature",
+   "legislatureUrl": "https://www.legislature.ca.gov/",
+   "findLegislatorUrl": "https://findyourrep.legislature.ca.gov/",
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -141,6 +155,8 @@
   "CO": {
    "name": "Colorado",
    "legislature": "Colorado General Assembly",
+   "legislatureUrl": "https://leg.colorado.gov/",
+   "findLegislatorUrl": "https://leg.colorado.gov/find-my-legislator",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -161,6 +177,8 @@
   "CT": {
    "name": "Connecticut",
    "legislature": "Connecticut General Assembly",
+   "legislatureUrl": "https://www.cga.ct.gov/",
+   "findLegislatorUrl": "https://www.cga.ct.gov/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -183,6 +201,8 @@
   "DC": {
    "name": "District of Columbia",
    "legislature": "Council of the District of Columbia",
+   "legislatureUrl": "https://dccouncil.gov/",
+   "findLegislatorUrl": "https://dccouncil.gov/",
    "lower": null,
    "upper": {
     "name": "Council",
@@ -200,6 +220,8 @@
   "DE": {
    "name": "Delaware",
    "legislature": "Delaware General Assembly",
+   "legislatureUrl": "https://legis.delaware.gov/",
+   "findLegislatorUrl": "https://legis.delaware.gov/FindMyLegislator",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -219,6 +241,8 @@
   "FL": {
    "name": "Florida",
    "legislature": "Florida Legislature",
+   "legislatureUrl": "https://www.leg.state.fl.us/",
+   "findLegislatorUrl": "https://www.flsenate.gov/Senators/Find",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -238,6 +262,8 @@
   "GA": {
    "name": "Georgia",
    "legislature": "Georgia General Assembly",
+   "legislatureUrl": "https://www.legis.ga.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -258,6 +284,8 @@
   "HI": {
    "name": "Hawaii",
    "legislature": "Hawaii State Legislature",
+   "legislatureUrl": "https://www.capitol.hawaii.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -279,6 +307,8 @@
   "IA": {
    "name": "Iowa",
    "legislature": "Iowa General Assembly",
+   "legislatureUrl": "https://www.legis.iowa.gov/",
+   "findLegislatorUrl": "https://www.legis.iowa.gov/legislators/find",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -298,6 +328,8 @@
   "ID": {
    "name": "Idaho",
    "legislature": "Idaho Legislature",
+   "legislatureUrl": "https://legislature.idaho.gov/",
+   "findLegislatorUrl": "https://legislature.idaho.gov/legislators/whosmylegislator/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -318,6 +350,8 @@
   "IL": {
    "name": "Illinois",
    "legislature": "Illinois General Assembly",
+   "legislatureUrl": "https://www.ilga.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -337,6 +371,8 @@
   "IN": {
    "name": "Indiana",
    "legislature": "Indiana General Assembly",
+   "legislatureUrl": "https://iga.in.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -357,6 +393,8 @@
   "KS": {
    "name": "Kansas",
    "legislature": "Kansas Legislature",
+   "legislatureUrl": "https://www.kslegislature.gov/",
+   "findLegislatorUrl": "https://www.kslegislature.gov/b2025_26/find-my-legislators/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -377,6 +415,8 @@
   "KY": {
    "name": "Kentucky",
    "legislature": "Kentucky General Assembly",
+   "legislatureUrl": "https://legislature.ky.gov/",
+   "findLegislatorUrl": "https://apps.legislature.ky.gov/findyourlegislator/findyourlegislator.html",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -397,6 +437,8 @@
   "LA": {
    "name": "Louisiana",
    "legislature": "Louisiana State Legislature",
+   "legislatureUrl": "https://legis.la.gov/",
+   "findLegislatorUrl": "https://www.legis.la.gov/legis/FindMyLegislators.aspx",
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -418,6 +460,8 @@
   "MA": {
    "name": "Massachusetts",
    "legislature": "Massachusetts General Court",
+   "legislatureUrl": "https://malegislature.gov/",
+   "findLegislatorUrl": "https://malegislature.gov/Search/FindMyLegislator",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -439,6 +483,8 @@
   "MD": {
    "name": "Maryland",
    "legislature": "Maryland General Assembly",
+   "legislatureUrl": "https://mgaleg.maryland.gov/",
+   "findLegislatorUrl": "https://mgaleg.maryland.gov/mgawebsite/Members/District",
    "lower": {
     "name": "House of Delegates",
     "term": "4-year term"
@@ -460,6 +506,8 @@
   "ME": {
    "name": "Maine",
    "legislature": "Maine Legislature",
+   "legislatureUrl": "https://legislature.maine.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -481,6 +529,8 @@
   "MI": {
    "name": "Michigan",
    "legislature": "Michigan Legislature",
+   "legislatureUrl": "https://www.legislature.mi.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -500,6 +550,8 @@
   "MN": {
    "name": "Minnesota",
    "legislature": "Minnesota Legislature",
+   "legislatureUrl": "https://www.leg.mn.gov/",
+   "findLegislatorUrl": "https://www.gis.leg.mn/iMaps/districts/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -519,6 +571,8 @@
   "MO": {
    "name": "Missouri",
    "legislature": "Missouri General Assembly",
+   "legislatureUrl": "https://www.moga.mo.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -541,6 +595,8 @@
   "MS": {
    "name": "Mississippi",
    "legislature": "Mississippi Legislature",
+   "legislatureUrl": "https://www.legislature.ms.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -561,6 +617,8 @@
   "MT": {
    "name": "Montana",
    "legislature": "Montana Legislature",
+   "legislatureUrl": "https://www.legmt.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -581,6 +639,8 @@
   "NC": {
    "name": "North Carolina",
    "legislature": "North Carolina General Assembly",
+   "legislatureUrl": "https://www.ncleg.gov/",
+   "findLegislatorUrl": "https://www.ncleg.gov/FindYourLegislators",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -600,6 +660,8 @@
   "ND": {
    "name": "North Dakota",
    "legislature": "North Dakota Legislative Assembly",
+   "legislatureUrl": "https://www.ndlegis.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -620,6 +682,8 @@
   "NE": {
    "name": "Nebraska",
    "legislature": "Nebraska Legislature",
+   "legislatureUrl": "https://nebraskalegislature.gov/",
+   "findLegislatorUrl": "https://nebraskalegislature.gov/senators/senator_find.php",
    "lower": null,
    "upper": {
     "name": "Legislature (one chamber, nonpartisan)",
@@ -637,6 +701,8 @@
   "NH": {
    "name": "New Hampshire",
    "legislature": "New Hampshire General Court",
+   "legislatureUrl": "https://gc.nh.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -659,6 +725,8 @@
   "NJ": {
    "name": "New Jersey",
    "legislature": "New Jersey Legislature",
+   "legislatureUrl": "https://www.njleg.state.nj.us/",
+   "findLegislatorUrl": "https://www.njleg.state.nj.us/#findLegislator",
    "lower": {
     "name": "General Assembly",
     "term": "2-year term"
@@ -678,6 +746,8 @@
   "NM": {
    "name": "New Mexico",
    "legislature": "New Mexico Legislature",
+   "legislatureUrl": "https://www.nmlegis.gov/",
+   "findLegislatorUrl": "https://www.nmlegis.gov/Members/Find_My_Legislator",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -698,6 +768,8 @@
   "NV": {
    "name": "Nevada",
    "legislature": "Nevada Legislature",
+   "legislatureUrl": "https://www.leg.state.nv.us/",
+   "findLegislatorUrl": "https://www.leg.state.nv.us/whosmylegislator/",
    "lower": {
     "name": "Assembly",
     "term": "2-year term"
@@ -719,6 +791,8 @@
   "NY": {
    "name": "New York",
    "legislature": "New York State Legislature",
+   "legislatureUrl": "https://www.nysenate.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -738,6 +812,8 @@
   "OH": {
    "name": "Ohio",
    "legislature": "Ohio General Assembly",
+   "legislatureUrl": "https://www.legislature.ohio.gov/",
+   "findLegislatorUrl": "https://www.legislature.ohio.gov/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -758,6 +834,8 @@
   "OK": {
    "name": "Oklahoma",
    "legislature": "Oklahoma Legislature",
+   "legislatureUrl": "https://www.oklegislature.gov/",
+   "findLegislatorUrl": "https://www.oklegislature.gov/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -778,6 +856,8 @@
   "OR": {
    "name": "Oregon",
    "legislature": "Oregon Legislative Assembly",
+   "legislatureUrl": "https://www.oregonlegislature.gov/",
+   "findLegislatorUrl": "https://www.oregonlegislature.gov/FindYourLegislator/legislator-lookup.html",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -797,6 +877,8 @@
   "PA": {
    "name": "Pennsylvania",
    "legislature": "Pennsylvania General Assembly",
+   "legislatureUrl": "https://www.palegis.us/",
+   "findLegislatorUrl": "https://www.palegis.us/find-my-legislator",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -817,6 +899,8 @@
   "RI": {
    "name": "Rhode Island",
    "legislature": "Rhode Island General Assembly",
+   "legislatureUrl": "https://www.rilegislature.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -838,6 +922,8 @@
   "SC": {
    "name": "South Carolina",
    "legislature": "South Carolina General Assembly",
+   "legislatureUrl": "https://www.scstatehouse.gov/",
+   "findLegislatorUrl": "https://www.scstatehouse.gov/",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -858,6 +944,8 @@
   "SD": {
    "name": "South Dakota",
    "legislature": "South Dakota Legislature",
+   "legislatureUrl": "https://sdlegislature.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -878,6 +966,8 @@
   "TN": {
    "name": "Tennessee",
    "legislature": "Tennessee General Assembly",
+   "legislatureUrl": "https://www.capitol.tn.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -898,6 +988,8 @@
   "TX": {
    "name": "Texas",
    "legislature": "Texas Legislature",
+   "legislatureUrl": "https://capitol.texas.gov/",
+   "findLegislatorUrl": "https://wrm.capitol.texas.gov/home",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -918,6 +1010,8 @@
   "UT": {
    "name": "Utah",
    "legislature": "Utah State Legislature",
+   "legislatureUrl": "https://le.utah.gov/",
+   "findLegislatorUrl": "https://le.utah.gov/GIS/findDistrict.jsp",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -937,6 +1031,8 @@
   "VA": {
    "name": "Virginia",
    "legislature": "Virginia General Assembly",
+   "legislatureUrl": "https://virginiageneralassembly.gov/",
+   "findLegislatorUrl": "https://whosmy.virginiageneralassembly.gov/",
    "lower": {
     "name": "House of Delegates",
     "term": "2-year term"
@@ -958,6 +1054,8 @@
   "VT": {
    "name": "Vermont",
    "legislature": "Vermont General Assembly",
+   "legislatureUrl": "https://legislature.vermont.gov/",
+   "findLegislatorUrl": "https://legislature.vermont.gov/people",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -980,6 +1078,8 @@
   "WA": {
    "name": "Washington",
    "legislature": "Washington State Legislature",
+   "legislatureUrl": "https://leg.wa.gov/",
+   "findLegislatorUrl": "https://app.leg.wa.gov/districtfinder",
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -999,6 +1099,8 @@
   "WI": {
    "name": "Wisconsin",
    "legislature": "Wisconsin State Legislature",
+   "legislatureUrl": "https://legis.wisconsin.gov/",
+   "findLegislatorUrl": "https://maps.legis.wisconsin.gov/",
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -1019,6 +1121,8 @@
   "WV": {
    "name": "West Virginia",
    "legislature": "West Virginia Legislature",
+   "legislatureUrl": "https://www.wvlegislature.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Delegates",
     "term": "2-year term"
@@ -1038,6 +1142,8 @@
   "WY": {
    "name": "Wyoming",
    "legislature": "Wyoming Legislature",
+   "legislatureUrl": "https://www.wyoleg.gov/",
+   "findLegislatorUrl": null,
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
