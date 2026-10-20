@@ -1,0 +1,186 @@
+{
+ "format": 1,
+ "state": "HI",
+ "stateName": "Hawaiʻi",
+ "maintainer": "Example entries by the convener; to be reviewed by a Hawaiʻi host",
+ "notes": [
+  "Hawaiʻi has no city or town governments. The counties are the only local governments.",
+  "Hawaiʻi has one statewide school system, so there are no local school boards.",
+  "Places like Haʻikū-Pauwela are census areas for statistics, not governments."
+ ],
+ "sources": [
+  [
+   "https://files.hawaii.gov/dbedt/economic/databook/2022-individual/09/narr09.pdf",
+   "State of Hawaiʻi Data Book: \"Separate municipal governments do not exist\""
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Hawaii_State_Department_of_Education",
+   "Hawaiʻi State Department of Education"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Office_of_Hawaiian_Affairs",
+   "Office of Hawaiian Affairs"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Maui_County_Council",
+   "Maui County Council"
+  ],
+  [
+   "https://en.wikipedia.org/wiki/Hawaii_House_of_Representatives",
+   "Hawaiʻi House of Representatives"
+  ]
+ ],
+ "state_offices": [
+  {
+   "id": "st-lower",
+   "name": "Hawaiʻi State House of Representatives",
+   "branch": "Legislative",
+   "seat": "State House district {sldl}",
+   "chosen": "Elected by district",
+   "term": "2-year term",
+   "civic": "receives",
+   "pack": "state",
+   "office": "state-house"
+  },
+  {
+   "id": "st-upper",
+   "name": "Hawaiʻi State Senate",
+   "branch": "Legislative",
+   "seat": "State Senate district {sldu}",
+   "chosen": "Elected by district",
+   "term": "4-year term",
+   "civic": "receives",
+   "pack": "state",
+   "office": "state-senate"
+  },
+  {
+   "id": "st-exec",
+   "name": "Governor and state departments",
+   "branch": "Executive",
+   "seat": "Governor and lieutenant governor, elected statewide; department heads appointed",
+   "civic": "later",
+   "how": "State departments, such as the Department of Agriculture and Biosecurity, hold public hearings on proposed rules. A later version could submit common ground there."
+  },
+  {
+   "id": "st-oha",
+   "name": "Office of Hawaiian Affairs",
+   "branch": "Independent state agency",
+   "seat": "9 trustees elected by all registered voters: 4 at large and 5 island seats",
+   "term": "4-year terms",
+   "civic": "possible",
+   "how": "Its board sets policy within its role and could receive packages on those issues."
+  },
+  {
+   "id": "st-boe",
+   "name": "Board of Education",
+   "branch": "Executive (education)",
+   "seat": "9 members appointed by the governor with Senate consent",
+   "term": "3-year terms",
+   "civic": "possible",
+   "how": "Runs the one statewide school system and takes public testimony at its meetings."
+  },
+  {
+   "id": "st-courts",
+   "name": "State courts",
+   "branch": "Judicial",
+   "seat": "Judges appointed by the governor from a judicial selection commission list",
+   "civic": "never",
+   "how": "Courts decide cases. Civic Accord never sends anything to a court."
+  }
+ ],
+ "counties": {
+  "15009": [
+   {
+    "id": "co-council",
+    "name": "Maui County Council",
+    "branch": "Legislative",
+    "seat": "9 members; every voter in the county votes for all 9, and each seat has a residency area",
+    "chosen": "Elected countywide, nonpartisan",
+    "term": "2-year terms",
+    "civic": "receives",
+    "pack": "county",
+    "note": "Haʻikū is in the Makawao-Haʻikū-Pāʻia residency area."
+   },
+   {
+    "id": "co-exec",
+    "name": "Mayor and county departments",
+    "branch": "Executive",
+    "seat": "Mayor, elected countywide",
+    "civic": "later",
+    "how": "County departments take public comment on plans and rules."
+   }
+  ],
+  "15001": [
+   {
+    "id": "co-council",
+    "name": "Hawaiʻi County Council",
+    "branch": "Legislative",
+    "seat": "Council member for your district",
+    "chosen": "Elected by district, nonpartisan",
+    "civic": "receives",
+    "pack": "county"
+   },
+   {
+    "id": "co-exec",
+    "name": "Mayor and county departments",
+    "branch": "Executive",
+    "seat": "Mayor, elected countywide",
+    "civic": "later"
+   }
+  ],
+  "15003": [
+   {
+    "id": "co-council",
+    "name": "Honolulu City Council",
+    "branch": "Legislative",
+    "seat": "Council member for your district",
+    "chosen": "Elected by district, nonpartisan",
+    "civic": "receives",
+    "pack": "county"
+   },
+   {
+    "id": "co-exec",
+    "name": "Mayor and city departments",
+    "branch": "Executive",
+    "seat": "Mayor, elected countywide",
+    "civic": "later"
+   }
+  ],
+  "15007": [
+   {
+    "id": "co-council",
+    "name": "Kauaʻi County Council",
+    "branch": "Legislative",
+    "seat": "Council members, elected countywide",
+    "chosen": "Elected countywide, nonpartisan",
+    "civic": "receives",
+    "pack": "county"
+   },
+   {
+    "id": "co-exec",
+    "name": "Mayor and county departments",
+    "branch": "Executive",
+    "seat": "Mayor, elected countywide",
+    "civic": "later"
+   }
+  ],
+  "15005": [
+   {
+    "id": "co-none",
+    "name": "Kalawao County",
+    "branch": "Administered by the state",
+    "seat": "No elected local government; run by the state Department of Health",
+    "civic": "never",
+    "how": "Residents here take part through state and federal deliberations."
+   }
+  ]
+ },
+ "school": {
+  "id": "sch",
+  "name": "Hawaiʻi State Department of Education",
+  "branch": "Education",
+  "seat": "The only school district in the state, overseen by the appointed Board of Education",
+  "civic": "possible"
+ },
+ "noLocal": true
+}

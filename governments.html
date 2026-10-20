@@ -1,0 +1,197 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Your Governments</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
+.timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+</style></head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#b07a12; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:var(--sun)}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.chip:empty{display:none}
+.issues{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.lvl{display:grid;gap:8px}
+.lvl h3{margin:6px 0 0}
+.gov{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:3px;background:var(--surface)}
+.gtop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.addr{display:grid;gap:8px}
+.addr input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.privacy{font-size:.85rem;background:var(--koa-soft);border-radius:8px;padding:10px 12px}
+.vsteps{display:flex;gap:6px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.vsteps span{padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
+.vsteps span.on{background:var(--koa);color:var(--surface);border-color:var(--koa)}
+.vsteps span.done{border-color:var(--koa);color:var(--koa)}
+.postcard{border:2px dashed var(--line);border-radius:12px;padding:16px;display:grid;gap:6px;max-width:360px;background:var(--bg)}
+.postcard .code{font-family:var(--mono);font-size:1.6rem;letter-spacing:.2em}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.flow div{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:4px;background:var(--surface)}
+.flow b{font-size:.9rem}
+.choice{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer}
+.choice.off{opacity:.55;cursor:not-allowed}
+.choice input{margin-top:3px;accent-color:var(--koa)}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Civic Accord · open lookup</div>
+    <h1>Your Governments</h1>
+    <p class="lede">Enter an address to see every government that represents it: federal, state, county, city or town, and school district. For each office, it shows how it's chosen, which branch it's in, and whether it can receive proposals from Civic Accord.</p>
+    <p class="note"><b>Why this exists.</b> Google shut down its free Representatives API in 2025, and nothing free replaced it. This lookup is open: districts come from the U.S. Census Bureau, offices come from an open registry anyone can review and extend.</p>
+  </header>
+  <section class="panel addr">
+    <label for="addr"><h3>Address</h3></label>
+    <input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP">
+    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau's geocoder to find your districts. It is never sent to or stored by Civic Accord.</p>
+    <div class="actions"><button class="btn" id="go" type="button">Find my governments</button><button class="btn ghost" id="ex" type="button">Use the example address in Haʻikū</button></div>
+    <span class="toast" id="msg" aria-live="polite"></span>
+  </section>
+  <section class="panel" id="out" hidden></section>
+  <p class="meta"><a href="/" style="color:var(--koa)">← Back to Civic Accord</a></p>
+  <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Registry files: /registry · Lookup: lib/registry.js</span></footer>
+</div>
+<script src="lib/registry.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let OPEN=[];
+async function show(geo){
+  const map=await CA_REG.buildMap(geo), people=await CA_REG.officeholders(geo);
+  const o=$("out");o.hidden=false;
+  o.innerHTML=`<div><div class="eyebrow">${geo.example?"Example address":"Matched address"}</div><h2>${esc(geo.matched)}</h2></div>
+    <p class="meta">${[geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).map(esc).join(" · ")}</p>
+    ${map.covered?"":`<p class="note">This state isn't in the open registry yet, so state and local offices show general descriptions. A local host can add the details.</p>`}
+    ${map.notes.map(n=>`<p class="meta">${esc(n)}</p>`).join("")}
+    ${CA_REG.render(map,people,OPEN)}
+    <h3>Sources</h3><ul class="plain">${map.sources.map(s=>`<li><a href="${esc(s[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s[1])}</a></li>`).join("")}</ul>`;
+}
+$("ex").onclick=()=>{$("msg").textContent="";show(CA_REG.EXAMPLE)};
+$("go").onclick=async()=>{const a=$("addr").value.trim();if(a.length<8){$("msg").textContent="Enter a full street address, including city and state.";return}
+  $("msg").textContent="Looking up your districts with the Census Bureau…";
+  try{const g=await CA_REG.lookup(a);$("msg").textContent="";show(g)}
+  catch(e){$("msg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling, or try the example.":"Couldn't reach the Census Bureau's geocoder. Try again, or use the example."}};
+$("addr").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
+(async()=>{try{const idx=await (await fetch("packs/index.json")).json();OPEN=[...new Set(idx.packs.map(p=>p.jurisdiction))]}catch(e){}})();
+</script>
+</body></html>

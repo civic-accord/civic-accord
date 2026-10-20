@@ -1,0 +1,15 @@
+# Open representative lookup
+
+Google shut down its free Representatives API in 2025. This is an open replacement: an address goes in, and every government that represents it comes out, with each office's branch, how it's chosen, and whether it can receive proposals through Civic Accord.
+
+## How it works
+
+1. **Districts.** The browser sends the address straight to the [U.S. Census Bureau Geocoder](https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.html) (JSONP, no key). It returns the state, county, congressional district, state house and senate districts, incorporated place, active county subdivision (towns and townships), and school districts. The address never passes through Civic Accord.
+2. **Offices.** `us.json` describes federal offices and general state defaults. Each state file (`hi.json`, ...) adds what's specific: chamber names, terms, how offices are chosen, county councils keyed by county FIPS code, statewide bodies, and notes such as "no city governments."
+3. **Officeholders.** Members of Congress come from the public-domain [congress-legislators](https://github.com/unitedstates/congress-legislators) dataset. The tool shows names and official sites only, never party.
+
+Census-designated places are statistical areas, not governments, so they are ignored. Special districts (water, fire, transit) aren't in the Census lookup yet; local hosts add them.
+
+## Adding a state
+
+Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs a source in `sources`, and the file is reviewed in that state's legal review like any pack. `civic` is one of `receives`, `possible`, `later`, or `never` (courts are always `never`).

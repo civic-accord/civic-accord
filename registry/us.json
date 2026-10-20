@@ -1,0 +1,20 @@
+{
+ "format": 1,
+ "scope": "United States (federal offices, the same for every address)",
+ "sources": [
+  ["https://unitedstates.github.io/congress-legislators/legislators-current.json", "congress-legislators (public domain): current members of Congress"],
+  ["https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.html", "U.S. Census Bureau Geocoder: districts for an address"]
+ ],
+ "federal": [
+  {"id": "us-house", "name": "U.S. House of Representatives", "branch": "Legislative", "seat": "U.S. Representative, {state} {cd}", "chosen": "Elected by district", "term": "2-year term", "civic": "receives", "pack": "federal"},
+  {"id": "us-senate", "name": "U.S. Senate", "branch": "Legislative", "seat": "2 U.S. Senators for {state}", "chosen": "Elected statewide", "term": "6-year terms", "civic": "receives", "pack": "federal"},
+  {"id": "us-exec", "name": "President and federal agencies", "branch": "Executive", "seat": "President, elected nationally; agency heads appointed", "civic": "later", "how": "Federal agencies take public comments on proposed rules. A later version could file a deliberation's common ground as a formal comment."},
+  {"id": "us-courts", "name": "Federal courts", "branch": "Judicial", "seat": "Judges appointed by the President with Senate consent", "civic": "never", "how": "Courts decide cases. They don't take proposals, so Civic Accord never sends anything to a court."}
+ ],
+ "stateDefaults": [
+  {"id": "st-lower", "name": "State House (lower chamber)", "branch": "Legislative", "seat": "State House district {sldl}", "chosen": "Elected by district", "civic": "receives"},
+  {"id": "st-upper", "name": "State Senate (upper chamber)", "branch": "Legislative", "seat": "State Senate district {sldu}", "chosen": "Elected by district", "civic": "receives"},
+  {"id": "st-exec", "name": "Governor and state agencies", "branch": "Executive", "seat": "Governor, elected statewide", "civic": "later", "how": "State agencies hold public hearings on proposed rules. A later version could submit common ground there."},
+  {"id": "st-courts", "name": "State courts", "branch": "Judicial", "seat": "How judges are chosen varies by state", "civic": "never", "how": "Courts decide cases. Civic Accord never sends anything to a court."}
+ ]
+}

@@ -137,7 +137,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
     <h1>Civic Accord</h1>
     <p class="lede">Residents talk an issue through, the tool finds where they actually agree, and the result goes to their representatives as a proposed bill with the full public record behind it.</p>
     <div class="who">
-      <span class="chip ok">✓ Verified resident</span>
+      <span class="chip" id="chip-ver"></span>
       <span class="chip" id="chip-district"></span>
       <span class="chip" id="chip-session"></span>
     </div>
@@ -147,7 +147,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
   <div>
     <div class="eyebrow" style="margin-bottom:6px">Your governments · example address in Haʻikū, Maui</div>
     <div class="issues" id="juris"></div>
-    <p class="meta" style="margin-top:6px">In the live tool, your address finds every government that represents you, down to county and special districts, and shows which have a deliberation open.</p>
+    <p class="meta" style="margin-top:6px">Your address finds every government that represents you and shows which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See every government for an address →</a></p>
   </div>
   <div>
     <div class="eyebrow" style="margin-bottom:6px">Issue</div>
@@ -270,7 +270,13 @@ function makeReceipt(){
 }
 
 // ---------- Header controls ----------
-function renderHeader(){
+const VER=(()=>{try{return JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){return null}})();
+function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
+  if(VER){c.className="chip ok";c.innerHTML=`✓ Verified resident <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
+    const u=document.getElementById("unver");if(u)u.onclick=e=>{e.preventDefault();try{localStorage.removeItem("civicaccord-verified")}catch(x){}location.reload()}}
+  else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify to take part</a>`}}
+function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. It takes one check, and your votes can never be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
+function renderHeader(){verChip();
   document.getElementById("chip-district").textContent=P.district;
   document.getElementById("chip-session").textContent=P.session;
   document.getElementById("footnote").textContent=P.footnote;
@@ -324,25 +330,25 @@ function weigh(){
       <p>${esc(s.t)}</p>
       ${costLine(s.id)}
       <div class="vote" data-id="${s.id}">
-        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted?"disabled":""}>Agree</button>
-        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted?"disabled":""}>Disagree</button>
-        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted?"disabled":""}>Pass / unsure</button>
+        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted||!VER?"disabled":""}>Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted||!VER?"disabled":""}>Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted||!VER?"disabled":""}>Pass / unsure</button>
       </div>
       ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
     </div>`}).join("");
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
-  <p class="progress">You've voted on ${voted} of ${list.length} statements.</p>
+  ${VER?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
   <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${P.resLabel} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
-  <form class="add" id="addform">
+  ${VER?`<form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
     <textarea id="newstmt" rows="2" maxlength="200" placeholder="One clear idea, in your own words."></textarea>
     <button class="btn" type="submit">Add statement</button>
     <span class="toast" id="addmsg" aria-live="polite"></span>
   </form>
-  ${submitBox()}
+  ${submitBox()}`:""}
   </section>`;
 }
 function ground(){
@@ -547,7 +553,7 @@ function handoff(){
 function render(){
   renderHeader();
   const p=document.getElementById("panel");
-  p.innerHTML=(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
+  p.innerHTML=(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+(!VER&&st.step===3?`<p class="note"><b>Exploring only.</b> Try any mix of options to see the cost. Your choices count once you <a href="verify.html" style="color:var(--koa)">verify your residency</a>.</p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
   const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
   go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
   if(st.step===3){
