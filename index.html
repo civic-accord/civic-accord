@@ -99,6 +99,12 @@ input[type=range]{width:100%;accent-color:var(--koa)}
 .gauge .g{height:100%;background:var(--koa)}
 .gauge .g.over{background:var(--sun)}
 .warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
 footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 @media (max-width:520px){nav.steps .step span{display:none}}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
@@ -236,12 +242,26 @@ function learn(){
   </section>`;
 }
 
+function costInfo(id){
+  const o=OPT[id];
+  if(o){const b=budget[id];const n=b?b.n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. cost ${money(o.per*n)}${o.yr?" a year":" one time"}`,basis:`${o.impact(n)} ${o.basis}`}}
+  if(id===4) return {kind:"rev",amt:100000,yr:true,text:"Brings in about $100K a year",basis:"Rough estimate of added fine revenue. Fines mainly deter."};
+  if(id===7) return {kind:"rev",amt:VISITORS,yr:true,text:`Brings in about ${money(VISITORS)} a year per $1 fee`,basis:"Based on about 9.64 million visitor arrivals in 2025. The fee amount is chosen in Step 4."};
+  return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas are sent to analysts for a cost estimate before they can be funded."};
+}
+function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
+function agreedTotals(){
+  let yearly=0,once=0,rev=0;
+  all().forEach(s=>{if(mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}else if(c.kind==="rev"&&s.id===4){rev+=c.amt}});
+  return {yearly,once,rev};
+}
 function weigh(){
   const list=all(), voted=list.filter(s=>mine[s.id]!==undefined).length;
   const items=list.map(s=>{
     const v=mine[s.id];
     return `<div class="stmt ${s.mine?"mine":""}">
       <p>${esc(s.t)}</p>
+      ${costLine(s.id)}
       <div class="vote" data-id="${s.id}">
         <button class="agree" aria-pressed="${v===0}" data-v="0">Agree</button>
         <button class="disagree" aria-pressed="${v===1}" data-v="1">Disagree</button>
@@ -253,6 +273,7 @@ function weigh(){
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
   <p class="progress">You've voted on ${voted} of ${list.length} statements.</p>
+  ${(()=>{const t=agreedTotals();const any=Object.values(mine).some(v=>v===0);return `<div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}.${mine[7]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>`})()}
   ${items}
   <form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
@@ -271,6 +292,7 @@ function ground(){
   const card=(s)=>`<div class="stmt">
     <span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"}</span>
     <p>${esc(s.t)}</p>
+    ${costLine(s.id)}
     <div class="bars">
       <div class="bar"><span>Group A</span><div class="track"><div class="fill ${s.pa<50?"low":""}" style="width:${s.pa}%"></div></div><span>${s.pa}%</span></div>
       <div class="bar"><span>Group B</span><div class="track"><div class="fill ${s.pb<50?"low":""}" style="width:${s.pb}%"></div></div><span>${s.pb}%</span></div>
@@ -332,6 +354,7 @@ function costs(){
   </div>
   <h3>What to fund</h3>
   ${opts}
+  ${added.length?`<h3>New ideas waiting for a cost estimate</h3>${added.map(a=>`<div class="opt off"><p>${esc(a.t)}</p><span class="cost-chip unknown">Cost not yet estimated</span><p class="meta">In the live tool, new ideas go to analysts for an estimate before they can be funded.</p></div>`).join("")}`:""}
   <h3>How to pay for it</h3>
   <div class="opt">
     <div class="opthead"><label for="fee">Visitor biosecurity fee</label><span class="cost" id="fee-v"></span></div>
