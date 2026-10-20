@@ -31,6 +31,7 @@ async function federalRules() {
   return items;
 }
 
+const BILL_PATH = { HR: "house-bill", S: "senate-bill", HRES: "house-resolution", SRES: "senate-resolution", HJRES: "house-joint-resolution", SJRES: "senate-joint-resolution", HCONRES: "house-concurrent-resolution", SCONRES: "senate-concurrent-resolution" };
 async function congressBills(key) {
   const j = await getJSON(`https://api.congress.gov/v3/bill?format=json&sort=updateDate+desc&limit=100&api_key=${encodeURIComponent(key)}`);
   return (j.bills || []).map(b => ({
@@ -38,7 +39,7 @@ async function congressBills(key) {
     title: `${b.type} ${b.number}: ${b.title}`, who: b.originChamber ? `${b.originChamber}` : "Congress",
     summary: b.latestAction ? `Latest action (${b.latestAction.actionDate}): ${b.latestAction.text}` : "",
     opened: b.introducedDate || null, closes: null,
-    read: `https://www.congress.gov/bill/${b.congress}th-congress/${b.originChamber === "Senate" ? "senate" : "house"}-bill/${b.number}`,
+    read: `https://www.congress.gov/bill/${b.congress}th-congress/${BILL_PATH[String(b.type).toUpperCase()] || "house-bill"}/${b.number}`,
     act: null, actLabel: null, source: "Congress.gov"
   }));
 }
