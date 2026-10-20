@@ -212,7 +212,7 @@ let VER=null;try{VER=JSON.parse(localStorage.getItem("civicaccord-verified")||"n
 const REKEY="civicaccord-reactions";let REACT={};try{REACT=JSON.parse(localStorage.getItem(REKEY)||"{}")}catch(e){}
 let DATA=null, shown=20;
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
-const daysLeft=d=>d?Math.ceil((new Date(d+"T23:59:59")-new Date())/864e5):null;
+const daysLeft=d=>{if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/864e5)};
 function card(it){
   const dl=daysLeft(it.closes), r=REACT[it.id];
   const start=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
@@ -220,7 +220,7 @@ function card(it){
     <span class="eyebrow">${esc(it.kind)} · ${esc(it.source)}</span>
     <h3>${esc(it.title)}</h3>
     <span class="who">${esc(it.who)}${it.opened?` · opened ${fmt(it.opened)}`:""}</span>
-    ${it.closes?`<span class="due ${dl!==null&&dl<=7?"soon":""}">Comments close ${fmt(it.closes)}${dl!==null?` · ${dl<=0?"today":dl+" day"+(dl===1?"":"s")+" left"}`:""}</span>`:""}
+    ${it.closes?`<span class="due ${dl!==null&&dl<=7?"soon":""}">Comments close ${fmt(it.closes)}${dl!==null?` · ${dl<=0?"closes today":dl===1?"1 day left":dl+" days left"}`:""}</span>`:""}
     ${it.summary?`<p class="meta">${esc(it.summary.length>420?it.summary.slice(0,420)+"…":it.summary)}</p>`:""}
     <div class="acts">
       ${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text</a>`:""}
