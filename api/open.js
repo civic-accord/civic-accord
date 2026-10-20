@@ -59,7 +59,7 @@ async function stateBills(key, st, out) {
     return [];
   }
   // 2. Bills from the current session that are still moving.
-  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|\beffective\b|sine die/i;
+  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|\beffective\b|sine die|^adopted\b|resolution adopted/i;
   const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20" });
   const j = await getJSON(`https://v3.openstates.org/bills?${q}`, H);
   const results = (j.results || []).filter(b => !DONE.test(b.latest_action_description || ""));
