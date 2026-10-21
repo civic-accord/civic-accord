@@ -10,7 +10,12 @@ const BILL_END = [
   /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
   /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
   /^indefinitely postponed/i, /\bdied in committee\b/i,
-  /^signed chap/i, /^approval memo/i, /^veto memo/i  // New York: governor signed (chapter) or vetoed
+  /^signed chap/i, /^approval memo/i, /^veto memo/i,  // New York: governor signed (chapter) or vetoed
+  // How other legislatures record a bill becoming law (New Jersey, Michigan, Wisconsin, Texas, Illinois, Florida,
+  // Minnesota, Virginia, North Carolina), and a governor's signature or veto worded differently.
+  /^approved p\.? ?l\.?/i, /^assigned pa\b/i, /^filed with (the )?secretary of state/i, /^published \d/i,
+  /^effective (on |immediately|\d)/i, /^public act\b/i, /^chapter no\.?\s*\d/i, /^secretary of state,? chapter\b/i,
+  /acts of assembly chapter/i, /^ch\.? ?sl\b/i, /^governor signed\b/i, /\bpocket vetoed\b/i, /^vetoed by (the )?governor/i
 ];
 // "Failed", "died", and "withdrawn" end a bill only when they're about the bill itself, not an amendment, a motion,
 // or a step like "Withdrawn from committee", which moves a bill forward.

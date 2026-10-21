@@ -14,15 +14,28 @@ async function stateBills(key, st, out, getJSON, loadSessions) {
   // Session dates change rarely, so they are remembered for a day and a busy minute never wastes this call.
   // A caller may keep session dates itself (the scheduled download saves them); otherwise they're remembered in this copy.
   const fetchSessions = async () => ((await getJSON(`https://v3.openstates.org/jurisdictions/${encodeURIComponent(name)}?include=legislative_sessions`, H)).legislative_sessions || [])
-    .map(x => ({ identifier: x.identifier, name: x.name, start_date: x.start_date, end_date: x.end_date }));
+    .map(x => ({ identifier: x.identifier, name: x.name, start_date: x.start_date, end_date: x.end_date, classification: x.classification || null }));
   const all = loadSessions ? await loadSessions(fetchSessions) : await memo("jur-" + st, 24 * 3600e3, fetchSessions);
   const sessions = all.filter(x => x.start_date);
-  const active = sessions.filter(x => x.start_date.slice(0, 10) <= today && (!x.end_date || x.end_date.slice(0, 10) >= today))
-    .sort((a, b) => b.start_date.localeCompare(a.start_date));
+  // A regular session with no end date counts as open only if no later regular session has started since.
+  const started = sessions.filter(x => x.start_date.slice(0, 10) <= today).sort((a, b) => b.start_date.localeCompare(a.start_date));
+  const special = x => x.classification === "special" || /special|extraordinary/i.test(`${x.name || ""} ${x.identifier || ""}`);
+  // A special session with no end date counts only in its first 60 days (special sessions are short).
+  const daysSince = d => (Date.parse(today + "T00:00:00Z") - Date.parse(d.slice(0, 10) + "T00:00:00Z")) / 864e5;
+  const active = started.filter(x => x.end_date ? x.end_date.slice(0, 10) >= today
+      : special(x) ? daysSince(x.start_date) <= 60
+      : !started.some(y => !special(y) && y.start_date > x.start_date))
+    // The regular session first, so its bills aren't hidden by a special session running at the same time.
+    .sort((a, b) => (special(a) - special(b)) || b.start_date.localeCompare(a.start_date));
   out.inSession = active.length > 0;
   // When the next session starts, so a scheduled download can check more often as that day nears.
   const upcoming = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
   out.nextStart = upcoming ? upcoming.start_date.slice(0, 10) : null;
+  if (!sessions.length) {
+    out.inSession = false;
+    out.quiet = `We couldn't confirm whether the ${body} is in session: its session dates aren't in the open data yet. See the ${body}'s website for bills.`;
+    return [];
+  }
   if (!active.length) {
     const next = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
     out.quiet = `The ${body} isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
