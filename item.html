@@ -211,9 +211,9 @@ textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--li
     <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · <a href="open.html" style="color:inherit">Open now</a> · talk it through</div>
     <h1 id="title">Loading…</h1>
     <p class="meta" id="kind"></p>
-    <p class="note"><b>Practice, from official text only.</b> Everything on this page comes word for word from official sources. No one, and no AI, wrote or reworded it. Your votes here are practice: they stay on this device and aren't counted or sent anywhere. Counting starts once real voter checks exist.</p>
+    <p class="note"><b>Practice, from official sources only.</b> The summary, status, and costs on this page come from official sources. The parts you weigh in on are copied word for word, and no AI wrote or reworded them. Your votes here are practice: they stay on this device and aren't counted or sent anywhere. Counting starts once real voter checks exist.</p>
   </header>
-  <main id="main" aria-live="polite"><p class="meta">Loading the official record…</p></main>
+  <main id="main"><p class="meta">Loading the official record…</p></main>
   <footer><span>Civic Accord · an open, nonpartisan example</span><span id="src"></span><span><a href="how.html#talk" style="color:inherit">How this works</a> · <a href="https://github.com/civic-accord/civic-accord/issues/new" style="color:inherit">Report a problem</a></span></footer>
 </div>
 <script>
@@ -222,6 +222,8 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const safe=u=>/^https:\/\//.test(String(u||""))?u:null;
 const fmt=d=>{if(!d)return "";const x=new Date(String(d).slice(0,10)+"T12:00:00Z");return isNaN(x)?esc(d):x.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric",timeZone:"UTC"})};
 const ID=new URLSearchParams(location.search).get("id")||"";
+// State bills: practice voting only for your own state, the same as Open Now.
+const DIST=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verified")||"null");if(v&&v.districts&&v.districts.state)return v.districts;return JSON.parse(localStorage.getItem("civicaccord-districts")||"null")}catch(e){return null}})();
 const VKEY="civicaccord-item-votes";
 let ALL=(()=>{try{return JSON.parse(localStorage.getItem(VKEY)||"{}")}catch(e){return {}}})();
 let MINE=ALL[ID]||{parts:{},added:[]};
@@ -233,7 +235,8 @@ function render(it){
   $("title").textContent=it.title;
   $("kind").textContent=[it.kind,it.jurisdiction&&it.jurisdiction.name].filter(Boolean).join(" · ");
   document.title=it.title.slice(0,60)+" · Talk It Through";
-  const parts=it.parts.length?it.parts:[it.whole];
+  const parts=it.parts.length?it.parts:[{text:it.whole}];
+  const own=it.level!=="state"||!!(DIST&&DIST.state&&it.jurisdiction&&DIST.state===it.jurisdiction.stateCode);
   const keys=it.parts.length?parts.map((_,i)=>"p"+i):["whole"];
   const chosen=keys.filter(k=>MINE.parts[k]!==undefined).length, agreed=keys.filter(k=>MINE.parts[k]==="0").length;
   const L=it.links||{};
@@ -256,15 +259,17 @@ function render(it){
 
   <section class="panel" aria-labelledby="h2"><div class="eyebrow">Step 2</div><h2 id="h2">Weigh in on each part</h2>
     <p>${it.parts.length?`Each part below is copied word for word from the official summary, in order. Do you agree with it?`:esc(it.partsNote)}</p>
-    <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?"Part "+(i+1):"The whole "+(it.kind==="Proposed rule"?"proposal":"bill")}</span><blockquote>${esc(p)}</blockquote>${choose(keys[i],it.parts.length?"Part "+(i+1):"The whole proposal")}</li>`).join("")}</ol>
+    ${it.parts.length?`<p class="meta">Headings and very short lines are left out. Read the official text for all of it.</p>`:""}
+    ${own?"":`<p class="submitbox">${DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a> so we know it's your state. It stays on this device.`}</p>`}
+    <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?"Part "+(i+1):"The whole "+(it.kind==="Proposed rule"?"proposal":"bill")}</span>${p.lead?`<span class="meta">${esc(p.lead)}</span>`:""}<blockquote>${esc(p.text)}</blockquote>${own?choose(keys[i],it.parts.length?"Part "+(i+1):"The whole proposal"):""}</li>`).join("")}</ol>
     ${it.partsMore?`<p class="meta">The summary has more parts than fit here. Read the rest in the official text.</p>`:""}
     <p class="meta" id="saved">${chosen?`Practice votes saved on this device: ${chosen} of ${keys.length}.`:"Your practice votes are saved on this device as you go."}</p>
-    <h3>Add your own statement</h3>
+    ${own?`<h3>Add your own statement</h3>
     <form id="addf"><label for="addt" class="meta">One clear idea about this ${it.kind==="Proposed rule"?"proposal":"bill"}, in your own words (practice; stays on this device)</label>
       <textarea id="addt" rows="2" maxlength="200"></textarea>
       <p class="meta">In the live version, a moderator checks new statements against <a href="how.html#rules" style="color:var(--koa)">published rules</a> before others see them.</p>
       <button class="btn" type="submit">Add statement</button> <span class="toast" id="addmsg" aria-live="polite"></span></form>
-    ${MINE.added.length?`<ul class="plain">${MINE.added.map((t,i)=>`<li>${esc(t)} <button type="button" class="btn ghost" data-rm="${i}">Remove</button></li>`).join("")}</ul>`:""}
+    ${MINE.added.length?`<ul class="plain">${MINE.added.map((t,i)=>`<li>${esc(t)} <button type="button" class="btn ghost" data-rm="${i}">Remove</button></li>`).join("")}</ul>`:""}`:""}
   </section>
 
   <section class="panel" aria-labelledby="h3"><div class="eyebrow">Step 3</div><h2 id="h3">Where people agree</h2>
@@ -273,7 +278,7 @@ function render(it){
   </section>
 
   <section class="panel" aria-labelledby="h4"><div class="eyebrow">Step 4</div><h2 id="h4">What it would cost</h2>
-    ${it.costs.length?`<ul class="plain">${it.costs.map(c=>`<li><b><a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a></b>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}${c.description?`<br><span class="meta">${esc(c.description)}</span>`:""}</li>`).join("")}</ul>`:`<p><b>Not yet estimated.</b> No official cost estimate is available for this ${it.kind==="Proposed rule"?"proposal":"bill"} yet.</p>`}
+    ${it.costs.filter(c=>safe(c.url)).length?`<ul class="plain">${it.costs.filter(c=>safe(c.url)).map(c=>`<li><b><a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a></b>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}${c.description?`<br><span class="meta">${esc(c.description)}</span>`:""}</li>`).join("")}</ul>`:it.kind==="Proposed rule"?`<p><b>Not shown here.</b> Read the full notice for any cost analysis.</p>`:`<p><b>Not yet estimated.</b> No official cost estimate is available for this bill yet.</p>`}
     <p class="meta">${esc(it.costNote)}</p>
   </section>
 
@@ -284,9 +289,9 @@ function render(it){
   document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=b.dataset.v;if(MINE.parts[k]===v)delete MINE.parts[k];else MINE.parts[k]=v;save();
     b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(MINE.parts[k]===x.dataset.v)));
     const n=keys.filter(k=>MINE.parts[k]!==undefined).length;$("saved").textContent=`Practice votes saved on this device: ${n} of ${keys.length}.`});
-  $("addf").onsubmit=e=>{e.preventDefault();const t=$("addt").value.trim();if(t.length<10){$("addmsg").textContent="Write at least a short sentence.";return}
-    MINE.added.push(t);save();render(it);$("addmsg").textContent="Added on this device."};
-  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{MINE.added.splice(+b.dataset.rm,1);save();render(it)});
+  const af=$("addf");if(af)af.onsubmit=e=>{e.preventDefault();const t=$("addt").value.trim();if(t.length<10){$("addmsg").textContent="Write at least a short sentence.";return}
+    MINE.added.push(t);save();render(it);$("addt").focus();$("addmsg").textContent="Added on this device."};
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{MINE.added.splice(+b.dataset.rm,1);save();render(it);const t=$("addt");if(t)t.focus();$("addmsg").textContent="Removed."});
 }
 (async()=>{
   if(!ID){$("title").textContent="Pick an item to talk through";$("main").innerHTML=`<p>Choose any bill or proposed rule on <a href="open.html" style="color:var(--koa)">Open Now</a>, then choose "Talk it through."</p>`;return}
@@ -296,7 +301,7 @@ function render(it){
   $("src").innerHTML=`From <a href="${esc(safe(d.item.source.url)||"#")}" target="_blank" rel="noopener" style="color:inherit">${esc(d.item.source.label)}</a> · fetched ${new Date(d.fetchedAt).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"})}`;
 })();
 </script>
-<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
 <script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
 <script src="/lib/forget.js" defer></script>
 </body></html>
