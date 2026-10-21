@@ -28,23 +28,19 @@
   "receiptPrefix": "US",
   "elections": [
    {
-    "name": "Primary election",
-    "date": "2026-08-08"
-   },
-   {
     "name": "General election",
     "date": "2026-11-03"
    }
   ],
   "electionsSource": {
-   "url": "https://elections.hawaii.gov/?p=20785",
-   "label": "Hawaiʻi Office of Elections, 2026 proclamation"
+   "url": "https://www.law.cornell.edu/uscode/text/2/7",
+   "label": "2 U.S.C. § 7: federal general election day (primary dates vary by state)"
   },
   "offices": [
    {
-    "key": "us-house-hi2",
+    "key": "us-house-example",
     "title": "U.S. House seat",
-    "where": "Hawaiʻi 2nd District (example)",
+    "where": "A U.S. House district (example)",
     "holder": "Current officeholder (example)",
     "term": "Two-year term",
     "onBallot": true,
@@ -91,7 +87,7 @@
   "title": "Should your representatives offer a public, verifiable way to work with them?",
   "facts": [
    [
-    "Trust is low",
+    "Public trust in government",
     "In September 2025, 17% of Americans said they trust the federal government to do what is right just about always or most of the time."
    ],
    [
@@ -146,8 +142,8 @@
   ],
   "costSources": [],
   "groups": [
-   "Leans toward keeping it independent of government and paying for it privately.",
-   "Leans toward government running or funding it, with public accountability."
+   "In these sample votes, agreed more often with keeping it independent of government and privately funded.",
+   "In these sample votes, agreed more often with government running or funding it, with public accountability."
   ],
   "exampleVotes": true,
   "statements": [

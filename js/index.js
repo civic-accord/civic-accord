@@ -1,5 +1,5 @@
 const SHARE_URL="https://civicaccord.org/ask.html";
-const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
+const SHARE_TEXT="Ask your representatives for a public way to work with residents, built so anyone can check the results: ";
 function shareBar(el){
   if(!el)return;
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);

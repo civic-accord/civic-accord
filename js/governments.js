@@ -53,7 +53,7 @@ function savedBar(){
   return g;
 }
 
-$("samples").innerHTML="No address handy? Try a state capitol: "+CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ");
+$("samples").innerHTML="No address handy? Try a capitol (results show the offices for that address, not your own): "+CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ");
 document.querySelectorAll(".sample").forEach(x=>x.onclick=e=>{e.preventDefault();$("addr").value=CA_REG.SAMPLES[+x.dataset.i][1];$("go").dataset.example="1";$("go").click()});
 $("go").onclick=async()=>{const a=$("addr").value.trim(),example=$("go").dataset.example==="1";delete $("go").dataset.example;
   if(a.length<8){$("msg").textContent="Enter a full street address, including city and state.";return}

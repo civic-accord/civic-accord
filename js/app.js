@@ -198,7 +198,7 @@ function weigh(){
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other voters wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
   ${CANVOTE?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
-  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${esc(P.resLabel)} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
+  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${esc(P.resLabel)} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also agreed with a visitor fee; Step 4 shows what it would bring in.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
   ${CANVOTE?`<form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>

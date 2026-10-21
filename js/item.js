@@ -122,7 +122,7 @@ function render(it){
   </section>
 
   <section class="panel" aria-labelledby="h3"><div class="eyebrow">3 · Results ${PLANNED}</div><h2 id="h3">Where people agree</h2>
-    <p>No votes are counted yet, so there are no results. When verified voting starts, each part will be labeled common ground, divides groups, or still forming, using the <a href="how.html#ground" style="color:var(--koa)">published rules</a>. Results will describe the verified voters who took part, with their share of registered voters. They won't describe the whole district.</p>
+    <p>No votes are counted yet, so there are no results. When verified voting starts, each part would be labeled common ground, divides groups, or still forming, using the <a href="how.html#ground" style="color:var(--koa)">published rules</a>. Results will describe the verified voters who took part, with their share of registered voters. They won't describe the whole district.</p>
     ${chosen?`<p class="meta">Your practice, in this browser only: you agreed with ${agreed} of the ${keys.length} ${it.parts.length?"parts":"choices"} you could vote on.</p>`:""}
     <p class="meta"><a href="item.html?id=sample-civic-channel" style="color:var(--koa)">See a sample issue with results, delivery, and an office response</a> (everything there is marked Sample).</p>
   </section>

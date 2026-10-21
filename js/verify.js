@@ -12,7 +12,7 @@ async function render(){bar();const p=$("p");
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. Only your districts are kept.</p>
    <div class="grp"><h3>Who can take part</h3><p class="meta">Registered voters in the district. Everyone else can still read everything, see what's open for public input, comment through official channels, and write to their representatives. Not a voter yet? Try <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a>.</p></div>
    <div class="actions"><button class="btn" id="go" type="button">Find my districts</button></div>
-   <p class="meta">No address handy? Try a state capitol: ${CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ")}</p>
+   <p class="meta">No address handy? Try a capitol (results show the offices for that address, not your own): ${CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ")}</p>
    <span class="toast" id="msg" aria-live="polite"></span>`;
    document.querySelectorAll(".sample").forEach(x=>x.onclick=e=>{e.preventDefault();$("addr").value=CA_REG.SAMPLES[+x.dataset.i][1];$("go").click()});
    $("go").onclick=async()=>{const a=$("addr").value.trim();if(a.length<8){$("msg").textContent="Enter a full street address, including city and state.";return}
@@ -25,7 +25,7 @@ async function render(){bar();const p=$("p");
    <p class="meta">${esc(geo.matched)}</p>
    ${map.notes.map(n=>`<p class="meta">${esc(n)}</p>`).join("")}
    ${CA_REG.render(map,people,OPEN)}
-   <p>Once you're verified as a voter here, your voice counts in every deliberation open for these governments.</p>
+   <p>In the live version, once you're verified as a voter, your voice would count in every deliberation open for these governments.</p>
    <div class="actions"><button class="btn" id="yes" type="button">This is where I live</button><button class="btn ghost" id="back" type="button">Change address</button></div>`;
    $("yes").onclick=()=>{step=2;render()};$("back").onclick=()=>{step=0;ELIG=null;render()};return}
  if(step===2){

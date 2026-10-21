@@ -125,7 +125,7 @@ async function congressItem(m, key) {
       url: httpsOnly(c.url), description: partsFrom(c.description).parts.map(p => p.text).join(" ") || null, by: "Congressional Budget Office" })).filter(c => c.url),
     costNote: "Only official estimates are shown. The Congressional Budget Office estimates the cost of many bills once a committee acts on them.",
     links: { official: page, text: page + "/text", comment: null },
-    source: { label: "Congress.gov", url: "https://api.congress.gov/" }
+    source: { label: "Congress.gov", url: "https://www.congress.gov/" }
   };
 }
 
@@ -164,7 +164,7 @@ async function stateItem(id, key, use) {
     costs: docs.map(d => ({ title: d.note || "Fiscal note", date: d.date ? String(d.date).slice(0, 10) : null, url: httpsOnly(((d.links || [])[0] || {}).url), description: null, by: body })).filter(c => c.url),
     costNote: `Only official estimates are shown. Many legislatures publish a fiscal note for bills that spend or raise money; not every bill has one.`,
     links: { official: sourceUrl || httpsOnly(b.openstates_url), text: httpsOnly(latestVersion && ((latestVersion.links || [])[0] || {}).url), comment: null },
-    source: { label: "Open States", url: "https://docs.openstates.org/api-v3/" }
+    source: { label: "Open States", url: "https://openstates.org/" }
   };
 }
 
@@ -186,7 +186,7 @@ async function ruleItem(id) {
     whole: d.title || num,
     costs: [], costNote: "The Federal Register's data doesn't include cost figures. Some proposed rules include a cost analysis in the notice itself; read the full notice.",
     links: { official: httpsOnly(d.html_url), text: httpsOnly(d.html_url), comment: form || httpsOnly(d.html_url), commentForm: !!form },
-    source: { label: "Federal Register", url: "https://www.federalregister.gov/developers/documentation/api/v1" }
+    source: { label: "Federal Register", url: "https://www.federalregister.gov/" }
   };
 }
 

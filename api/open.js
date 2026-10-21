@@ -95,14 +95,14 @@ module.exports = async (req, res) => {
   // Each source reports when its list was really fetched, and whether a refresh just failed (so an older list is shown).
   // meta lets a source report its own download time (saved copies of state lists carry theirs).
   const run = async (label, short, url, fn, key, meta) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length, at: meta && meta.at ? meta.at : key && asOf(key) ? new Date(asOf(key)).toISOString() : null, stale: meta && "stale" in meta ? meta.stale : !!(key && isStale(key)) }); } catch (e) { out.errors.push(publicError(short, e)); } };
-  await run("Federal Register: proposed rules open for public comment", "Federal rules", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules), "fr");
-  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)), "congress");
+  await run("Federal Register: proposed rules open for public comment", "Federal rules", "https://www.federalregister.gov/", () => memo("fr", 3 * 3600e3, federalRules), "fr");
+  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://www.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)), "congress");
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
     // With a saved-copy store connected, state lists come from the scheduled download (api/refresh.js). Visits call
     // Open States for a list only if it hasn't been downloaded yet or the store can't be read, and then only within
     // the shared limit.
-    if (process.env.OPENSTATES_API_KEY && store.on()) { const meta = {}; await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => {
+    if (process.env.OPENSTATES_API_KEY && store.on()) { const meta = {}; await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://openstates.org/", async () => {
       const r = await memo("saved-st-" + st, 5 * 60e3, () => store.read(`states/${st}.json`)).catch(() => null);
       // Not downloaded yet (for example, right after the store is connected): fetch it now, taking turns from the same
       // shared limit as everything else, and remember it in this copy for 6 hours.
@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
       if (d.quiet) out.quiet = d.quiet; if (d.partial) out.partial = d.partial; if (d.cut) out.shortLife = true;
       return d.items; }, null, meta);
       if (meta.at) savedAt = Date.parse(meta.at); }
-    else if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o, getJSON); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; }, "st-" + st);
+    else if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://openstates.org/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o, getJSON); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; }, "st-" + st);
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st]} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   // Keep the feed light on phones: summaries are cut at a word near 700 characters. The full summary is on each item's

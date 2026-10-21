@@ -2,7 +2,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const SHARE_URL="https://civicaccord.org/ask.html";
-const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
+const SHARE_TEXT="Ask your representatives for a public way to work with residents, built so anyone can check the results: ";
 function shareBar(el){
   if(!el)return;
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
@@ -95,5 +95,5 @@ async function find(){
   $("s2").scrollIntoView({behavior:"smooth"});
 }
 $("go").onclick=find;$("addr").onkeydown=e=>{if(e.key==="Enter")find()};
-$("samples").innerHTML="No address handy? Try a state capitol: "+CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ");
+$("samples").innerHTML="No address handy? Try a capitol (results show the offices for that address, not your own): "+CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ");
 document.querySelectorAll(".sample").forEach(x=>x.onclick=e=>{e.preventDefault();$("addr").value=CA_REG.SAMPLES[+x.dataset.i][1];find()});

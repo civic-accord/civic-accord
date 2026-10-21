@@ -28,23 +28,19 @@
   "receiptPrefix": "US",
   "elections": [
    {
-    "name": "Primary election",
-    "date": "2026-08-08"
-   },
-   {
     "name": "General election",
     "date": "2026-11-03"
    }
   ],
   "electionsSource": {
-   "url": "https://elections.hawaii.gov/?p=20785",
-   "label": "Hawaiʻi Office of Elections, 2026 proclamation"
+   "url": "https://www.law.cornell.edu/uscode/text/2/7",
+   "label": "2 U.S.C. § 7: federal general election day (primary dates vary by state)"
   },
   "offices": [
    {
-    "key": "us-house-hi2",
+    "key": "us-house-example",
     "title": "U.S. House seat",
-    "where": "Hawaiʻi 2nd District (example)",
+    "where": "A U.S. House district (example)",
     "holder": "Current officeholder (example)",
     "term": "Two-year term",
     "onBallot": true,
@@ -113,7 +109,7 @@
     [
      "Federal agencies reported spending about $2.3 billion on invasive species in FY2016",
      "Selected invasive species cost the U.S. economy an estimated $127 billion a year",
-     "Islands and territories like Hawaiʻi face the highest risk of new arrivals"
+     "Islands, territories, ports, and border regions face the highest risk of new arrivals"
     ]
    ],
    [
@@ -150,8 +146,8 @@
    ]
   ],
   "groups": [
-   "Leans toward border enforcement and protecting farmers, wary of new costs on business.",
-   "Leans toward steady funding for states, research, and having importers share the cost."
+   "In these sample votes, agreed more often with port inspections and protecting farms, and less often with new costs on businesses.",
+   "In these sample votes, agreed more often with steady funding for states, research, and fees on importers."
   ],
   "exampleVotes": true,
   "statements": [
