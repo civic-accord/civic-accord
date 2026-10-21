@@ -131,7 +131,7 @@ function render(it){
 
   <section class="panel" aria-labelledby="h3"><div class="eyebrow">3 · Results ${PLANNED}</div><h2 id="h3">Where people agree</h2>
     ${chosen?`<p class="meta">Your practice, in this browser only: you agreed with ${agreed} of the ${keys.length} ${it.parts.length?"parts":"choices"} you could vote on.</p>`:""}
-    <details><summary class="meta" style="cursor:pointer;min-height:44px;display:flex;align-items:center">No votes are counted yet. What this will show, and a sample</summary>
+    <details><summary class="meta" style="cursor:pointer;padding:12px 0">No votes are counted yet. What this will show, and a sample</summary>
       <p>When verified voting starts, each part would be labeled common ground, divides groups, or still forming, using the <a href="how.html#ground" style="color:var(--koa)">published rules</a>. Results will describe the verified voters who took part, with their share of registered voters. They won't describe the whole district.</p>
       <p class="meta"><a href="item.html?id=sample-civic-channel" style="color:var(--koa)">See a sample issue with results, delivery, and an office response</a> (everything there is marked Sample).</p></details>
   </section>
@@ -143,7 +143,7 @@ function render(it){
         <div class="acts"><button type="button" class="btn ghost" data-copyrec="${esc(s.id)}">Copy as text</button><button type="button" class="btn ghost" data-delrec="${esc(s.id)}">Delete this record</button><span class="toast" id="cr-${esc(s.id)}" role="status" aria-live="polite"></span></div></li>`).join("")}</ul>
       <p class="meta">These records are reported by you. Civic Accord didn't deliver them and can't confirm they were received. They're kept only in this browser: they don't sync to your other devices, and clearing this browser's data deletes them. <a href="following.html#records" style="color:var(--koa)">Export a copy</a>.</p>`
       :`<p class="meta">No records yet. After you write to an office or comment officially, you can keep a record here of exactly what you sent. It stays in this browser.</p>`}
-    <details><summary class="meta" style="cursor:pointer;min-height:44px;display:flex;align-items:center">${PLANNED} What the office would receive once verified voting exists</summary>
+    <details><summary class="meta" style="cursor:pointer;padding:12px 0">${PLANNED} What the office would receive once verified voting exists</summary>
       <p class="meta">The ${it.kind==="Proposed rule"?"agency":local?esc(J.name):"office that represents you"} would receive a package with the exact request, which parts have common ground and which divide people, and how many verified voters took part, with the date it was delivered.</p></details>
   </section>
 
