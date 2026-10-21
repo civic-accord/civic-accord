@@ -226,7 +226,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p><b>Not a voter yet?</b> <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a> is a separate space for young people and anyone who can't vote. It uses real issues and points to real actions anyone can take. You can tap the topics you care about or search, using the same open word lists as Open Now, and your picks stay on your device. Nothing there is counted in deliberations.</p></section>
 
   <section class="panel" id="privacy"><h2>Your privacy</h2><ul class="plain">
-    <li><b>Your address never reaches Civic Accord's servers.</b> Your browser sends it straight to the U.S. Census Bureau's free lookup to find your districts. Only your districts are kept.</li>
+    <li><b>The address you type never reaches Civic Accord's servers.</b> Your browser sends it straight to the U.S. Census Bureau's free lookup to find your districts. Only your districts are kept. (In the live version, the voter list used to mail codes is handled only by the host or the election office, and each address is deleted after printing.)</li>
     <li><b>Your identity is kept apart from your votes.</b> In the live version, the residency check gives your device a sealed voting key. The vote record sees only that key, never your name. It's designed so even the host can't link the two.</li>
     <li><b>Messages to your representatives come from you.</b> Email opens in your own email app. Civic Accord never sees or keeps what you send.</li>
     <li><b>Looking up your legislators sends only district numbers</b>, never an address.</li>
@@ -247,13 +247,14 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     </ul>
     <p>The plan is to use established, open methods rather than inventing new ones: sealing and receipt codes like Microsoft's open-source <a href="https://github.com/microsoft/electionguard-python" style="color:var(--koa)">ElectionGuard</a>, plus a separate, checkable shuffle.</p>
     <p>Each voter record can be claimed by only one verified person. Before a package goes to an office, voter status is checked again against the current list.</p>
-    <p><b>Protecting your voter record (planned).</b> In many states, anyone can get a copy of the voter list (<a href="https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx" style="color:var(--koa)">see each state's rules</a>), and people move. So the mailed code is protected in several ways:</p>
+    <p><b>Protecting your voter record (planned).</b> In about half the states, anyone can get a copy of the voter list, and others limit it to campaigns, parties, or officials (<a href="https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx" style="color:var(--koa)">each state's rules</a>). People also move. So the mailed code is protected in several ways:</p>
     <ul class="plain">
-      <li>Codes go only to records the election office lists as active, at the address on that record. Civic Accord adds no addresses of its own.</li>
-      <li>The postcard tells the voter what to do if they didn't ask for it. A code works once, expires in 30 days, and locks after a few wrong tries.</li>
-      <li>If someone else claimed your record, you can take it back with an in-person check. Their claim is cancelled, and their votes are removed if the deliberation hasn't closed.</li>
-      <li>Limits stop mass requests: one code per voter record a month, and no more codes to one address than it has active voters. Addresses with many voters, like care homes and dorms, use the in-person check instead.</li>
-      <li>Public counts for each district: codes mailed, records claimed, claims taken back, and claims cancelled. Anyone can watch for unusual jumps.</li>
+      <li>Codes go only to records the election office lists as active, at the address on that record. Civic Accord adds no addresses and changes no voter records.</li>
+      <li>The code comes in a sealed letter. The outside doesn't mention voting. The letter tells the voter what to do if they didn't ask for it. A code works once, expires in 30 days, and locks after a few wrong tries.</li>
+      <li>If someone else claimed your record, you can take it back: in person at a library or election office, through the election office, or with a take-back code mailed to your address. Help will be offered for people who can't travel, including at care homes. Their claim is cancelled, and the system is designed so their votes can be removed if the deliberation hasn't closed. How to do that without linking anyone to their votes is still being reviewed.</li>
+      <li>Some voters can't get mail at the address on their record: people in address confidentiality programs, military and overseas voters, and people without home mail delivery. They'll use the election office or an in-person check instead.</li>
+      <li>Limits stop mass requests: one code per voter record a month, and no more codes to one address than it has active voters. Every request gets the same answer, so the limits don't reveal who lives where.</li>
+      <li>Public counts for each district, published weekly once they're large enough not to point to anyone: codes mailed, records claimed, claims taken back, and claims cancelled. Anyone can watch for unusual jumps.</li>
     </ul>
     <p class="meta">Today: the example uses sample votes, and receipts are generated on your device to show how they would work.</p></section>
 
