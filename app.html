@@ -366,7 +366,7 @@ function submitBox(){
     <h3>✓ Your sample votes are saved</h3>
     <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're saved only in this browser.</p>
     <p class="meta">Your receipt</p><span class="receipt">${st.receipt}</span>
-    <p class="meta">In the live tool, this receipt confirms your sealed votes are in the public record, unchanged. It won't show anyone how you voted, so it can't be used to buy or pressure your vote. You can change your votes until the deliberation closes; only your last votes count.</p>
+    <p class="meta">In the live tool, this receipt would show your sealed votes are in the public record. It's designed so it can't show anyone how you voted, so it can't be used to buy or pressure your vote. You can change your votes until the deliberation closes; only your last votes count.</p>
     <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
   </div>`;
   if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;

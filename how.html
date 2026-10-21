@@ -234,10 +234,18 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <li><b>No ads or analytics.</b> The site doesn't track you. Its fonts load from Google Fonts, and sharing sites like Facebook have their own policies if you use their share buttons.</li></ul></section>
 
   <section class="panel" id="count"><h2>How votes are counted</h2>
-    <p>In the live version, votes go into a public record that can be added to but never quietly changed. Simple code that anyone can read does the counting, so anyone can download the record and recount it. Your private receipt lets you confirm your votes are in the record, unchanged. It doesn't show how you voted, so no one can use it to buy your vote or pressure you to prove it.</p>
-    <p><b>You can change your votes</b> any time until the deliberation closes, and only your last votes count. If someone pressured you, they can't know whether you changed your votes afterward.</p>
-    <p><b>Votes are sealed, then shuffled, then counted.</b> While a deliberation is open, votes are stored sealed (encrypted), each with its receipt code. When it closes, the sealed votes are shuffled in a way anyone can check, so they can no longer be matched to receipts, and only then opened and published for anyone to recount. One question is still open for independent review: with many statements, an unusual pattern of votes could stand out in the published list, so the review will decide how much detail to publish. Each voter is shown a random set of statements, which makes patterns harder to pick out.</p>
-    <p>The plan is to use established, open methods for this, such as Microsoft's open-source <a href="https://github.com/microsoft/electionguard-python" style="color:var(--koa)">ElectionGuard</a>, rather than inventing new ones.</p>
+    <p>In the live version, votes go into a public record that can be added to but never quietly changed. Simple code that anyone can read does the counting, so anyone can download the record and recount it.</p>
+    <ul class="plain">
+      <li><b>Your receipt code</b> (also called a tracking code) shows that your sealed vote is in the record. It's designed so it can't show how you voted, so it can't be used to buy your vote or prove it to someone pressuring you. Before you submit, you'll be able to spot-check that the tool sealed your choices correctly.</li>
+      <li><b>You can change your votes</b> until the deliberation closes. Only your last votes count. This is designed to make pressure much harder, because someone else can't easily tell whether you changed them later.</li>
+      <li><b>Votes stay sealed until the end.</b> When a deliberation closes, the sealed votes are shuffled in a way anyone can check, so they can't be matched to receipts. Then they're opened, counted, and published for anyone to recount.</li>
+    </ul>
+    <p>Two questions are still open for the independent security review before launch:</p>
+    <ul class="plain">
+      <li>Whether groups and common ground can be shown while a deliberation is open, or only when it closes. Showing them early could reveal how some people voted. This sample shows them right away.</li>
+      <li>How much vote-by-vote detail to publish. With many statements, an unusual pattern of votes could stand out. One option being studied is showing each voter only some of the statements.</li>
+    </ul>
+    <p>The plan is to use established, open methods rather than inventing new ones: sealing and receipt codes like Microsoft's open-source <a href="https://github.com/microsoft/electionguard-python" style="color:var(--koa)">ElectionGuard</a>, plus a separate, checkable shuffle.</p>
     <p>Each voter record can be claimed by only one verified person. Before a package goes to an office, voter status is checked again against the current list.</p>
     <p class="meta">Today: the example uses sample votes, and receipts are generated on your device to show how they would work.</p></section>
 
@@ -293,7 +301,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 
   <section class="panel" id="security"><h2>Security</h2>
     <p>No single test proves a system secure. Civic Accord is checked in layers, and the most important is a design where the public can check results even if part of the system is attacked.</p><ul class="plain">
-      <li><b>Checkable by design</b> (planned)<b>:</b> a public record anyone can recount, private receipts that confirm your vote was counted without showing how you voted, identity kept apart from votes, and AI that never counts.</li>
+      <li><b>Checkable by design</b> (planned)<b>:</b> a public record anyone can recount, private receipts that show your vote is included without showing how you voted, identity kept apart from votes, and AI that never counts.</li>
       <li><b>Open code</b> that anyone can inspect (works now).</li>
       <li><b>Automatic checks</b> on every change (planned; not set up yet).</li>
       <li><b>Independent review before launch:</b> a security review and break-in test against the <a href="https://owasp.org/www-project-ASVS/" style="color:var(--koa)">OWASP ASVS</a> standard, by experts with no stake in the project. Code written with AI help gets the same scrutiny.</li>
