@@ -47,12 +47,14 @@ async function federalRules() {
     (j.results || []).forEach(d => {
       // An online comment form exists only when the Federal Register links one. Otherwise the notice itself explains
       // how to comment (often by email or mail), and the button says so instead of promising a form.
-      const form = d.comment_url || d.regulations_dot_gov_url || null;
+      // The Federal Register often lists these links as http://; they're upgraded to https:// here, because pages
+      // only show https links.
+      const form = https(d.comment_url) || https(d.regulations_dot_gov_url) || null;
       items.push({
         id: "fr-" + d.document_number, level: "federal", kind: "Proposed rule", title: d.title,
         who: (d.agencies || []).map(a => a.name).filter(Boolean).join(", "),
         summary: d.abstract || "", opened: d.publication_date, closes: d.comments_close_on,
-        read: d.html_url, act: form || d.html_url, commentForm: !!form,
+        read: https(d.html_url), act: form || https(d.html_url), commentForm: !!form,
         actLabel: form ? "Comment officially" : "How to comment (in the notice)", source: "Federal Register"
       });
     });
