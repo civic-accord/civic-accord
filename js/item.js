@@ -44,7 +44,7 @@ function topBlock(it,stage,next,following){
     <dl class="kv">
       <dt>The item</dt><dd>${esc(it.title)} ${LIVE}<br><span class="meta">Version: ${versionLabel(it)}</span></dd>
       <dt>Who can act</dt><dd>${esc(whoCanAct(it))}${it.level!=="local"&&it.kind!=="Proposed rule"?`<br><a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">See who represents you, and how to reach them</a>`:""}</dd>
-      <dt>Where it stands</dt><dd><b>${esc(stage.label)}</b>${stage.date?`, ${fmt(stage.date)}`:""}${stage.detail?`<br><span class="meta">${esc(stage.detail)}</span>`:""}</dd>
+      <dt>Where it stands</dt><dd><b>${esc(stage.label)}</b>${stage.date?(stage.key==="comment-open"?` until ${fmt(stage.date)}`:`, ${fmt(stage.date)}`):""}${stage.detail?`<br><span class="meta">${esc(stage.detail)}</span>`:""}</dd>
       <dt>What you can do next</dt><dd>${next.href&&safe(next.href)?`<a class="nextbtn" href="${esc(next.href)}" target="_blank" rel="noopener">${esc(next.text)}</a>`:next.anchor?`<a class="nextbtn" href="#${esc(next.anchor)}">${esc(next.text)}</a>`:esc(next.text)}</dd>
     </dl>
     <div class="acts"><button type="button" class="btn${following?" ghost":""}" id="follow" aria-pressed="${following}">${following?"Following":"Follow this issue"}</button>
@@ -73,7 +73,8 @@ function render(it){
   const chosen=keys.filter(k=>MINE.parts[k]).length, agreed=keys.filter(k=>MINE.parts[k]&&MINE.parts[k].v==="0").length;
   if(!MINE.version||(!orphans.length&&changed)){MINE.version=version;save()}
   const L=it.links||{}, following=CA_RECORDS.isFollowing(ID), sent=CA_RECORDS.sentFor(ID);
-  const canTell=(it.level==="federal"&&it.kind==="Bill in Congress")||it.level==="state";
+  // Proposed rules too: the official comment comes first (above), and members of Congress can also be told.
+  const canTell=(it.level==="federal"&&(it.kind==="Bill in Congress"||it.kind==="Proposed rule"))||it.level==="state";
   const r=REACT[ID];
   $("main").innerHTML=`${topBlock(it,stage,next,following)}
 
@@ -168,7 +169,9 @@ function manualOffice(it){const J=it.jurisdiction||{};
     :it.level==="local"?{officeId:it.office&&it.office.id||null,name:J.name,title:J.name,channel:"meeting-comment",text:""}:null}
 
 function bind(it,keys,parts,version,orphans){
-  const rerender=(focus)=>{const y=window.scrollY;render(it);window.scrollTo({top:y});if(focus){const f=$(focus);if(f)f.focus()}};
+  // After the page is redrawn, focus goes back to the control that was used (or to a named field), so keyboard and
+  // screen-reader users don't land at the top of the page.
+  const rerender=(focus)=>{const y=window.scrollY,back=focusKey();render(it);window.scrollTo({top:y});const f=(focus&&$(focus))||(back&&document.querySelector(back));if(f)f.focus({preventScroll:true})};
   $("follow").onclick=()=>{
     if(CA_RECORDS.isFollowing(ID)){CA_RECORDS.unfollow(ID);SINCE=null;rerender("follow");$("follow-msg").textContent="Stopped following. Nothing about this issue is kept for Following now.";return}
     if(!CA_RECORDS.available()){$("follow-msg").textContent="This browser isn't saving data (it may be a private window), so Follow can't be kept.";return}
@@ -191,7 +194,8 @@ function bind(it,keys,parts,version,orphans){
     pend(p,"email",m);window.__openMail?window.__openMail(url):(location.href=url);if(!shown){setTimeout(()=>rerender("didsend"),1200);el.textContent="Opening your email app…"}});
   document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const p=reps[+a.dataset.form];pend(p,"contact-form",msg(p));setTimeout(()=>rerender(),1200)}));
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keepS();const i=+b.dataset.copy,p=reps[i],m=msg(p);pend(p,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`,t=$("rm-"+i);
-    CA_TELL.copy(txt).then(ok=>ok?t.textContent="Copied. Now open the contact form and paste it.":CA_TELL.showText(t,txt,"Couldn't copy automatically. Select the message below and copy it."))});
+    const noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: add your name above first, or replace it after pasting.":"";
+    CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; now open the contact form and paste it.":"Couldn't copy automatically. Select the message below and copy it.")+noName))});
   const ds=$("didsend");if(ds)ds.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   const rm=$("rec-manual");if(rm)rm.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   if(RECORDING)CA_TELL.bindPanel("rec",{id:ID,title:it.title,version},PENDING,manualOffice(it),n=>{RECORDING=false;if(n)PENDING=[];rerender("h4")});
@@ -215,8 +219,11 @@ async function loadReps(it){
   if(!DIST||(FED&&STATELEG))return;
   try{FED=await CA_REG.officeholders(DIST)}catch(e){FED={}}
   try{STATELEG=await CA_REG.stateLegislators(DIST)}catch(e){STATELEG={legislators:[],errors:["Couldn't reach the legislator lookup."]}}
-  const y=window.scrollY;render(it);window.scrollTo({top:y});
+  const y=window.scrollY,back=focusKey();render(it);window.scrollTo({top:y});const f=back&&document.querySelector(back);if(f)f.focus({preventScroll:true});
 }
+// A selector that finds the focused control again after a redraw: its id, or its data attribute.
+function focusKey(){const a=document.activeElement;if(!a||a===document.body)return null;if(a.id)return "#"+CSS.escape(a.id);
+  const d=a.dataset&&Object.entries(a.dataset)[0];return d?`[data-${d[0].replace(/[A-Z]/g,c=>"-"+c.toLowerCase())}="${CSS.escape(d[1])}"]`:null}
 
 (async()=>{
   if(!ID){$("title").textContent="Pick an issue";$("main").innerHTML=`<p>Choose any bill, proposed rule, or meeting from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>`;return}

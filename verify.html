@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Verify You're a Voter</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Verify you're a voter (sample) · Civic Accord</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
 .timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
@@ -55,6 +55,16 @@ a:focus-visible,summary:focus-visible,select:focus-visible,label:focus-visible{o
 }
 </style>
 
+<style>
+/* Shared accessibility rules. Form controls and tappable chips have edges at least 3:1 against the page (WCAG 1.4.11).
+   On phones, focused items scroll clear of the bottom tab bar (2.4.11). At very high zoom, the fixed bars stop
+   following the screen so content has room (1.4.10). */
+input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea,.chips button,.vote button,button.agree,button.disagree,button.pass{border-color:var(--muted)}
+button[data-g]{min-height:44px}
+a.sample{display:inline-block;padding:10px 0}
+@media (max-width:700px){html{scroll-padding-bottom:calc(84px + env(safe-area-inset-bottom))}}
+@media (max-width:700px) and (max-height:500px){.tabbar{position:static!important}body{padding-bottom:0!important}.row.save{position:static!important}}
+</style>
 </head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{

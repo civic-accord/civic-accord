@@ -37,14 +37,24 @@ function draw(){
           ${r==="seen"?`<span class="meta">What's there now (official data fetched ${esc(when(c.at))}) is saved. Next time, you'll see what changed after this.</span>`:""}
           ${r==="not-refreshed"?`<span class="meta">The source's data (fetched ${esc(when(c.at))}) isn't newer than what you last saw, so there's nothing new to compare yet. This is not the same as "no change."</span>`:""}
           ${c.cmp&&c.cmp.soon.length?`<p><b>Coming up:</b> ${c.cmp.soon.map(x=>esc(x.text)).join("; ")}.</p>`:""}`}
-      <div class="acts">${(r==="changed"||r==="no-baseline")&&c&&c.item?`<button type="button" class="btn ghost" data-seen="${esc(id)}">Mark as seen</button>`:""}<button type="button" class="btn ghost" data-unf="${esc(id)}">Stop following</button></div></li>`}).join("")}</ul>
-  <p class="end">You're up to date. That's everything you follow.</p>`;
+      <div class="acts">${(r==="changed"||r==="no-baseline")&&c&&c.item?`<button type="button" class="btn ghost" data-seen="${esc(id)}">Mark as seen</button>`:""}${r==="unavailable"?`<button type="button" class="btn ghost" data-retry="${esc(id)}">Check again</button>`:""}<button type="button" class="btn ghost" data-unf="${esc(id)}">Stop following</button></div></li>`}).join("")}</ul>
+  ${endLine(rows)}`;
   document.querySelectorAll("[data-seen]").forEach(b=>b.onclick=()=>{const id=b.dataset.seen,c=CHECKS[id];
     if(c&&c.item){CA_RECORDS.setBaseline(id,CA_ISSUE.snapshot(c.item,c.at),c.item.title);c.seenNow=true}draw();
+    const h=document.getElementById("h-"+encodeURIComponent(id));if(h)h.focus()});
+  document.querySelectorAll("[data-retry]").forEach(b=>b.onclick=async()=>{const id=b.dataset.retry;b.disabled=true;b.textContent="Checking…";
+    const r=await fetchItem(id),f=CA_RECORDS.follows().find(x=>x.issue.id===id);
+    CHECKS[id]=r.item?{item:r.item,at:r.at,cmp:CA_ISSUE.compare(f&&f.baseline,r.item,r.at,new Date())}:{error:r.error};draw();
     const h=document.getElementById("h-"+encodeURIComponent(id));if(h)h.focus()});
   document.querySelectorAll("[data-unf]").forEach(b=>b.onclick=()=>{CA_RECORDS.unfollow(b.dataset.unf);delete CHECKS[b.dataset.unf];draw();
     $("rec-msg").textContent="Stopped following that issue.";const h=$("main").querySelector("h2");if(h)h.focus()});
 }
+
+// The closing line says "up to date" only when every issue was checked; otherwise it gives a plain tally.
+function endLine(rows){const res=rows.map(f=>{const c=CHECKS[f.issue.id];return !c?"unchecked":c.sample?"sample":c.seenNow?"seen":c.cmp?c.cmp.result:"unavailable"});
+  const n=k=>res.filter(x=>x===k).length,ch=n("changed"),un=n("unavailable")+n("unchecked");
+  if(!ch&&!un)return `<p class="end">You're up to date. That's everything you follow.</p>`;
+  return `<p class="end">That's everything you follow: ${[ch&&`${ch} changed since you last looked`,un&&`${un} couldn't be checked right now`].filter(Boolean).join(" · ")}.</p>`}
 
 // Checks run three at a time. The list is drawn once they all finish, so keyboard and screen reader users don't
 // lose their place while results come in.

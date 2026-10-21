@@ -26,7 +26,7 @@ function renderMe(){
   if(DIST){m.innerHTML=`<div><h2>Who represents you</h2><p style="margin:4px 0 0">Writing as a resident of ${esc(DIST.stateName||DIST.state)}${DIST.cd?`, congressional district ${esc(DIST.cd)}`:""}${DIST.sldl?`, state house ${esc(DIST.sldl)}`:""}${DIST.sldu?`, state senate ${esc(DIST.sldu)}`:""}. <a href="#" id="chg" style="color:var(--koa)">Change</a></p></div>`;
     $("chg").onclick=e=>{e.preventDefault();DIST=null;try{localStorage.removeItem(DKEY)}catch(x){}renderMe();render()};return}
   m.innerHTML=`<div><h2>Who represents you</h2><p style="margin:4px 0 0">To tell your representatives what you think, enter your address once. Only your districts are kept on this device. The address goes from your browser straight to the U.S. Census Bureau.</p></div>
-   <div class="row"><label for="addr" style="position:absolute;left:-9999px">Home address</label><input id="addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="findme" type="button">Find my representatives</button></div>
+   <div class="row"><label for="addr" class="meta">Home address (street, city, state, ZIP)</label><input id="addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="findme" type="button">Find my representatives</button></div>
    <span class="toast" id="memsg" aria-live="polite"></span>`;
   const go=async()=>{const a=$("addr").value.trim();if(a.length<8){$("memsg").textContent="Enter a full street address, including city and state.";return}
     $("memsg").textContent="Looking up your districts with the Census Bureau…";
@@ -163,13 +163,13 @@ function card(it,first){
   return `<article class="item lvl-${esc(it.level)}" id="it-${esc(it.id)}">
     <div class="top"><span class="kindtag">${esc(KIND(it))}</span>${first?`<span class="start">Start here</span>`:""}
       ${it.closes&&dl!==null?`<span class="clock ${CA_DATES.closesSoon(it.closes)?"soon":""}">${CA_DATES.label(it.closes)}</span>`:""}</div>
-    <h3>${esc(it.title)}</h3>
+    <h3><a href="item.html?id=${encodeURIComponent(it.id)}" style="color:inherit">${esc(it.title)}</a></h3>
     ${whyLine(it)}
     <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}${dl===0?" (check the notice for the exact time)":""}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
     ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm)}${it.summaryCut?` <a href="item.html?id=${encodeURIComponent(it.id)}" style="color:var(--koa)">Full summary</a>`:""}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}
-    <div class="also"><a href="item.html?id=${encodeURIComponent(it.id)}">Issue page: follow it, keep a record</a>${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
+    <div class="also"><a href="item.html?id=${encodeURIComponent(it.id)}">Open the issue page (follow, keep a record, talk it through)</a>${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
   </article>`;
 }
 function render(){
@@ -221,7 +221,8 @@ function render(){
       if(!shown){setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);el.textContent="Opening your email app…"}});
     document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const r=reps[+a.dataset.form];if(r)pend(it,r,"contact-form",message(it,r.sal));mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
     document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);pend(it,r,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`;
-      const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
+      const t=$("rm-"+i),noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: add your name above first, or replace it after pasting.":"";
+      CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; now open the contact form and paste it.":"Couldn't copy automatically. Select the message below and copy it.")+noName))});
   }
 }
 // Only the latest state choice is ever shown: earlier requests are cancelled, and a late answer is ignored.

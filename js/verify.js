@@ -8,7 +8,7 @@ function bar(){$("vsteps").innerHTML=STEPS.map((s,i)=>`<span class="${i===step?"
 async function render(){bar();const p=$("p");
  if(step===0){p.innerHTML=`<div><div class="eyebrow">Step 1</div><h2>Where do you live?</h2></div>
    <p>Your address finds your districts: congressional, state house and senate, county, and more. Use the address where you're registered to vote.</p>
-   <div class="addr"><label for="addr" class="meta">Home address</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
+   <div class="addr"><label for="addr" class="meta">Home address (street, city, state, ZIP)</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. Only your districts are kept.</p>
    <div class="grp"><h3>Who can take part</h3><p class="meta">Registered voters in the district. Everyone else can still read everything, see what's open for public input, comment through official channels, and write to their representatives. Not a voter yet? Try <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a>.</p></div>
    <div class="actions"><button class="btn" id="go" type="button">Find my districts</button></div>

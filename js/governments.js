@@ -36,7 +36,7 @@ async function show(geo,fromSaved){
     <p class="meta">Members of Congress come from the public-domain congress-legislators data; state legislators from Open States, published nightly. Party is never shown. To write about a specific issue, open it from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>
 
     <h3>Every government that represents you</h3>
-    ${map.covered?"":`<p class="note">This state isn't in the open registry yet, so state and local offices show general descriptions. A local host can add the details.</p>`}
+    ${map.covered?"":`<p class="note">We don't have full details for this state's state and local offices yet, so they show general descriptions. Names and contact details for members of Congress and state legislators come from current public data.</p>`}
     ${map.notes.map(n=>`<p class="meta">${esc(n)}</p>`).join("")}
     ${CA_REG.render(map,people,OPEN)}
     <h3>Sources</h3><ul class="plain">${map.sources.map(s=>`<li><a href="${esc(s[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s[1])}</a></li>`).join("")}</ul>`;

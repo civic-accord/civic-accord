@@ -47,7 +47,7 @@ const JURIS=VD?[
   {key:VD.state.toLowerCase()+"-state",name:`${VD.stateName||VD.state} Legislature`,sub:[VD.sldl&&"House "+VD.sldl,VD.sldu&&"Senate "+VD.sldu].filter(Boolean).join(" · ")||"Your state legislators"},
   ...(VD.county?[{key:VD.state.toLowerCase()+"-county-"+(VD.countyId||VD.county),name:VD.county,sub:"County government"}]:[]),
   ...(VD.place?[{key:VD.state.toLowerCase()+"-city-"+VD.place,name:VD.place,sub:"City or town government"}]:[])]
- :[{key:"federal",name:"U.S. Congress",sub:"Nationwide"},{key:"hi-state",name:"Hawaiʻi State Legislature",sub:"Pilot"}];
+ :[{key:"federal",name:"U.S. Congress",sub:"Nationwide"},{key:"hi-state",name:"Hawaiʻi State Legislature",sub:"Sample"}];
 const requested={};
 const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
 
@@ -427,7 +427,9 @@ function render(){
   const p=document.getElementById("panel");
   refreshCanVote();
   p.innerHTML=(PRACTICE?`<p class="draftbar"><b>Practice mode.</b> You're trying the sample deliberation from <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a>. Practice votes use sample data, stay on this device, and are never counted.</p>`:"")+(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+(!CANVOTE&&st.step===3?`<p class="note"><b>Exploring only.</b> Try any mix of options to see the cost. Only verified voters' choices count. <a href="verify.html" style="color:var(--koa)">Verify that you're a registered voter</a>.</p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
-  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
+  // Moving to another step puts focus on that step's first heading, so keyboard and screen-reader users start there.
+  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0});
+    const h=document.querySelector("#panel h2, #panel h3");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}};
   go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
   if(st.step===3&&Object.keys(P.OPT).length){
     Object.keys(P.OPT).forEach(k=>{

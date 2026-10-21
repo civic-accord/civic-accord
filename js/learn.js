@@ -39,7 +39,8 @@ function itemCard(it){
 }
 function renderItems(){
   $("items").innerHTML=ITEMS.length?ITEMS.map(itemCard).join(""):`<p class="meta">Nothing to show right now. Try again later.</p>`;
-  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{OPENG=OPENG===b.dataset.g?null:b.dataset.g;renderItems()});
+  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const g=b.dataset.g;OPENG=OPENG===g?null:g;renderItems();
+    const nb=[...document.querySelectorAll("[data-g]")].find(x=>x.dataset.g===g);if(nb)nb.focus({preventScroll:true})});
   document.querySelectorAll("[data-n]").forEach(t=>t.oninput=()=>{(NOTES[OPENG]=NOTES[OPENG]||{})[t.dataset.n]=t.value;try{localStorage.setItem("civicaccord-learn-notes",JSON.stringify(NOTES))}catch(e){}});
   const cp=$("copynotes");if(cp)cp.onclick=()=>{const n=NOTES[OPENG]||{};const txt=QS.map((q,i)=>n[i]?`${q}\n${n[i]}`:"").filter(Boolean).join("\n\n");try{navigator.clipboard.writeText(txt).then(()=>$("cpmsg").textContent="Copied.")}catch(e){$("cpmsg").textContent="Select your notes to copy them."}};
 }
