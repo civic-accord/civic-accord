@@ -61,3 +61,21 @@ Threats and planned controls:
 11. **Small organized groups.** Consensus labels count a group only once it has at least 10 votes on that statement, and need at least two such groups. The common-ground step and the office's package show turnout as a share of registered voters, beside the citizen panel. Planned: a public daily timeline of votes and sign-ups so coordinated bursts are visible.
 
 To be reviewed with the host's counsel, each state's legal review (which voter-list fields and mailings are allowed, address confidentiality programs), and the independent security review.
+
+## Office identity design (planned)
+
+Goal: nothing can appear as an office's public response unless that office really sent it, and the public can check that. A fake response (or a real one later disowned) is among the most damaging failures for trust, so office accounts get stronger controls than any other part of the system.
+
+1. **Confirming the office, out of band.** The host confirms each seat through official channels, never through contact details supplied by whoever asks: it writes to the office at the contact in the chamber's or government's own published directory and asks the office to designate an office administrator. Creating or re-confirming an office account needs two host staff to approve.
+2. **Official domains.** The registry lists each government's official email domains with sources (e.g., house.gov, senate.gov, a legislature's domain). Office accounts can only use addresses on those domains. Lookalike domains are rejected.
+3. **Phishing-resistant sign-in.** Every office account uses a passkey or security key (WebAuthn), one account per person. No shared logins. Account recovery happens only by re-confirming through official channels, never by a help-desk reset.
+4. **Roles.** Staff can draft; only designated approvers can publish. Every public response names its approver (as the core design requires).
+5. **Signed responses.** Each response is signed with the office's signing key and added to the public, append-only record with its signature, so anyone can verify it came from that office account. Each response has a permanent page; screenshots can be checked against it.
+6. **Public change log.** Every change to who can post for an office (added, removed, re-confirmed, keys rotated) is published with dates, without personal contact details.
+7. **Disputes.** If an office reports that it didn't send a response, the response is labeled "Under review: the office says it didn't send this" at once. The host investigates, publishes the outcome, revokes compromised keys, and keeps the original in the record with the label.
+8. **Term changes.** The new officeholder's start date comes from official sources (certification and swearing-in). Outgoing staff access ends that day; the signing key is rotated; the new office is confirmed the same way. Open packages and the full record pass to the seat; "No response yet" keeps counting.
+9. **Host insiders.** Host staff cannot post as an office. Host actions on office accounts are logged and published in the change log.
+10. **No secrets by email or phone.** Civic Accord never asks an office for a password or code by email or phone; the office onboarding guide says so.
+
+To be reviewed in the independent security review, and with each chamber's rules on official communications.
+
