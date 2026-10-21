@@ -114,7 +114,7 @@ function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
   // Your own local meetings are included in "your topics" even when no topic word matches, so say so.
   const localOnly=TP.picked.length?mine.filter(it=>!topicsOf(it).some(m=>TP.picked.includes(m.id))).length:0;
-  $("headline").textContent=TP.picked.length?`${mine.length} item${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"}${localOnly?`, including ${localOnly} local meeting${localOnly===1?"":"s"},`:""} you can weigh in on right now.`:`${all.length} items you can weigh in on right now.`;
+  $("headline").textContent=TP.picked.length?`${mine.length} item${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"}${localOnly?`, including ${localOnly} local meeting${localOnly===1?"":"s"},`:""} you can weigh in on right now${DIST&&DIST.stateName?" in "+DIST.stateName+" and nationwide":""}.`:`${all.length} items you can weigh in on right now${DIST&&DIST.stateName?" in "+DIST.stateName+" and nationwide":""}.`;
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";
   if(DATA.quiet)$("subline").textContent+=" "+DATA.quiet;}
 // Your own county or city's meetings always show in "your topics", since meeting titles rarely name a topic.
@@ -161,7 +161,7 @@ function card(it,first){
   const dl=daysLeft(it.closes);
   const sm=it.summary||"";
   return `<article class="item lvl-${esc(it.level)}" id="it-${esc(it.id)}">
-    <div class="top"><span class="kindtag">${esc(KIND(it))}</span>${first?`<span class="start">Start here</span>`:""}
+    <div class="top"><span class="kindtag">${esc(KIND(it))}</span>${far(it)?`<span class="kindtag" title="This item names another state in its official title">About ${esc(CA_PLACE.statesNamed(it.title).map(k=>CA_PLACE.NAMES[k]).join(" and "))}</span>`:""}${first?`<span class="start">Start here</span>`:""}
       ${it.closes&&dl!==null?`<span class="clock ${CA_DATES.closesSoon(it.closes)?"soon":""}">${CA_DATES.label(it.closes)}</span>`:""}</div>
     <h3><a href="item.html?id=${encodeURIComponent(it.id)}" style="color:inherit">${esc(it.title)}</a></h3>
     ${whyLine(it)}
@@ -172,13 +172,16 @@ function card(it,first){
     <div class="also"><a href="item.html?id=${encodeURIComponent(it.id)}">Open the issue page (follow, keep a record, talk it through)</a>${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
   </article>`;
 }
+// Federal items about one other state (an air plan for North Carolina, a water program for Arkansas) sort after your
+// own state's items and nationwide rules. Judged from the official title only (lib/place.js). Nothing is hidden.
+function far(it){return it.level==="federal"&&DIST&&DIST.state&&window.CA_PLACE&&CA_PLACE.aboutAnotherState(it.title,DIST.state)?1:0}
 function render(){
   const qraw=$("q").value.trim(), q=qraw.toLowerCase(), lvl=$("lvl").value, kd=$("kind").value;
   const base=q?(DATA.items||[]):VIEW==="mine"&&TP.picked.length?mineItems():VIEW!=="all"&&VIEW!=="mine"?(DATA.items||[]).filter(it=>topicsOf(it).some(m=>m.id===VIEW)):(DATA.items||[]);
   const items=base.filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
-    .sort((a,b)=>(a.closes||a.meets||"9999").localeCompare(b.closes||b.meets||"9999"));
+    .sort((a,b)=>(far(a)-far(b))||(a.closes||a.meets||"9999").localeCompare(b.closes||b.meets||"9999"));
   const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
-  const wk=items.filter(i=>CA_DATES.closesSoon(i.closes));
+  const wk=items.filter(i=>!far(i)&&CA_DATES.closesSoon(i.closes));
   $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
   const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:(q?`<p class="meta">Nothing matches. Try another word.</p>`:`<p class="meta">Nothing is open for public input here right now${lvl||kd?" with these filters":""}.${DATA&&DATA.quiet?" "+esc(DATA.quiet):""} See "Where this comes from" at the bottom of the page for each source.</p>`);
   // Many near-identical rules (for example, dozens of "Airworthiness Directives") are folded into one group.
@@ -187,7 +190,7 @@ function render(){
     if(gi[k]===undefined){gi[k]=groups.length;groups.push({k,name:it.title.split(";")[0].trim(),list:[it]})}else groups[gi[k]].list.push(it)});
   GROUPS=groups;
   // One unit everywhere: items. When similar items are folded together, say so.
-  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}${groups.length<items.length?`, shown in ${groups.length} groups of similar items`:""}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}${DATA.closedNow?` ${DATA.closedNow} item${DATA.closedNow===1?" has":"s have"} closed since this list was fetched, so ${DATA.closedNow===1?"it's":"they're"} hidden.`:""}`;
+  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}${groups.length<items.length?`, shown in ${groups.length} groups of similar items`:""}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}${(()=>{const n=items.filter(far).length;return n?` ${n} item${n===1?" is":"s are"} about other states; ${n===1?"it comes":"they come"} after yours.`:""})()}${DATA.closedNow?` ${DATA.closedNow} item${DATA.closedNow===1?" has":"s have"} closed since this list was fetched, so ${DATA.closedNow===1?"it's":"they're"} hidden.`:""}`;
   $("list").innerHTML=groups.slice(0,shown).map((g,gi)=>{const rest=g.list.length-1,f=gi===0&&!q&&VIEW!=="all";
     if(!rest)return card(g.list[0],f);
     const open=OPENG.has(g.k);
