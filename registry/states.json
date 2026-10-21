@@ -38,6 +38,14 @@
   [
    "https://www.ncsl.org/aboutus/ncslservice/state-legislative-websites-directory.aspx",
    "NCSL: State legislative websites directory (interactive; homepages and lookup pages were checked by opening each legislature site)"
+  ],
+  [
+   "https://lrb.hawaii.gov/par/",
+   "Hawaii Legislative Reference Bureau: Public Access Room"
+  ],
+  [
+   "https://www.oregonlegislature.gov/citizen_engagement/Pages/Submit-Exhibits.aspx",
+   "Oregon Legislature: register to testify and submit testimony (each testimony.url was opened and is the source for its row)"
   ]
  ],
  "states": {
@@ -46,6 +54,12 @@
    "legislature": "Alaska Legislature",
    "legislatureUrl": "https://akleg.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -70,6 +84,12 @@
    "legislature": "Alabama Legislature",
    "legislatureUrl": "https://alison.legislature.state.al.us/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -92,6 +112,12 @@
    "legislature": "Arkansas General Assembly",
    "legislatureUrl": "https://www.arkleg.state.ar.us/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -114,6 +140,12 @@
    "legislature": "Arizona State Legislature",
    "legislatureUrl": "https://www.azleg.gov/",
    "findLegislatorUrl": "https://www.azleg.gov/findmylegislator/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -136,6 +168,12 @@
    "legislature": "California State Legislature",
    "legislatureUrl": "https://www.legislature.ca.gov/",
    "findLegislatorUrl": "https://findyourrep.legislature.ca.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -157,6 +195,12 @@
    "legislature": "Colorado General Assembly",
    "legislatureUrl": "https://leg.colorado.gov/",
    "findLegislatorUrl": "https://leg.colorado.gov/find-my-legislator",
+   "testimony": {
+    "url": "https://content.leg.colorado.gov/sites/default/files/r25-1179-public-participation-memo-accessible.pdf",
+    "how": "Register on the public testimony website for a scheduled bill, then testify in person, by Zoom, or in writing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -179,6 +223,12 @@
    "legislature": "Connecticut General Assembly",
    "legislatureUrl": "https://www.cga.ct.gov/",
    "findLegislatorUrl": "https://www.cga.ct.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -203,6 +253,12 @@
    "legislature": "Council of the District of Columbia",
    "legislatureUrl": "https://dccouncil.gov/",
    "findLegislatorUrl": "https://dccouncil.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": null,
    "upper": {
     "name": "Council",
@@ -222,6 +278,12 @@
    "legislature": "Delaware General Assembly",
    "legislatureUrl": "https://legis.delaware.gov/",
    "findLegislatorUrl": "https://legis.delaware.gov/FindMyLegislator",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -243,6 +305,12 @@
    "legislature": "Florida Legislature",
    "legislatureUrl": "https://www.leg.state.fl.us/",
    "findLegislatorUrl": "https://www.flsenate.gov/Senators/Find",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -264,6 +332,12 @@
    "legislature": "Georgia General Assembly",
    "legislatureUrl": "https://www.legis.ga.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -286,6 +360,12 @@
    "legislature": "Hawaii State Legislature",
    "legislatureUrl": "https://www.capitol.hawaii.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": "https://lrb.hawaii.gov/par/use-your-voice-at-the-legislature/",
+    "how": "Submit written testimony, including through the online testimony feature, or testify orally at a scheduled hearing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -309,6 +389,12 @@
    "legislature": "Iowa General Assembly",
    "legislatureUrl": "https://www.legis.iowa.gov/",
    "findLegislatorUrl": "https://www.legis.iowa.gov/legislators/find",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -330,6 +416,12 @@
    "legislature": "Idaho Legislature",
    "legislatureUrl": "https://legislature.idaho.gov/",
    "findLegislatorUrl": "https://legislature.idaho.gov/legislators/whosmylegislator/",
+   "testimony": {
+    "url": "https://legislature.idaho.gov/remote-testimony/",
+    "how": "Where a committee allows it, sign up ahead on the committee page's public testimony registration tab to testify remotely.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -352,6 +444,12 @@
    "legislature": "Illinois General Assembly",
    "legislatureUrl": "https://www.ilga.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -373,6 +471,12 @@
    "legislature": "Indiana General Assembly",
    "legislatureUrl": "https://iga.in.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -395,6 +499,12 @@
    "legislature": "Kansas Legislature",
    "legislatureUrl": "https://www.kslegislature.gov/",
    "findLegislatorUrl": "https://www.kslegislature.gov/b2025_26/find-my-legislators/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -417,6 +527,12 @@
    "legislature": "Kentucky General Assembly",
    "legislatureUrl": "https://legislature.ky.gov/",
    "findLegislatorUrl": "https://apps.legislature.ky.gov/findyourlegislator/findyourlegislator.html",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -439,6 +555,12 @@
    "legislature": "Louisiana State Legislature",
    "legislatureUrl": "https://legis.la.gov/",
    "findLegislatorUrl": "https://www.legis.la.gov/legis/FindMyLegislators.aspx",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -462,6 +584,12 @@
    "legislature": "Massachusetts General Court",
    "legislatureUrl": "https://malegislature.gov/",
    "findLegislatorUrl": "https://malegislature.gov/Search/FindMyLegislator",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -485,6 +613,12 @@
    "legislature": "Maryland General Assembly",
    "legislatureUrl": "https://mgaleg.maryland.gov/",
    "findLegislatorUrl": "https://mgaleg.maryland.gov/mgawebsite/Members/District",
+   "testimony": {
+    "url": "https://mgaleg.maryland.gov/pubs-current/current-jpr-faqs.pdf",
+    "how": "Create an MGA account, then sign up to testify in person or by Zoom, or upload written testimony as a PDF.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Delegates",
     "term": "4-year term"
@@ -508,6 +642,12 @@
    "legislature": "Maine Legislature",
    "legislatureUrl": "https://legislature.maine.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -531,6 +671,12 @@
    "legislature": "Michigan Legislature",
    "legislatureUrl": "https://www.legislature.mi.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -552,6 +698,12 @@
    "legislature": "Minnesota Legislature",
    "legislatureUrl": "https://www.leg.mn.gov/",
    "findLegislatorUrl": "https://www.gis.leg.mn/iMaps/districts/",
+   "testimony": {
+    "url": "https://www.leg.mn.gov/leg/FAQ/faq?id=117",
+    "how": "Arrange testimony with committee staff before a scheduled hearing.",
+    "remote": null,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -573,6 +725,12 @@
    "legislature": "Missouri General Assembly",
    "legislatureUrl": "https://www.moga.mo.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -597,6 +755,12 @@
    "legislature": "Mississippi Legislature",
    "legislatureUrl": "https://www.legislature.ms.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -619,6 +783,12 @@
    "legislature": "Montana Legislature",
    "legislatureUrl": "https://www.legmt.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": "https://legmt.gov/participate",
+    "how": "Use the Public Participation app to sign up for remote testimony or submit written comments on a bill.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -641,6 +811,12 @@
    "legislature": "North Carolina General Assembly",
    "legislatureUrl": "https://www.ncleg.gov/",
    "findLegislatorUrl": "https://www.ncleg.gov/FindYourLegislators",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -662,6 +838,12 @@
    "legislature": "North Dakota Legislative Assembly",
    "legislatureUrl": "https://www.ndlegis.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": "https://ndlegis.gov/node/38129",
+    "how": "Register through Zoom Webinar to submit written or oral testimony for a scheduled committee hearing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "4-year term"
@@ -684,6 +866,12 @@
    "legislature": "Nebraska Legislature",
    "legislatureUrl": "https://nebraskalegislature.gov/",
    "findLegislatorUrl": "https://nebraskalegislature.gov/senators/senator_find.php",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": null,
    "upper": {
     "name": "Legislature (one chamber, nonpartisan)",
@@ -703,6 +891,12 @@
    "legislature": "New Hampshire General Court",
    "legislatureUrl": "https://gc.nh.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": "https://gc.nh.gov/house/committees/remotetestimony/",
+    "how": "Use the online form to register a position and submit testimony for a House committee hearing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -727,6 +921,12 @@
    "legislature": "New Jersey Legislature",
    "legislatureUrl": "https://www.njleg.state.nj.us/",
    "findLegislatorUrl": "https://www.njleg.state.nj.us/#findLegislator",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "General Assembly",
     "term": "2-year term"
@@ -748,6 +948,12 @@
    "legislature": "New Mexico Legislature",
    "legislatureUrl": "https://www.nmlegis.gov/",
    "findLegislatorUrl": "https://www.nmlegis.gov/Members/Find_My_Legislator",
+   "testimony": {
+    "url": "https://www.nmlegis.gov/Publications/Public Comment Procedure and Guidelines.24.pdf",
+    "how": "For interim committees, join the committee's Zoom webinar and use the raise-hand feature when public comment opens.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -770,6 +976,12 @@
    "legislature": "Nevada Legislature",
    "legislatureUrl": "https://www.leg.state.nv.us/",
    "findLegislatorUrl": "https://www.leg.state.nv.us/whosmylegislator/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "Assembly",
     "term": "2-year term"
@@ -793,6 +1005,12 @@
    "legislature": "New York State Legislature",
    "legislatureUrl": "https://www.nysenate.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -814,6 +1032,12 @@
    "legislature": "Ohio General Assembly",
    "legislatureUrl": "https://www.legislature.ohio.gov/",
    "findLegislatorUrl": "https://www.legislature.ohio.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -836,6 +1060,12 @@
    "legislature": "Oklahoma Legislature",
    "legislatureUrl": "https://www.oklegislature.gov/",
    "findLegislatorUrl": "https://www.oklegislature.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -858,6 +1088,12 @@
    "legislature": "Oregon Legislative Assembly",
    "legislatureUrl": "https://www.oregonlegislature.gov/",
    "findLegislatorUrl": "https://www.oregonlegislature.gov/FindYourLegislator/legislator-lookup.html",
+   "testimony": {
+    "url": "https://www.oregonlegislature.gov/citizen_engagement/Pages/Submit-Exhibits.aspx",
+    "how": "Register in OLIS to testify in person or remotely, or submit written testimony online within 48 hours of the hearing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -879,6 +1115,12 @@
    "legislature": "Pennsylvania General Assembly",
    "legislatureUrl": "https://www.palegis.us/",
    "findLegislatorUrl": "https://www.palegis.us/find-my-legislator",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -901,6 +1143,12 @@
    "legislature": "Rhode Island General Assembly",
    "legislatureUrl": "https://www.rilegislature.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -924,6 +1172,12 @@
    "legislature": "South Carolina General Assembly",
    "legislatureUrl": "https://www.scstatehouse.gov/",
    "findLegislatorUrl": "https://www.scstatehouse.gov/",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -946,6 +1200,12 @@
    "legislature": "South Dakota Legislature",
    "legislatureUrl": "https://sdlegislature.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -968,6 +1228,12 @@
    "legislature": "Tennessee General Assembly",
    "legislatureUrl": "https://www.capitol.tn.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -990,6 +1256,12 @@
    "legislature": "Texas Legislature",
    "legislatureUrl": "https://capitol.texas.gov/",
    "findLegislatorUrl": "https://wrm.capitol.texas.gov/home",
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -1012,6 +1284,12 @@
    "legislature": "Utah State Legislature",
    "legislatureUrl": "https://le.utah.gov/",
    "findLegislatorUrl": "https://le.utah.gov/GIS/findDistrict.jsp",
+   "testimony": {
+    "url": "https://le.utah.gov/documents/aboutthelegislature/TestifyingbeforeaLegislativeCommittee.htm",
+    "how": "Ask the committee's staff policy analyst in advance to be placed on the chair's list to testify.",
+    "remote": null,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -1033,6 +1311,12 @@
    "legislature": "Virginia General Assembly",
    "legislatureUrl": "https://virginiageneralassembly.gov/",
    "findLegislatorUrl": "https://whosmy.virginiageneralassembly.gov/",
+   "testimony": {
+    "url": "https://hodspeak.house.virginia.gov/",
+    "how": "For House committees, sign up online to speak, including virtually, or to submit written comments.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Delegates",
     "term": "2-year term"
@@ -1056,6 +1340,12 @@
    "legislature": "Vermont General Assembly",
    "legislatureUrl": "https://legislature.vermont.gov/",
    "findLegislatorUrl": "https://legislature.vermont.gov/people",
+   "testimony": {
+    "url": "https://legislature.vermont.gov/Documents/2026/Workgroups/House%20Ways%20and%20Means/Highlights/Information%20for%20Witnesses/Witness%20Information%20December%202025.pdf",
+    "how": "Committees invite witnesses, who may testify by Zoom or send written testimony as a PDF to the committee assistant. This guide is from one committee.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -1080,6 +1370,12 @@
    "legislature": "Washington State Legislature",
    "legislatureUrl": "https://leg.wa.gov/",
    "findLegislatorUrl": "https://app.leg.wa.gov/districtfinder",
+   "testimony": {
+    "url": "https://leg.wa.gov/media/r5agoxpz/how-to-testify-in-committee.pdf",
+    "how": "Sign in online to testify, submit written testimony, or record your position for a scheduled hearing.",
+    "remote": true,
+    "verified": true
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
@@ -1101,6 +1397,12 @@
    "legislature": "Wisconsin State Legislature",
    "legislatureUrl": "https://legis.wisconsin.gov/",
    "findLegislatorUrl": "https://maps.legis.wisconsin.gov/",
+   "testimony": {
+    "url": "https://legis.wisconsin.gov/LC/media/13bdzj3m/citizen_testify_final.pdf",
+    "how": "Fill out a hearing slip or electronic registration form at the hearing, then testify or simply record your position.",
+    "remote": null,
+    "verified": true
+   },
    "lower": {
     "name": "State Assembly",
     "term": "2-year term"
@@ -1123,6 +1425,12 @@
    "legislature": "West Virginia Legislature",
    "legislatureUrl": "https://www.wvlegislature.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Delegates",
     "term": "2-year term"
@@ -1144,6 +1452,12 @@
    "legislature": "Wyoming Legislature",
    "legislatureUrl": "https://www.wyoleg.gov/",
    "findLegislatorUrl": null,
+   "testimony": {
+    "url": null,
+    "how": null,
+    "remote": null,
+    "verified": false
+   },
    "lower": {
     "name": "House of Representatives",
     "term": "2-year term"
