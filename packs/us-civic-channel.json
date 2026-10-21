@@ -7,7 +7,7 @@
   "level": "federal",
   "district": "Nationwide · your U.S. representative and senators",
   "session": "120th Congress convenes Jan 3, 2027",
-  "drafting": "AI organizes and drafts. People decide. The House and Senate Offices of Legislative Counsel draft final bill text for any member who introduces it.",
+  "drafting": "AI organizes and drafts. People decide. Each office decides whether to adopt the policy.",
   "residents": 341800000,
   "residentLabel": "U.S. resident",
   "residentNote": "about 341.8 million U.S. residents (2025 estimate)",
@@ -23,7 +23,7 @@
   "generalFundTradeoff": "federal general funds, where it competes with every other federal program or adds to borrowing",
   "representativeTitle": "member of Congress",
   "handoffTitle": "Hand off to your members of Congress",
-  "handoffText": "The package goes to the offices of your U.S. representative and both of your state's senators. They decide whether to introduce it. The public record stays open either way.",
+  "handoffText": "The package goes to the offices of your U.S. representative and both of your state's senators. Each office decides whether to adopt the policy. The public record stays open either way.",
   "timing": "The 120th Congress convenes January 3, 2027. Bills can be introduced at any time in the two-year Congress, but early introduction gives more time for hearings.",
   "receiptPrefix": "US",
   "elections": [
@@ -168,7 +168,8 @@
      31,
      3,
      2
-    ]
+    ],
+    "billText": "Offer constituents a public way to talk through issues together and send proposals to this office"
    },
    {
     "id": 2,
@@ -187,7 +188,8 @@
      30,
      4,
      2
-    ]
+    ],
+    "billText": "Answer every proposal it receives publicly, with its reasons"
    },
    {
     "id": 3,
@@ -206,7 +208,8 @@
      29,
      4,
      3
-    ]
+    ],
+    "billText": "Use only tools whose votes are counted by open-source code that anyone can check"
    },
    {
     "id": 4,
@@ -225,7 +228,8 @@
      32,
      2,
      2
-    ]
+    ],
+    "billText": "Use AI only to help summarize and draft, never to count votes or decide anything"
    },
    {
     "id": 5,
@@ -244,7 +248,8 @@
      31,
      3,
      2
-    ]
+    ],
+    "billText": "Count only verified constituents, one person, one voice"
    },
    {
     "id": 6,
@@ -263,7 +268,8 @@
      24,
      7,
      5
-    ]
+    ],
+    "billText": "Show a randomly chosen citizen panel's results beside the open results"
    },
    {
     "id": 7,
@@ -414,22 +420,23 @@
   }
  },
  "bill": {
+  "kind": "policy",
+  "label": "Starting office policy",
   "centerLines": [
-   "H. RES. ____",
-   "IN THE HOUSE OF REPRESENTATIVES",
-   "RESOLUTION",
-   "Supporting public, verifiable channels for constituents to deliberate and send proposals to their representatives."
+   "OFFICE POLICY",
+   "Office of ____, member of Congress",
+   "A public, checkable way for constituents to work with this office"
   ],
   "preamble": [
-   "Resolved, That the House of Representatives—"
+   "This office adopts the following practices for hearing from its constituents:"
   ],
   "sectionWord": "",
   "firstSection": 1,
   "appropriation": {
    "style": "authorization",
-   "text": "No funds are authorized by this resolution."
+   "text": "This policy uses the office's existing resources. It does not call for new funds or any change in law."
   },
-  "effective": "This resolution takes effect upon adoption."
+  "effective": "This policy takes effect when the office adopts it."
  },
  "copyTitle": "A public channel to your representatives, U.S. Congress"
 }

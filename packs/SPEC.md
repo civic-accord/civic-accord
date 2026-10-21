@@ -133,6 +133,8 @@ Each option links to the statement it puts a price on.
 | `basis` | **Required.** How the cost was estimated, and from what |
 | `billText` | Clause for the draft bill |
 
+A statement can also carry its own `billText`. It becomes a provision of the draft only if that statement reaches common ground.
+
 Templates you can use in `impact` and `billText`:
 
 - `{n}` the number chosen, with commas (12,000)
@@ -151,6 +153,8 @@ Templates you can use in `impact` and `billText`:
 
 | Field | What it holds |
 | --- | --- |
+| `kind` | Optional: `bill` (the default) or `policy`, for a practice an office can adopt on its own |
+| `label` | Optional heading for the draft, for example `Starting office policy` |
 | `centerLines` | Centered heading lines in the body's official format |
 | `preamble` | Opening sections, ending with the line that introduces the numbered provisions |
 | `sectionWord` | For example `SECTION` or `SEC.` |

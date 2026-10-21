@@ -27,10 +27,10 @@ function compilePack(d,opts={}){
     fines:fixR?{label:fixR.name,amt:fixR.amount,statement:fixR.statement,note:fixR.note,billText:fixR.billText}:null,
     revUnknown,
     issueTitle:is.title, facts:is.facts, lists:is.lists, sources:is.sources, costSources:is.costSources, groups:is.groups,
-    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null})), OPT,
+    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null,billText:x.billText||null})), OPT,
     participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
     billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
-    secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
+    docKind:d.bill.kind||"bill", docLabel:d.bill.label||"Starting bill text", secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
     handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, packId:d.id, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix, level:j.level||"state", jstate:j.state||null, national:!!j.national||j.level==="federal", countyId:j.countyId||null, place:j.place||null
   };
 }
@@ -352,7 +352,8 @@ function draft(){
   seedBudget();
   const t=totals();
   const picked=Object.keys(P.OPT).filter(k=>st.budget[k].on);
-  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n));
+  // Provisions: chosen cost options, plus any statement with its own provision text that reached common ground.
+  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n)).concat(P.S.filter(s=>s.billText&&!P.OPT[s.id]).filter(s=>{const x=statusOf(s.id);return x&&x.kind==="common"}).map(s=>s.billText));
   const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
   const sf=P.fee?statusOf(P.fee.statement):null;
   const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
@@ -381,8 +382,8 @@ function draft(){
     <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
   </div>
   ${feeNote}
-  <h3>Starting bill text</h3>
-  <p class="meta">A starting point for a ${esc(P.repTitle)}'s office, assembled by simple code from the common ground. In the live version, AI would help write it. It is not final legal text, and people decide what's in it.</p>
+  <h3>${esc(P.docLabel)}</h3>
+  <p class="meta">A starting point for a ${esc(P.repTitle)}'s office, assembled by simple code from the common ground. In the live version, AI would help write it. ${P.docKind==="policy"?"It's a practice an office can adopt on its own, not a bill.":"It is not final legal text, and people decide what's in it."}</p>
   <div class="bill">${P.billHead}${body||"     (no provisions yet)"}${extra.length?"\n\n"+extra.join("\n\n"):""}\n\n${approp}\n\n${eff}</div>
   <button class="btn" id="go4">Prepare the hand-off</button>
   </section>`;

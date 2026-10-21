@@ -143,11 +143,11 @@ function renderDetail(){
     ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office introduces it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
     <p class="meta">Residents see the office's response, or "no response yet" after 30 days. A reason is required for every choice.</p>
     <form id="respond" class="choices">
-      ${[["introduce","I will introduce a bill"],["cosponsor","I will support or co-sponsor an existing bill"],["amend","I will introduce it with changes"],["info","I need more information"],["decline","I decline"]].map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}
+      ${(d.bill&&d.bill.kind==="policy"?[["adopt","Our office will adopt this policy"],["amend","Our office will adopt it with changes"],["info","We need more information"],["decline","We decline"]]:[["introduce","I will introduce a bill"],["cosponsor","I will support or co-sponsor an existing bill"],["amend","I will introduce it with changes"],["info","I need more information"],["decline","I decline"]]).map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}
       <div id="changesbox" hidden><label for="changes" class="meta">What would need to change? Residents deliberate on the revised version.</label>
       <textarea id="changes" rows="2" maxlength="600" placeholder="For example: phase in the inspectors over two years and drop the visitor fee."></textarea></div>
       <label for="reason" class="meta">The office's reason, shown publicly</label>
-      <textarea id="reason" rows="3" maxlength="600" placeholder="For example: I'll introduce the common-ground items and hold a hearing on the visitor fee."></textarea>
+      <textarea id="reason" rows="3" maxlength="600" placeholder="${d.bill&&d.bill.kind==="policy"?"For example: we'll adopt the common-ground practices and report back in six months.":"For example: I'll introduce the common-ground items and hold a hearing on the visitor fee."}"></textarea>
       <label for="approver" class="meta">Approver's role</label>
       <input type="text" id="approver" maxlength="80" placeholder="The representative, or chief of staff">
       <span class="toast" id="rmsg" aria-live="polite"></span>
