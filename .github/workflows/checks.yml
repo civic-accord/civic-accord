@@ -15,6 +15,8 @@ jobs:
         run: node scripts/check-csp.js
       - name: Main security policy keeps its key protections
         run: node scripts/check-policy.js
+      - name: Local agenda feeds have every field they need
+        run: node scripts/check-feeds.js
       - name: Every script file is valid JavaScript
         run: for f in js/*.js lib/*.js api/*.js sw.js scripts/*.js; do node --check "$f"; done
       - name: No inline scripts in pages (except the lookup frame)
