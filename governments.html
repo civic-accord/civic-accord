@@ -194,30 +194,8 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
   <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Registry files: /registry · Lookup: lib/registry.js</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
 <script src="lib/registry.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let OPEN=[];
-async function show(geo){
-  const map=await CA_REG.buildMap(geo), people=await CA_REG.officeholders(geo);
-  const o=$("out");o.hidden=false;
-  o.innerHTML=`<div><div class="eyebrow">${geo.example?"Example address":"Matched address"}</div><h2>${esc(geo.matched)}</h2></div>
-    <p class="meta">${[geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).map(esc).join(" · ")}</p>
-    ${map.covered?"":`<p class="note">This state isn't in the open registry yet, so state and local offices show general descriptions. A local host can add the details.</p>`}
-    ${map.notes.map(n=>`<p class="meta">${esc(n)}</p>`).join("")}
-    ${CA_REG.render(map,people,OPEN)}
-    <h3>Sources</h3><ul class="plain">${map.sources.map(s=>`<li><a href="${esc(s[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s[1])}</a></li>`).join("")}</ul>`;
-}
-$("samples").innerHTML="No address handy? Try a state capitol: "+CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ");
-document.querySelectorAll(".sample").forEach(x=>x.onclick=e=>{e.preventDefault();$("addr").value=CA_REG.SAMPLES[+x.dataset.i][1];$("go").click()});
-$("go").onclick=async()=>{const a=$("addr").value.trim();if(a.length<8){$("msg").textContent="Enter a full street address, including city and state.";return}
-  $("msg").textContent="Looking up your districts with the Census Bureau…";
-  try{const g=await CA_REG.lookup(a);$("msg").textContent="";show(g)}
-  catch(e){$("msg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau's geocoder. Try again in a moment."}};
-$("addr").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
-(async()=>{try{const idx=await (await fetch("packs/index.json")).json();OPEN=[...new Set(idx.packs.map(p=>p.jurisdiction))]}catch(e){}})();
-</script>
+<script src="/js/governments.js"></script>
 <nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
-<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
+<script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>
 </body></html>

@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Address lookup</title></head><body>
+<script>
+// Civic Accord address lookup, isolated. This tiny page runs in a sandboxed frame with no access to Civic Accord pages,
+// storage, or cookies. It is the only place a U.S. Census Bureau script runs. It takes an address from its parent page,
+// asks the Census Bureau geocoder for districts, and passes back only the result. Nothing is sent to Civic Accord's servers.
+(function(){
+  var ready=false;
+  window.addEventListener("message",function(e){
+    if(e.source!==window.parent)return;
+    var m=e.data; if(!m||m.type!=="ca-geo-lookup"||typeof m.address!=="string"||typeof m.id!=="string")return;
+    var addr=m.address.slice(0,300), id=m.id.replace(/[^a-z0-9]/gi,"").slice(0,20), src=e.source;
+    var cb="__caGeo"+id, s=document.createElement("script"), t;
+    function done(msg){clearTimeout(t);try{delete window[cb]}catch(x){window[cb]=undefined}s.remove();msg.type="ca-geo-result";msg.id=id;src.postMessage(msg,"*")}
+    t=setTimeout(function(){done({ok:false,error:"timeout"})},12000);
+    window[cb]=function(data){var r=data&&data.result&&data.result.addressMatches;
+      if(!r||!r.length)return done({ok:false,error:"nomatch"});
+      var x=r[0];done({ok:true,match:JSON.parse(JSON.stringify({matchedAddress:x.matchedAddress,coordinates:x.coordinates,geographies:x.geographies}))})};
+    s.onerror=function(){done({ok:false,error:"network"})};
+    s.src="https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address="+encodeURIComponent(addr)+
+      "&benchmark=Public_AR_Current&vintage=Current_Current&layers=all&format=jsonp&callback="+cb;
+    document.head.appendChild(s);
+  });
+  window.parent.postMessage({type:"ca-geo-ready"},"*");
+})();
+</script>
+</body></html>

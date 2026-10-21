@@ -306,39 +306,11 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 
   <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Source code</a></span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
-<script>
-const SHARE_URL="https://civicaccord.org/ask.html";
-const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
-function shareBar(el){
-  const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
-  el.innerHTML=`${navigator.share?`<button type="button" id="sh-native">Share…</button>`:""}
-   <button type="button" id="sh-copy">Copy link</button>
-   <a href="mailto:?subject=${encodeURIComponent("Ask your representatives for this")}&body=${t}${u}">Email</a>
-   <a href="sms:?&body=${t}${u}">Text</a>
-   <a href="https://bsky.app/intent/compose?text=${t}${u}" target="_blank" rel="noopener">Bluesky</a>
-   <a href="https://twitter.com/intent/tweet?text=${t}&url=${u}" target="_blank" rel="noopener">X</a>
-   <a href="https://www.facebook.com/sharer/sharer.php?u=${u}" target="_blank" rel="noopener">Facebook</a>
-   <span class="toast" id="sh-msg" aria-live="polite"></span>`;
-  const n=el.querySelector("#sh-native");if(n)n.onclick=()=>navigator.share({title:"Civic Accord",text:SHARE_TEXT,url:SHARE_URL}).catch(()=>{});
-  el.querySelector("#sh-copy").onclick=()=>{const m=el.querySelector("#sh-msg");try{navigator.clipboard.writeText(SHARE_URL).then(()=>m.textContent="Link copied.",()=>m.textContent=SHARE_URL)}catch(e){m.textContent=SHARE_URL}};
-}
-shareBar(document.getElementById("share"));</script>
+<script src="/js/index.js"></script>
 <script src="lib/topics.js"></script>
-<script>
-(function(){const T=window.CA_TOPICS;if(!T)return;const box=document.getElementById("quickpick");
-  const pick=["health","education","housing","economy","environment","agriculture","safety","tech","veterans","families"];
-  box.querySelector(".qchips").innerHTML=T.list.filter(t=>pick.includes(t.id)).map(t=>`<a href="open.html" data-q="${t.id}">${t.label}</a>`).join("")+`<a href="open.html">Something else</a>`;
-  box.querySelectorAll("[data-q]").forEach(a=>a.addEventListener("click",()=>{try{const old=(JSON.parse(localStorage.getItem("civicaccord-topics")||"null")||{}).picked||[];
-    localStorage.setItem("civicaccord-topics",JSON.stringify({picked:[a.dataset.q,...old.filter(x=>x!==a.dataset.q)].slice(0,5),skipped:false}))}catch(e){}}));
-  box.hidden=false})();
-</script>
+<script src="/js/index-2.js"></script>
 <nav class="appnav" aria-label="App menu"><a href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
-<script>
-let deferredInstall=null;const ib=document.getElementById("installbtn");
-addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;if(ib)ib.hidden=false});
-if(ib)ib.onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(x){}deferredInstall=null;ib.hidden=true};
-if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){const sct=document.getElementById("install");if(sct)sct.hidden=true}
-</script>
-<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
+<script src="/js/index-3.js"></script>
+<script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>
 </body></html>

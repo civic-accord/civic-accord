@@ -1,0 +1,490 @@
+// ---------- Shared formatting ----------
+const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
+const unitMoney=v=>v>=1e6?`$${+(v/1e6).toFixed(2)}M`:v>=1000?`$${+(v/1000).toFixed(1)}K`:`$${v}`;
+const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const words=n=>n.toLocaleString();
+
+// ---------- Jurisdiction packs ----------
+// Packs are plain data files (see packs/SPEC.md). The core compiles them; nothing in a pack can run code or touch the vote count.
+const fill=(tpl,o,n)=>String(tpl).replace(/\{n\}/g,words(n)).replace(/\{total\}/g,money(o.per*n)).replace(/\{dollars\}/g,"$"+words(Math.round(o.per*n)));
+function compilePack(d,opts={}){
+  const j=d.jurisdiction, is=d.issue, OPT={};
+  ["costOptions","revenue","facts","lists","sources","costSources","statements"].forEach(k=>{if(!Array.isArray(is[k]))is[k]=[]});
+  if(!Array.isArray(is.groups)||is.groups.length<2) is.groups=["Described from the votes once enough people take part.","Described from the votes once enough people take part."];
+  is.costOptions.forEach(c=>{const o={name:c.name,unit:c.unit,min:c.min,max:c.max,step:c.step,def:c.default,per:c.unitCost,yr:c.recurring,basis:c.basis};
+    o.impact=n=>fill(c.impact,o,n); o.bill=n=>fill(c.billText,o,n); OPT[c.statement]=o;});
+  const feeR=is.revenue.find(r=>r.type==="fee"), fixR=is.revenue.find(r=>r.type==="fixed");
+  const revUnknown={}; is.revenue.filter(r=>r.type==="unestimated").forEach(r=>revUnknown[r.statement]={text:r.name,note:r.note});
+  const center=d.bill.centerLines.map(l=>`<span class="c">${esc(l)}</span>`).join("");
+  return {
+    key:j.key, name:j.name, district:j.district, session:j.session, footnote:j.drafting,
+    residents:j.residents, resLabel:j.residentLabel, resNote:j.residentNote, regVoters:j.registeredVoters||null, regSource:j.registeredVotersSource||null, regLabel:j.registeredVotersLabel||"registered voters",
+    popSource:{href:j.populationSource.url,label:j.populationSource.label},
+    base:{amt:j.baseline.amount,label:j.baseline.label},
+    genFundName:j.generalFundName, genFundTradeoff:j.generalFundTradeoff, repTitle:j.representativeTitle,
+    fee:feeR?{label:feeR.name,perUnit:feeR.perDollar,unitText:feeR.note,max:feeR.max,step:feeR.step,statement:feeR.statement,payers:feeR.payers,billText:feeR.billText}:null,
+    fines:fixR?{label:fixR.name,amt:fixR.amount,statement:fixR.statement,note:fixR.note,billText:fixR.billText}:null,
+    revUnknown,
+    issueTitle:is.title, facts:is.facts, lists:is.lists, sources:is.sources, costSources:is.costSources, groups:is.groups,
+    S:is.statements.map(x=>({id:x.id,t:x.text,a:x.a||[0,0,0],b:x.b||[0,0,0],panel:x.panel||null})), OPT,
+    participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
+    billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
+    secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
+    handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, packId:d.id, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix, level:j.level||"state", jstate:j.state||null, national:!!j.national||j.level==="federal", countyId:j.countyId||null, place:j.place||null
+  };
+}
+let PACKS={};
+
+// ---------- Per-pack state ----------
+const blank=(P)=>{if(!P)return null;const b={};Object.keys(P.OPT).forEach(k=>b[k]={on:false,n:P.OPT[k].def});return {mine:{},added:[],budget:b,fee:0,fines:false,budgetSeeded:false,submitted:false,receipt:"",nextId:100,step:0}};
+let ST={}; let cur=null, P=null, st=null;
+const packsFor=jk=>Object.values(PACKS).filter(x=>x.key===jk);
+const selectPack=k=>{cur=k;P=PACKS[k];st=ST[k];render();window.scrollTo({top:0})};
+const VD=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verified")||"null");return v&&v.districts&&v.districts.state&&!v.example?v.districts:null}catch(e){return null}})();
+const JURIS=VD?[
+  {key:"federal",name:"U.S. Congress",sub:`${VD.state} ${VD.cd==="at-large"?"at large":"district "+VD.cd} · 2 senators`},
+  {key:VD.state.toLowerCase()+"-state",name:`${VD.stateName||VD.state} Legislature`,sub:[VD.sldl&&"House "+VD.sldl,VD.sldu&&"Senate "+VD.sldu].filter(Boolean).join(" · ")||"Your state legislators"},
+  ...(VD.county?[{key:VD.state.toLowerCase()+"-county-"+(VD.countyId||VD.county),name:VD.county,sub:"County government"}]:[]),
+  ...(VD.place?[{key:VD.state.toLowerCase()+"-city-"+VD.place,name:VD.place,sub:"City or town government"}]:[])]
+ :[{key:"federal",name:"U.S. Congress",sub:"Nationwide"},{key:"hi-state",name:"Hawaiʻi State Legislature",sub:"Pilot"}];
+const requested={};
+const STEPS=[["Learn","1"],["Weigh in","2"],["Common ground","3"],["Weigh costs","4"],["Draft","5"],["Hand off","6"]];
+
+const perRes=v=>{const x=v/P.residents;return x<=0?"$0":x<0.01?"under 1¢":x<10?`$${x.toFixed(2)}`:`$${Math.round(x)}`};
+function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
+  const math=o.unit&&o.unit!=="million dollars"?`${words(n)} ${o.unit} × ${unitMoney(o.per)} = ${money(tot)}${when}`:`${money(tot)}${when}`;
+  return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
+const all=()=>[...P.S,...st.added];
+
+// The consensus rule, the same on every page. Each group is [agree, disagree, pass] for one statement.
+// A group decides a label only once it has at least 10 votes on that statement, so a handful of people can't
+// stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
+// or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
+const MIN_GROUP_VOTES=10;
+// Compared on exact counts (agree × 100 ≥ 70 × votes), so 69.5% never rounds up to 70%. A pass counts as not agreeing.
+function consensusLabel(groups){const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES);
+  if(counted.length<2) return "forming";
+  const atLeast=(g,p)=>g[0]*100>=p*(g[0]+g[1]+g[2]);
+  if(counted.every(g=>atLeast(g,70))) return "common";
+  if(counted.some(g=>atLeast(g,70))&&counted.some(g=>!atLeast(g,50))) return "split";
+  return "forming"}
+// Share of registered voters who took part, as plain text.
+function shareText(n,total){if(!total)return "";if(!n)return "0%";const v=n/total*100;return v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%"}
+const httpsOnly=u=>/^https:\/\//.test(String(u||""))?u:null;
+const myStatus=()=>VER&&VER.voterStatus||null;
+// Which group your votes sit closest to. The sample compares your votes with each group's votes on the
+// statements you voted on; the live version uses the open Pol.is grouping. Ties go to Group A.
+function myGroup(){let sa=0,sb=0;
+  all().forEach(s=>{const v=st.mine[s.id];if(v===undefined||!s.a||!s.b)return;const na=s.a[0]+s.a[1]+s.a[2],nb=s.b[0]+s.b[1]+s.b[2];
+    if(na)sa+=s.a[v]/na;if(nb)sb+=s.b[v]/nb});
+  return sb>sa?"b":"a"}
+function tally(s){
+  const a=[...s.a], b=[...s.b], v=st.mine[s.id];
+  if(v!==undefined&&st.submitted&&(PRACTICE||myStatus()==="registered")){ (myGroup()==="b"?b:a)[v]++; }
+  const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+  const pa=pct(a), pb=pct(b);
+  const kind=consensusLabel([a,b]);
+  const pp=s.panel?pct(s.panel):null, pn=s.panel?s.panel[0]+s.panel[1]+s.panel[2]:0;
+  const pkind=pp===null?null:pp>=70?"agrees":pp>=40?"divided":"disagrees";
+  return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2],pp,pn,pkind};
+}
+function panelNote(s){if(s.pp===null)return "";
+  const label=s.pkind==="agrees"?"Citizen panel agrees":s.pkind==="divided"?"Citizen panel divided":"Citizen panel disagrees";
+  const story=s.kind==="common"&&s.pkind==="agrees"?"Confirms the common ground.":s.kind==="common"?"The open group agreed, but the panel did not. Worth a closer look.":s.pkind==="agrees"?"The panel found agreement the open group didn't.":"";
+  return `<p class="panelnote ${s.pkind}"><b>${label}: ${s.pp}%</b> of ${s.pn} panelists. ${story}</p>`}
+function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
+function seedBudget(){if(!st.budgetSeeded){Object.keys(P.OPT).forEach(k=>{const s=statusOf(k);st.budget[k].on=!!s&&s.kind==="common"});st.budgetSeeded=true}}
+function totals(){
+  let yearly=0, once=0;
+  Object.keys(P.OPT).forEach(k=>{const b=st.budget[k];if(!b.on)return;const c=P.OPT[k].per*b.n;P.OPT[k].yr?yearly+=c:once+=c});
+  const feeRev=P.fee?st.fee*P.fee.perUnit:0, fineRev=st.fines?P.fines.amt:0;
+  const gf=Math.max(0,yearly+once-feeRev-fineRev);
+  return {yearly,once,feeRev,fineRev,gf,surplus:Math.max(0,feeRev+fineRev-yearly-once)};
+}
+const netYearly=t=>Math.max(0,t.yearly-t.feeRev-t.fineRev);
+
+function costInfo(id){
+  const o=P.OPT[id];
+  if(o){const n=st.budget[id]?st.budget[id].n:o.def;return {kind:"cost",amt:o.per*n,yr:o.yr,text:`Est. ${money(o.per*n)}${o.yr?" a year":" one time"} · ${perRes(o.per*n)} per resident`,basis:`${breakdown(o,n)}. ${o.impact(n)} ${o.basis}`}}
+  if(P.fines&&id===P.fines.statement) return {kind:"rev",amt:P.fines.amt,yr:true,text:`Brings in about ${money(P.fines.amt)} a year`,basis:P.fines.note};
+  if(P.fee&&id===P.fee.statement) return {kind:"rev",amt:P.fee.perUnit,yr:true,text:`Brings in about ${money(P.fee.perUnit)} a year per $1 fee · paid by ${P.fee.payers}`,basis:`${P.fee.unitText} The fee amount is chosen in Step 4.`};
+  if(P.revUnknown&&P.revUnknown[id]) return {kind:"unknown",text:P.revUnknown[id].text,basis:P.revUnknown[id].note};
+  return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas don't have a cost estimate yet. Before real use, a reviewer would add one, with how it was made."};
+}
+function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
+function agreedTotals(){
+  let yearly=0,once=0;
+  all().forEach(s=>{if(st.mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}});
+  return {yearly,once};
+}
+function voteCounts(){const v=Object.values(st.mine);return {agree:v.filter(x=>x===0).length,disagree:v.filter(x=>x===1).length,pass:v.filter(x=>x===2).length,total:v.length}}
+function makeReceipt(){
+  const str=cur+JSON.stringify(Object.keys(st.mine).sort().map(k=>[k,st.mine[k]]))+Date.now();
+  let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
+  const x=(h>>>0).toString(36).toUpperCase().padStart(7,"0");
+  return `CA-${P.receiptPrefix}-${x.slice(0,4)}-${x.slice(4)}`;
+}
+
+// ---------- Header controls ----------
+const VER=(()=>{try{return JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){return null}})();
+const PRACTICE=/[?&]practice=1/.test(location.search);
+const ISVOTER=!!(VER&&VER.voterStatus==="registered");
+// A verified voter can respond only where they're a voter: federal items anywhere, a state's items only in that state, local items only in that county or city.
+function inMyJurisdiction(p){const d=VER&&VER.districts;if(!d||!p)return false;
+  if(p.national)return true;
+  if(p.level==="state")return !!p.jstate&&d.state===p.jstate;
+  if(p.level==="county")return !!p.countyId&&d.countyId===p.countyId;
+  if(p.level==="city")return !!p.place&&d.place===p.place&&d.state===p.jstate;
+  return false}
+let CANVOTE=false; function refreshCanVote(){CANVOTE=PRACTICE||(ISVOTER&&inMyJurisdiction(P))}
+function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
+  if(VER){c.className="chip ok";c.innerHTML=`${ISVOTER?"✓ Verified voter (sample)":"Not a verified voter"} <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
+    const u=document.getElementById("unver");if(u)u.onclick=e=>{e.preventDefault();try{localStorage.removeItem("civicaccord-verified")}catch(x){}location.reload()}}
+  else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify you're a registered voter</a>`}}
+function verifyGate(what){
+  if(ISVOTER&&!inMyJurisdiction(P)) return `<div class="submitbox" id="gate"><h3>This deliberation is for voters the ${esc(P.name)} represents</h3><p>You're verified as a voter in ${esc((VER.districts&&(VER.districts.stateName||VER.districts.state))||"another place")}. You can read everything here, but only voters this government represents can vote or add statements.</p><p class="meta">Look for deliberations for your own governments at the top of the page.</p></div>`;
+  if(VER&&VER.voterStatus!=="registered") return `<div class="submitbox" id="gate"><h3>Only verified voters can ${what}</h3><p>Votes and statements here come only from registered voters in the district, each confirmed as a real, active voter. You can still read everything, see what's open for public input, and write to your representatives.</p><p class="meta">Not registered yet? <a href="https://vote.gov/" target="_blank" rel="noopener" style="color:var(--koa)">Register at Vote.gov</a>, then verify again.</p></div>`;
+  return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. Only registered voters in the district can vote or add statements, so each voice is a real, verified voter. In the live version, it's designed so your votes can't be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify that you're a registered voter</a></div>`}
+function renderHeader(){verChip();
+  const vd=VER&&VER.districts&&!VER.example?VER.districts:null;
+  document.getElementById("chip-district").textContent=vd&&P.key===vd.state.toLowerCase()+"-state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
+  document.getElementById("chip-session").textContent=P.session;
+  document.getElementById("footnote").textContent=P.footnote;
+  const jb=document.getElementById("juris");jb.innerHTML="";
+  document.getElementById("juris-label").textContent=VD?"Your governments · verified districts":"Open deliberations";
+  document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">Find your governments →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
+  const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
+  jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
+    const status=live?"● Deliberation open":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
+    const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
+    b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
+  const ib=document.getElementById("issues");ib.innerHTML="";
+  packsFor(P.key).forEach(x=>{const b=el(`<button class="issue" aria-pressed="${x.packKey===cur}">${esc(x.issueName)}<small>${x.draft?"Draft preview":"Deliberation open"}</small></button>`);b.onclick=()=>{if(x.packKey!==cur)selectPack(x.packKey)};ib.appendChild(b)});
+  ib.appendChild(el(`<a class="issue newissue" href="new.html">＋ Start a deliberation<small>On any issue, for any government</small></a>`));
+  const n=document.getElementById("steps");n.innerHTML="";
+  STEPS.forEach(([name,num],i)=>{const b=el(`<button class="step ${i<st.step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===st.step}"><b>Step ${num}</b><span>${name}</span></button>`);b.onclick=()=>{st.step=i;render()};n.appendChild(b)});
+}
+
+// ---------- Steps ----------
+const safeUrl=u=>/^https:\/\//.test(u)?u:"#";
+const srcLinks=list=>list.map(([h,l])=>`<a href="${esc(safeUrl(h))}" target="_blank" rel="noopener">${esc(l)}</a>`).join(" · ");
+function learn(){
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Issue pack · ${esc(P.name)}</div><h2>${esc(P.issueTitle)}</h2></div>
+  <p class="lede">Everyone starts from the same sourced facts before weighing in. Each issue and each level of government gets its own pack like this one; the rest of the tool stays the same.</p>
+  <div class="grid2">${P.facts.map(([k,v])=>`<div class="fact"><span class="k">${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div>
+  <div class="grid2">${P.lists.map(([h,items])=>`<div><h3>${esc(h)}</h3><ul class="plain">${items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>
+  <p class="src">Sources: ${srcLinks(P.sources)}</p>
+  <button class="btn" id="go1">Start weighing in</button>
+  </section>`;
+}
+function submitBox(){
+  const c=voteCounts(), t=agreedTotals(), n=all().length;
+  if(st.submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
+    <h3>✓ Your sample votes are saved</h3>
+    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're saved only in this browser.</p>
+    <p class="meta">Your receipt</p><span class="receipt">${st.receipt}</span>
+    <p class="meta">In the live tool, this receipt would show your sealed votes are in the public record. It's designed so it can't show anyone how you voted, so it can't be used to buy or pressure your vote. You can change your votes until the deliberation closes; only your last votes count.</p>
+    <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
+  </div>`;
+  if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;
+  return `<div class="submitbox"><h3>Review and submit</h3>
+    <p>You voted on ${c.total} of ${n} statements: ${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass.${c.total<n?` ${n-c.total} still have no vote, and that's fine.`:""}</p>
+    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per ${P.resLabel} a year.</p>`:""}
+    <p class="meta">Your votes aren't counted until you submit.</p>
+    <button class="btn" id="submitvotes">Submit my votes</button></div>`;
+}
+function weigh(){
+  const list=all(), voted=list.filter(s=>st.mine[s.id]!==undefined).length;
+  const t=agreedTotals(), any=Object.values(st.mine).some(v=>v===0);
+  const items=list.map(s=>{const v=st.mine[s.id];
+    return `<div class="stmt ${s.mine?"mine":""} ${st.submitted?"locked":""}">
+      <p>${esc(s.t)}</p>
+      ${costLine(s.id)}
+      <div class="vote" data-id="${s.id}">
+        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted||!CANVOTE?"disabled":""}>Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted||!CANVOTE?"disabled":""}>Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted||!CANVOTE?"disabled":""}>Pass / unsure</button>
+      </div>
+      ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
+    </div>`}).join("");
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
+  <p class="lede">Vote on what other voters wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
+  ${CANVOTE?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
+  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${P.resLabel} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
+  ${items}
+  ${CANVOTE?`<form class="add" id="addform">
+    <label for="newstmt"><h3>Add a statement</h3></label>
+    <textarea id="newstmt" rows="2" maxlength="200" placeholder="One clear idea, in your own words."></textarea>
+    <p class="meta">In the live version, a moderator checks new statements against <a href="how.html#rules" style="color:var(--koa)">published rules</a> before others see them. Any view is welcome. Private details, threats, slurs, harassment, and campaigning for or against a candidate or party are not.</p>
+    <button class="btn" type="submit">Add statement</button>
+    <span class="toast" id="addmsg" aria-live="polite"></span>
+  </form>
+  ${submitBox()}`:""}
+  </section>`;
+}
+function ground(){
+  const list=all().map(s=>({...s,...tally(s)}));
+  const common=list.filter(s=>s.kind==="common").sort((x,y)=>(y.pa+y.pb)-(x.pa+x.pb));
+  const split=list.filter(s=>s.kind==="split"), forming=list.filter(s=>s.kind==="forming");
+  const card=(s)=>`<div class="stmt">
+    <span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"}</span>
+    <p>${esc(s.t)}</p>
+    ${costLine(s.id)}
+    <div class="bars">
+      <div class="bar"><span>Group A</span><div class="track"><div class="fill ${s.pa<50?"low":""}" style="width:${s.pa}%"></div></div><span>${s.pa}%</span></div>
+      <div class="bar"><span>Group B</span><div class="track"><div class="fill ${s.pb<50?"low":""}" style="width:${s.pb}%"></div></div><span>${s.pb}%</span></div>
+    </div>
+    ${panelNote(s)}
+    <details><summary>See the ${s.n} votes behind this</summary><p class="meta" style="margin-top:6px">In the live tool this opens every vote and the original statement, so no one has to take the summary on trust.</p></details>
+  </div>`;
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
+  ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
+  <p class="lede">The tool sorted participants into groups by how they voted. It shows what every group agrees on, and gives the disagreements equal space. A group counts toward a label only once at least 10 of its members have voted on that statement.</p>
+  ${participationBox()}
+  <div class="groups">
+    <div class="grp"><h3>Group A</h3><p class="meta">${esc(P.groups[0])}</p></div>
+    <div class="grp"><h3>Group B</h3><p class="meta">${esc(P.groups[1])}</p></div>
+  </div>
+  <h3>Both groups agree (${common.length})</h3>
+  ${common.map(card).join("")||'<p class="meta">Nothing yet.</p>'}
+  <h3>Where they split (${split.length})</h3>
+  <p class="meta">These go to the representative too, so the strongest dissent isn't lost.</p>
+  ${split.map(card).join("")||'<p class="meta">No sharp splits right now.</p>'}
+  ${forming.length?`<h3>Still forming (${forming.length})</h3>${forming.map(card).join("")}`:""}
+  <button class="btn" id="go3">Weigh the costs</button>
+  </section>`;
+}
+// How many of the district's registered voters took part. Shown wherever results are, so a small, organized
+// group can't pass for the whole district.
+function turnoutLine(n){if(!P.regVoters)return `<p class="meta"><b>${n} verified voters took part.</b> This pack doesn't list the number of registered voters yet, so their share isn't shown.</p>`;
+  const src=P.regSource&&httpsOnly(P.regSource.url);
+  return `<p class="meta"><b>${n} verified voters took part: ${shareText(n,P.regVoters)} of ${P.regVoters.toLocaleString("en-US")} ${esc(P.regLabel)}</b>${src?` (<a href="${esc(src)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(P.regSource.label||"source")}</a>)`:""}. Common ground here means agreement among the people who took part, not everyone this government represents.</p>`}
+function participationBox(){const pt=P.participation;if(!pt)return "";
+  const dims=pt.makeup&&pt.makeup.dimensions||[];
+  return `<div class="twoways">
+    <div class="grp"><h3>${esc(pt.open.label)} · ${pt.open.count}</h3><p class="meta">${esc(pt.open.how)}</p></div>
+    <div class="grp"><h3>${esc(pt.panel.label)} · ${pt.panel.count}</h3><p class="meta">${esc(pt.panel.how)}</p></div>
+  </div>
+  ${turnoutLine(pt.open.count)}
+  ${dims.length?`<details><summary>Who took part compared with the district</summary><div style="overflow-x:auto;margin-top:8px"><table class="mk"><tr><th></th>${pt.makeup.columns.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>${dims.map(dm=>`<tr><th colspan="4" class="mkh">${esc(dm.name)}</th></tr>${dm.rows.map(r=>`<tr><td>${esc(r[0])}</td>${r.slice(1).map(v=>`<td>${v}%</td>`).join("")}</tr>`).join("")}`).join("")}</table></div>${pt.example?'<p class="meta">Example figures.</p>':""}</details>`:""}
+  <p class="meta">Each statement shows both. When they agree, the common ground is likely real. When they differ, the open group may not reflect the district.</p>`}
+function tagFor(s){return s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:""}
+function costs(){
+  seedBudget();
+  if(!Object.keys(P.OPT).length) return `<section class="panel" role="tabpanel"><div><div class="eyebrow">Step 4</div><h2>Weigh costs</h2></div><p class="lede">This deliberation has no cost options yet. A pack author adds them, each with how it was estimated, before costs can be weighed.</p><div class="row"><button class="btn" id="go4">Continue to the draft</button></div></section>`;
+  const opts=Object.keys(P.OPT).map(k=>{
+    const o=P.OPT[k], b=st.budget[k];
+    const slider=o.max>o.min?`<label class="meta" for="r-${k}">How much: <span id="n-${k}"></span></label><input type="range" id="r-${k}" min="${o.min}" max="${o.max}" step="${o.step}" value="${b.n}">`:"";
+    return `<div class="opt ${b.on?"":"off"}" id="o-${k}">
+      <div class="opthead"><label><input type="checkbox" id="c-${k}" ${b.on?"checked":""}><span>${esc(o.name)}</span></label><span class="cost" id="cost-${k}"></span></div>
+      ${tagFor(statusOf(k))}
+      ${slider}
+      <p class="meta" id="br-${k}" style="font-family:var(--mono)"></p>
+      <p class="meta" id="imp-${k}"></p>
+      <details><summary>How this cost was estimated</summary><p class="meta" style="margin-top:6px">${esc(o.basis)}</p></details>
+    </div>`}).join("");
+  const unk=Object.keys(P.revUnknown).map(id=>{const s=statusOf(id);return `<div class="opt off"><p>${esc(s.t)}</p>${tagFor(s)}<span class="cost-chip unknown">${esc(P.revUnknown[id].text)}</span><p class="meta">${esc(P.revUnknown[id].note)}</p></div>`}).join("");
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 4</div><h2>Weigh costs</h2></div>
+  <p class="lede">Every idea costs something, and someone pays for it. Turn options on or off, adjust how big each one is, and choose how to pay. The totals update as you go.</p>
+  <div class="ledger" aria-live="polite">
+    <div class="rows">
+      <div class="r"><span>Yearly cost</span><span id="t-yearly"></span></div>
+      <div class="r"><span>One-time cost</span><span id="t-once"></span></div>
+      ${P.fee?`<div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>`:""}
+      ${P.fines?`<div class="r"><span>${esc(P.fines.label.replace(/^Raise /,"Higher ").replace(/ for .*$/,""))} bring in</span><span id="t-fines"></span></div>`:""}
+      <div class="r total"><span>Still needed from ${esc(P.genFundName)}</span><span id="t-gf"></span></div>
+      <div class="r"><span>Your share as a ${esc(P.resLabel)}</span><span id="t-per"></span></div>
+    </div>
+    <div class="gauge" title="Compared with current spending"><div class="g" id="g-bar"></div></div>
+    <p class="meta" id="t-compare"></p>
+  </div>
+  <h3>What to fund</h3>
+  ${opts}
+  ${st.added.length?`<h3>New ideas waiting for a cost estimate</h3>${st.added.map(a=>`<div class="opt off"><p>${esc(a.t)}</p><span class="cost-chip unknown">Cost not yet estimated</span><p class="meta">In the live tool, new ideas go to analysts for an estimate before they can be funded.</p></div>`).join("")}`:""}
+  <h3>How to pay for it</h3>
+  ${P.fee?`<div class="opt">
+    <div class="opthead"><label for="fee">${esc(P.fee.label)}</label><span class="cost" id="fee-v"></span></div>
+    ${tagFor(statusOf(P.fee.statement))}
+    <input type="range" id="fee" min="0" max="${P.fee.max}" step="${P.fee.step}" value="${st.fee}">
+    <p class="meta">${esc(P.fee.unitText)}</p>
+  </div>`:""}
+  ${P.fines?`<div class="opt">
+    <div class="opthead"><label><input type="checkbox" id="fines" ${st.fines?"checked":""}><span>${esc(P.fines.label)}</span></label><span class="cost">about ${money(P.fines.amt)}/yr</span></div>
+    ${tagFor(statusOf(P.fines.statement))}
+    <p class="meta">${esc(P.fines.note)}</p>
+  </div>`:""}
+  ${unk}
+  <p class="meta">Whatever fees and penalties don't cover comes from ${esc(P.genFundTradeoff)}.</p>
+  <p class="meta">"Per resident" divides the cost by ${esc(P.resNote)}. It shows scale, not a bill: government costs are paid through taxes, which people pay in different amounts.</p>
+  <p class="note"><b>Estimates.</b> These costs are rough figures for illustration, anchored to recent public budgets where possible. In the live tool, agencies and independent analysts would supply the estimates, with sources shown.</p>
+  <p class="src">Sources: ${srcLinks(P.costSources)} · <a href="${esc(safeUrl(P.popSource.href))}" target="_blank" rel="noopener">${esc(P.popSource.label)}</a></p>
+  <button class="btn" id="goC">Draft the proposal</button>
+  </section>`;
+}
+function updateBudget(){
+  Object.keys(P.OPT).forEach(k=>{
+    const o=P.OPT[k], b=st.budget[k];
+    const c=document.getElementById("cost-"+k); if(!c) return;
+    c.textContent=b.on?`${money(o.per*b.n)}${o.yr?"/yr":" once"}`:"off";
+    const n=document.getElementById("n-"+k); if(n) n.textContent=`${words(b.n)} ${o.unit}`;
+    document.getElementById("imp-"+k).textContent=o.impact(b.n);
+    document.getElementById("br-"+k).textContent=b.on?breakdown(o,b.n):`Off. Would be ${breakdown(o,b.n)}`;
+    document.getElementById("o-"+k).classList.toggle("off",!b.on);
+  });
+  const t=totals();
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  set("t-yearly",money(t.yearly)); set("t-once",money(t.once));
+  set("t-fee",st.fee?`− ${money(t.feeRev)}`:"$0"); set("t-fines",st.fines?`− ${money(t.fineRev)}`:"$0");
+  set("t-gf",t.surplus?`$0 (fees exceed costs by ${money(t.surplus)})`:money(t.gf));
+  if(P.fee) set("fee-v",st.fee?`$${st.fee.toFixed(2)} per visitor`:"none");
+  set("t-per",`about ${perRes(netYearly(t))} a year${t.once?` + ${perRes(t.once)} one time`:""}`);
+  const share=t.yearly/P.base.amt;
+  const bar=document.getElementById("g-bar");
+  if(bar){bar.style.width=Math.min(100,share*50)+"%";bar.classList.toggle("over",share>1)}
+  set("t-compare",`Yearly cost is ${share<0.1?(share*100).toFixed(1)+"% of":share.toFixed(1)+"×"} ${P.base.label}. The bar fills at twice that amount.`);
+}
+function draft(){
+  seedBudget();
+  const t=totals();
+  const picked=Object.keys(P.OPT).filter(k=>st.budget[k].on);
+  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n));
+  const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
+  const sf=P.fee?statusOf(P.fee.statement):null;
+  const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
+  const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)};`).join("\n");
+  let n=P.firstSection; const extra=[];
+  if(P.fee&&st.fee){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}`);n++}
+  if(P.fines&&st.fines){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fines.billText)}`);n++}
+  const tot=Math.round(t.yearly+t.once);
+  let src;
+  const A=P.approp;
+  if(A.style==="authorization") src=A.text.replace("{amount}",`$${words(tot)}`);
+  else {const fromFees=st.fee?Math.min(tot,Math.round(t.feeRev)):0;
+    const so=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of ${A.special} and the sum of $${words(Math.round(t.gf))} out of ${A.general},`:t.gf>0?`out of ${A.general} the sum of $${words(Math.round(t.gf))}`:`out of ${A.special} the sum of $${words(tot)}`;
+    src=A.text.replace("{source}",so);}
+  const approp=`     ${P.secWord} ${n}.  ${esc(src)}`;
+  const eff=`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
+  <p class="lede">The proposal is built from your choices in Step 4, starting from what every group agreed on. Anything you added that lacks common ground is flagged.</p>
+  <h3>Plain-language proposal</h3>
+  ${plain?`<ul class="plain">${plain}</ul>`:'<p class="meta">Nothing is selected yet. Choose options in Step 4.</p>'}
+  <div class="stat">
+    <div><strong>${money(t.yearly)}</strong><span>yearly cost</span></div>
+    <div><strong>${money(t.once)}</strong><span>one-time cost</span></div>
+    <div><strong>${money(t.gf)}</strong><span>from general funds</span></div>
+    <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
+  </div>
+  ${feeNote}
+  <h3>Starting bill text</h3>
+  <p class="meta">A starting point for a ${esc(P.repTitle)}'s office, assembled by simple code from the common ground. In the live version, AI would help write it. It is not final legal text, and people decide what's in it.</p>
+  <div class="bill">${P.billHead}${body||"     (no provisions yet)"}${extra.length?"\n\n"+extra.join("\n\n"):""}\n\n${approp}\n\n${eff}</div>
+  <button class="btn" id="go4">Prepare the hand-off</button>
+  </section>`;
+}
+function followThrough(){
+  let rec={};try{rec=JSON.parse(localStorage.getItem("civicaccord-office")||"{}")}catch(e){}
+  const keys=Object.keys(rec.responses||{}).filter(k=>k.endsWith("|"+P.packId));
+  const r=keys.length?rec.responses[keys[0]]:null, ups=keys.length?((rec.updates||{})[keys[0]]||[]):[];
+  return `<div class="grp"><h3>Follow it</h3>
+    <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. In the live version, you'd be notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
+    <ol class="timeline">
+      <li><b>Package sent to the office</b><span class="meta">${st.submitted?"Your votes are included":"Submit your votes in Step 2 to be included"}</span></li>
+      ${r?`<li><b>${esc(r.office?r.office+": ":"")}${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
+        ${r.changes?`<li class="wait"><b>The office asked for changes</b><span class="meta">${esc(r.changes)} Residents weigh in on the revised version once the host reviews it.</span></li>`:""}`
+       :`<li class="wait"><b>Waiting for the office's response</b><span class="meta">If there's none after 30 days, the public record says "no response yet."</span></li>`}
+      ${ups.map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)}</span></li>`).join("")}
+    </ol></div>`;
+}
+function handoff(){
+  const list=all().map(s=>({...s,...tally(s)}));
+  const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
+  const people=(P.participation?P.participation.open.count:0)+(st.submitted?1:0), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
+  return `<section class="panel" role="tabpanel">
+  <div><div class="eyebrow">Step 6</div><h2>${esc(P.handoffTitle)}</h2></div>
+  <p class="lede">${esc(P.handoffLede)}</p>
+  <div class="pkg">
+    <div class="stat">
+      <div><strong>${people}</strong><span>verified voters</span></div>
+      ${P.participation?`<div><strong>${P.participation.panel.count}</strong><span>citizen panelists</span></div>`:""}
+      <div><strong>${votes}</strong><span>votes cast</span></div>
+      <div><strong>${common.length}</strong><span>points of common ground</span></div>
+      <div><strong>${split.length}</strong><span>open disagreements</span></div>
+      <div><strong>${money(t.yearly)}</strong><span>estimated yearly cost</span></div>
+      <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
+    </div>
+    <div class="grp"><h3>What's in the package</h3>
+      <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
+    </div>
+    <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
+  </div>
+  <div class="row"><button class="btn" id="copy">Copy summary</button><span class="toast" id="copymsg" aria-live="polite"></span></div>
+  ${followThrough()}
+  <p class="meta"><a href="inbox.html" style="color:var(--koa)">See what the office receives →</a></p>
+  <textarea id="summarytext" rows="6" readonly hidden></textarea>
+  </section>`;
+}
+
+// ---------- Render and wiring ----------
+function render(){
+  renderHeader();
+  const p=document.getElementById("panel");
+  refreshCanVote();
+  p.innerHTML=(PRACTICE?`<p class="draftbar"><b>Practice mode.</b> You're trying the sample deliberation from <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a>. Practice votes use sample data, stay on this device, and are never counted.</p>`:"")+(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+(!CANVOTE&&st.step===3?`<p class="note"><b>Exploring only.</b> Try any mix of options to see the cost. Only verified voters' choices count. <a href="verify.html" style="color:var(--koa)">Verify that you're a registered voter</a>.</p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
+  const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
+  go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
+  if(st.step===3&&Object.keys(P.OPT).length){
+    Object.keys(P.OPT).forEach(k=>{
+      const c=document.getElementById("c-"+k); c.onchange=()=>{st.budget[k].on=c.checked;updateBudget()};
+      const r=document.getElementById("r-"+k); if(r) r.oninput=()=>{st.budget[k].n=+r.value;if(!st.budget[k].on){st.budget[k].on=true;c.checked=true}updateBudget()};
+    });
+    const f=document.getElementById("fee"); if(f) f.oninput=()=>{st.fee=+f.value;updateBudget()};
+    const fi=document.getElementById("fines"); if(fi) fi.onchange=()=>{st.fines=fi.checked;updateBudget()};
+    updateBudget();
+  }
+  p.querySelectorAll(".vote").forEach(row=>{
+    row.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const id=+row.dataset.id, v=+b.dataset.v;
+      if(st.mine[id]===v) delete st.mine[id]; else st.mine[id]=v;
+      const y=window.scrollY; render(); window.scrollTo({top:y});
+    });
+  });
+  const sv=document.getElementById("submitvotes");
+  if(sv) sv.onclick=()=>{st.submitted=true;st.receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
+  const us=document.getElementById("unsubmit");
+  if(us) us.onclick=()=>{st.submitted=false;st.receipt="";render()};
+  const bs=document.getElementById("backsubmit");
+  if(bs) bs.onclick=(e)=>{e.preventDefault();st.step=1;render();const b=document.querySelector(".submitbox");if(b)b.scrollIntoView({block:"center"})};
+  const f=document.getElementById("addform");
+  if(f) f.onsubmit=(e)=>{e.preventDefault();const t=document.getElementById("newstmt").value.trim();
+    const m=document.getElementById("addmsg");
+    if(t.length<10){m.textContent="Write at least a short sentence so others can vote on it.";return}
+    const id=st.nextId++;st.added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});st.mine[id]=0;if(st.submitted){st.submitted=false;st.receipt=""}
+    const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added. Others can now vote on it.";};
+  const c=document.getElementById("copy");
+  if(c) c.onclick=()=>{
+    const list=all().map(s=>({...s,...tally(s)})), t=totals();
+    const txt=`Civic Accord summary: ${P.copyTitle} (example data)\n\nEstimated cost: ${money(t.yearly)} a year, about ${perRes(netYearly(t))} per ${P.resLabel}\n\nCommon ground:\n`+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
+    const msg=document.getElementById("copymsg");
+    const fallback=()=>{const ta=document.getElementById("summarytext");ta.hidden=false;ta.value=txt;ta.select();msg.textContent="Select and copy the text below."};
+    try{navigator.clipboard.writeText(txt).then(()=>msg.textContent="Copied.",fallback)}catch(e){fallback()}
+  };
+}
+async function boot(){
+  const panel=document.getElementById("panel");
+  panel.innerHTML='<section class="panel"><p class="meta">Loading the deliberation…</p></section>';
+  try{
+    const idx=await (await fetch("packs/index.json")).json();
+    for(const e of idx.packs){const d=await (await fetch(e.file)).json(); const c=compilePack(d); PACKS[c.packKey]=c; ST[c.packKey]=blank(c);}
+    if(/[?&]preview=draft/.test(location.search)){try{const raw=localStorage.getItem("civicaccord-draft");if(raw){const c=compilePack(JSON.parse(raw),{draft:true});c.packKey="draft:"+c.packKey;PACKS[c.packKey]=c;ST[c.packKey]=blank(c);cur=c.packKey}}catch(e){}}
+    const want=new URLSearchParams(location.search).get("pack");if(want&&PACKS[want])cur=want;
+    if(!cur){const ks=Object.keys(PACKS);cur=(VD&&ks.find(k=>PACKS[k].key===VD.state.toLowerCase()+"-state"))||ks[0]}
+    P=PACKS[cur]; st=ST[cur]; render();
+  }catch(err){panel.innerHTML='<section class="panel"><h2>Couldn\'t load this deliberation</h2><p class="meta">Check your connection and reload the page.</p></section>'}
+}
+boot();
