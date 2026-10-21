@@ -21,7 +21,7 @@ Please report security problems privately at https://github.com/civic-accord/civ
 - Static pages served by Vercel, with security headers (HSTS, CSP, no framing) set in `vercel.json`.
 - Three read-only serverless functions (`api/open.js`, `api/people.js`, `api/congress.js`) that fetch public data, with API keys stored as Vercel secrets. They accept no personal data.
 - Browser storage on the visitor's own device (districts, reactions, demo verification). Nothing is sent back. "Forget me on this device" (`lib/forget.js`, in every page footer) removes it all.
-- The data functions answer only their exact expected address (anything else is redirected), share one request among simultaneous visitors, remember failures briefly, stay under each source's rate limit, and show visitors plain error messages without source details.
+- The data functions answer only their exact expected address (anything else is redirected), accept only GET and HEAD, share one request among simultaneous visitors, give up on a source after 8 seconds, remember failures briefly (keeping the last good answer, with its real fetch time), limit calls to Open States in each server copy to stay under its free limit, and show visitors plain error messages without source details.
 
 ## Verification plan (not in place yet)
 

@@ -5,7 +5,7 @@
 const FR = "https://www.federalregister.gov/api/v1/documents.json";
 const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
-const { canonical, memo, publicError, getJSON: get } = require("./_shared");
+const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
@@ -96,7 +96,7 @@ async function stateBills(key, st, out) {
     const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20", page: String(page) });
     let j;
     // If a later page is refused (for example, the source is busy), keep what we already have instead of failing.
-    try { j = await getJSON(`https://v3.openstates.org/bills?${q}`, H); } catch (e) { if (page === 1) throw e; break; }
+    try { j = await getJSON(`https://v3.openstates.org/bills?${q}`, H); } catch (e) { if (page === 1) throw e; out.cut = true; break; }
     results.push(...(j.results || []));
     const pg = j.pagination || {};
     if (total === null && typeof pg.total_items === "number") total = pg.total_items;
@@ -115,6 +115,7 @@ async function stateBills(key, st, out) {
 }
 
 module.exports = async (req, res) => {
+  if (onlyRead(req, res)) return;
   let st = String((req.query && req.query.state) || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
   if (!STATE_NAMES[st]) st = "";
   if (canonical(req, res, "/api/open", { state: st })) return;
@@ -124,11 +125,15 @@ module.exports = async (req, res) => {
   if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)));
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial }; }); if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; });
+    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; });
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st]} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
+  // Show when the oldest list here was really fetched, in case a saved copy is being used while a source is down.
+  const times = ["fr", "congress", st && "st-" + st].filter(Boolean).map(asOf).filter(Boolean);
+  if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
+  const shortLife = out.shortLife; delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", out.errors.length ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=172800");
+  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=172800");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(200).send(JSON.stringify(out));
 };

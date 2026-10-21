@@ -1,6 +1,6 @@
 // Current state legislators for a whole state, from Open States' nightly public CSV files (no key, no rate limit).
 // The browser filters to its own districts, so no district or address is ever sent here. Party is never returned.
-const { canonical, memo, publicError } = require("./_shared");
+const { canonical, memo, onlyRead, fetchWithTimeout, publicError } = require("./_shared");
 const TTL = 12 * 3600 * 1000;
 const STATES = new Set("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA PR RI SC SD TN TX UT VT VA WA WV WI WY".split(" "));
 function parseCSV(text) {
@@ -21,7 +21,7 @@ const okEmail = e => /^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$/.test(e || "") ? e : null
 const okUrl = u => /^https:\/\/\S+$/.test(u || "") ? u : null;
 const load = st => memo("people-" + st, TTL, () => fetchState(st));
 async function fetchState(st) {
-  const r = await fetch(`https://data.openstates.org/people/current/${st.toLowerCase()}.csv`, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)" } });
+  const r = await fetchWithTimeout(`https://data.openstates.org/people/current/${st.toLowerCase()}.csv`, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)" } });
   if (!r.ok) throw new Error(String(r.status));
   const data = parseCSV(await r.text()).map(p => ({
     name: p.name, chamber: p.current_chamber, district: p.current_district,
@@ -32,6 +32,7 @@ async function fetchState(st) {
   return data;
 }
 module.exports = async (req, res) => {
+  if (onlyRead(req, res)) return;
   const st = String((req.query && req.query.state) || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
   const out = { state: st, legislators: [], errors: [], fetchedAt: new Date().toISOString(),
     source: { label: "Open States, current legislators (published nightly)", url: "https://open.pluralpolicy.com/data/legislator-csv/" } };
