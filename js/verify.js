@@ -44,7 +44,7 @@ async function render(){bar();const p=$("p");
    <div class="actions"><button class="btn" id="next" type="button">Continue</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
    $("next").onclick=()=>{const v=document.querySelector("input[name=vs]:checked").value;
      if(v!=="registered"){$("notreg").innerHTML=`<div class="submitbox"><h3>Only registered voters can take part here</h3><p>You can still read every deliberation, see what's open for public input, comment through official channels, and write to your representatives. <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a> is built for people who aren't voters yet.</p><p><a class="btn" href="${esc(vs.registerUrl||"https://vote.gov/")}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Register to vote</a></p><p class="meta">Once you're registered, come back and verify.</p></div>`;return}
-     vstatus={status:"registered",how:law?"matched against the voter record":"self-reported, no state rules yet"};step=3;render()};
+     vstatus={status:"registered",how:"sample only; nothing was matched or checked"};step=3;render()};
    $("back").onclick=()=>{step=1;render()};return}
  if(step===3){p.innerHTML=`<div><div class="eyebrow">Step 4</div><h2>Prove you're that voter</h2></div>
    <p>Next, we confirm you're really the person on that record, so no one can claim someone else's.</p>

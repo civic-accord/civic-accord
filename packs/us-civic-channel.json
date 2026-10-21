@@ -79,7 +79,13 @@
    "cadence": "Before launch and at the start of each Congress"
   },
   "state": null,
-  "national": true
+  "national": true,
+  "registeredVoters": 174000000,
+  "registeredVotersLabel": "registered voters nationwide (U.S. citizens, November 2024)",
+  "registeredVotersSource": {
+   "url": "https://www.census.gov/newsroom/press-releases/2025/2024-presidential-election-voting-registration-tables.html",
+   "label": "U.S. Census Bureau, Current Population Survey, November 2024"
+  }
  },
  "issue": {
   "key": "civic-channel",
