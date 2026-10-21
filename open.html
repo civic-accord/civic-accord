@@ -444,7 +444,7 @@ function pathHTML(it){const p=PROG[it.id]||{},now=stepOf(it),ro=!canRespond(it);
     return `<li class="${cls}${just}">${l}${i===4?" (planned)":""}<span class="sr-only" style="position:absolute;left:-9999px">${i===4?", planned":d?", done":(!ro&&i===now)?", next":""}</span></li>`}).join("")}</ol>`}
 function nextHTML(it){
   const p=PROG[it.id]||{},now=stepOf(it),r=REACT[it.id];
-  const start=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
+  const start=`item.html?id=${encodeURIComponent(it.id)}`, build=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
   const reacts=`<div class="go" role="group" aria-label="Where you stand">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>`;
   if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To respond to a state bill, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know it's your state.`}</p>
     ${safe(it.read)?`<div class="go"><a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a></div>`:""}</div>`;
@@ -460,8 +460,8 @@ function nextHTML(it){
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
       ${OPENID===it.id?composeBox(it):""}
       ${rule||p.started?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
-  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Start a draft deliberation, where neighbors could weigh in and see where they agree. Today it's a sample that only you can preview. Neighbors can take part once a host reviews it and opens it.</p>
-    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Start a draft deliberation</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
+  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Talk it through: weigh in on each part of it, copied word for word from the official summary, and see the official cost estimate. Your votes there are practice for now, saved only on this device. <a href="${esc(build)}" style="color:var(--koa)">Or build your own deliberation</a>.</p>
+    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Talk it through</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
   return `<div class="next"><p>You've done everything you can here today. Next, verified voters' views will be counted in a public record anyone can check. That part is planned. <a href="verify.html" style="color:var(--koa)">See how verification will work</a>.</p>${OPENID===it.id?composeBox(it):`<div class="go"><button type="button" data-tell="${esc(it.id)}">Write another message</button></div>`}</div>`;
 }
 function card(it,first){
@@ -476,7 +476,7 @@ function card(it,first){
     ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm.slice(200).length>1200?sm.slice(0,1400)+"…":sm)}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}
-    <div class="also">${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<span class="meta">From ${esc(it.source)}</span></div>
+    <div class="also">${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
   </article>`;
 }
 function render(){

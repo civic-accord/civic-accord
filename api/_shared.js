@@ -43,6 +43,8 @@ function memo(key, ttlMs, fn, failMs = SHORT) {
       throw error;
     });
   MEMO.set(key, { ...(hit || {}), pending });
+  // Keep memory bounded: many items each get their own entry. Drop the oldest beyond 2,000.
+  while (MEMO.size > 2000) MEMO.delete(MEMO.keys().next().value);
   return pending;
 }
 // When the answer for a key was actually fetched from its source (null if never).
