@@ -17,6 +17,11 @@ test("Washington counts only as the state, not the city", () => {
   assert.deepStrictEqual(P.statesNamed("Notice of Meeting in Washington, DC"), ["DC"]);
   assert.deepStrictEqual(P.statesNamed("Air Plan Approval; State of Washington; Regional Haze"), ["WA"]);
 });
+test("a postal abbreviation after a comma names the state", () => {
+  assert.deepStrictEqual(P.statesNamed("Safety Zone; Red Bull Flugtag, Intercoastal Waterway, Biscayne Bay, Miami, FL"), ["FL"]);
+  assert.deepStrictEqual(P.statesNamed("Special Local Regulation; Ohio River, Louisville, KY"), ["OH","KY"]);
+  assert.deepStrictEqual(P.statesNamed("Rules on IN-house review"), []);
+});
 test("Hawaiʻi with an ʻokina is found", () => {
   assert.deepStrictEqual(P.statesNamed("Endangered Species: Hawaiʻi Plants"), ["HI"]);
 });
