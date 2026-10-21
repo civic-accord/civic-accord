@@ -84,15 +84,29 @@ function publicError(label, e) {
   return `${label}: couldn't reach the source just now. Try again later.`;
 }
 
-async function getJSON(url, headers, limits) {
-  const host = new URL(url).host;
-  if (limits && limits[host]) spend(host, limits[host]);
+// 5. One shared limit for Open States across every server copy (see _store.js), when a store is connected.
+//    Open States' free key allows 10 calls a minute. All copies together stay at 8. Scheduled downloads may use 6 of
+//    those in a minute, so talk-it-through pages always have room. A daily cap is kept too: set OPENSTATES_DAILY_LIMIT
+//    to the key's daily allowance (shown on the Open States account page); 500 is assumed if it isn't set. 90% of it
+//    is used, about two-thirds for scheduled downloads and the rest for talk-it-through pages.
+const store = require("./_store");
+function openStatesCaps(use) {
+  const daily = Math.max(50, Number(process.env.OPENSTATES_DAILY_LIMIT) || 500), perDay = Math.floor(daily * 0.9), refreshDay = Math.floor(perDay * 0.65);
+  return { perMinute: 8, perDay, useMinute: use === "refresh" ? 6 : 8, useDay: use === "refresh" ? refreshDay : perDay - refreshDay };
+}
+const SHARED = { "v3.openstates.org": { name: "openstates", caps: openStatesCaps } };
+
+// use: "refresh" or "items", for sources with a shared limit. Without a connected store, each copy keeps its own limit.
+async function getJSON(url, headers, limits, use) {
+  const host = new URL(url).host, shared = SHARED[host];
+  if (shared && use && store.on()) await store.take(shared.name, use, shared.caps(use));
+  else if (limits && limits[host]) spend(host, limits[host]);
   const r = await fetchWithTimeout(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)", ...(headers || {}) } });
   if (!r.ok) {
-    if (r.status === 429) pause(host, 60e3);
+    if (r.status === 429) { pause(host, 60e3); if (shared && store.on()) await store.pauseAll(shared.name, 60e3); }
     const e = new Error(`${r.status} from ${host}`); e.status = r.status; throw e;
   }
   return r.json();
 }
 
-module.exports = { canonical, memo, asOf, isStale, onlyRead, fetchWithTimeout, publicError, getJSON };
+module.exports = { canonical, memo, asOf, isStale, onlyRead, fetchWithTimeout, publicError, getJSON, openStatesCaps };

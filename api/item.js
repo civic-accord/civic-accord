@@ -2,9 +2,10 @@
 // The parts people weigh in on are copied word for word from the official summary. Nothing is written or rewritten here,
 // by people or by AI. Costs come only from official estimates. Party is never returned.
 const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
-// Open States' free key allows 10 calls a minute in all. Open Now (api/open.js) keeps 8 per server copy; item pages get 2.
+// Open States' free key allows 10 calls a minute in all. With a saved-copy store connected, every copy shares one count
+// (see _shared.js and _store.js). Without one, each copy keeps its own: Open Now 8, item pages 2.
 const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
-const getJSON = (url, headers) => get(url, headers, LIMITS);
+const getJSON = (url, headers) => get(url, headers, LIMITS, "items");
 
 const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)(\d{1,5})-(\d{2,3})$/;
 const STATE_ID = /^os-ocd-bill\/[0-9a-f-]{36}$/;
