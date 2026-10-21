@@ -118,4 +118,11 @@ async function getJSON(url, headers, limits, use) {
   return r.json();
 }
 
-module.exports = { canonical, memo, asOf, isStale, onlyRead, fetchWithTimeout, publicError, getJSON, openStatesCaps };
+// A page or feed as text (agenda systems that publish HTML or RSS rather than JSON). Capped at 2 MB.
+async function getText(url) {
+  const r = await fetchWithTimeout(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)", "Accept": "text/html, application/rss+xml, application/xml, text/xml" } });
+  if (!r.ok) { const e = new Error(`${r.status} from ${new URL(url).host}`); e.status = r.status; throw e; }
+  const t = await r.text();
+  return t.length > 2e6 ? t.slice(0, 2e6) : t;
+}
+module.exports = { canonical, memo, asOf, isStale, onlyRead, fetchWithTimeout, publicError, getJSON, getText, openStatesCaps };

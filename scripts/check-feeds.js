@@ -6,7 +6,7 @@ const file = path.join(__dirname, "..", "registry", "local-feeds.json");
 const live = process.argv.includes("--live");
 const STATES = /^(A[KLRZ]|C[AOT]|D[CE]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|PA|PR|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY]|GU|AS|MP)$/;
 const LEVELS = ["county", "city", "town", "township", "school"];
-const SYSTEMS = ["legistar"];
+const SYSTEMS = ["legistar", "granicus", "civicplus"];
 const problems = [];
 const bad = (id, msg) => problems.push(`${id || "(no id)"}: ${msg}`);
 
@@ -33,18 +33,21 @@ for (const f of data.feeds) {
   if ((f.level === "city") && !f.placeId) bad(id, "a city feed needs placeId");
   if ((f.level === "town" || f.level === "township") && !f.townId) bad(id, "a town or township feed needs townId");
   if (f.system === "legistar" && !/^[a-z0-9-]+$/.test(f.client || "")) bad(id, 'client must be the Legistar client name (the part before ".legistar.com")');
+  if (f.system === "granicus") { if (!/^[a-z0-9.-]+\.granicus\.com$/.test(f.host || "")) bad(id, 'host must be the government\'s Granicus host, for example "eagle-id.granicus.com"'); if (!/^\d+$/.test(String(f.viewId || ""))) bad(id, "viewId must be the number from the ViewPublisher page address (view_id=N)"); }
+  if (f.system === "civicplus") { if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(f.host || "")) bad(id, 'host must be the government\'s own site host, for example "nevadamo.gov", whose /AgendaCenter page lists its agendas'); }
   if (!/^https:\/\//.test(f.calendar || "")) bad(id, "calendar must be an https link to the government's own meeting calendar");
   if (!f.tz || !/^[A-Za-z_]+\/[A-Za-z_]+$/.test(f.tz)) bad(id, 'tz must be an IANA time zone, for example "America/Chicago"');
   else { try { new Date().toLocaleDateString("en-CA", { timeZone: f.tz }); } catch (e) { bad(id, `tz "${f.tz}" is not a known time zone`); } }
-  const allowed = ["id", "name", "state", "level", "countyId", "placeId", "townId", "system", "client", "calendar", "note", "tz", "source"];
+  const allowed = ["id", "name", "state", "level", "countyId", "placeId", "townId", "system", "client", "host", "viewId", "calendar", "note", "tz", "source"];
   for (const k of Object.keys(f)) if (!allowed.includes(k)) bad(id, `unexpected field "${k}"`);
 }
 
 async function checkLive() {
   const { localMeetings } = require("../api/_local.js");
-  const getJSON = async (url) => { const r = await fetch(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)" }, signal: AbortSignal.timeout(15000) }); if (!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`); return r.json(); };
+  const hit = async (url) => { const r = await fetch(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)" }, signal: AbortSignal.timeout(15000) }); if (!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`); return r; };
+  const getJSON = async url => (await hit(url)).json(), getText = async url => (await hit(url)).text();
   for (const f of data.feeds) {
-    try { const items = await localMeetings(f, getJSON); console.log(`${f.id}: ${items.length} meeting${items.length === 1 ? "" : "s"} in the next 30 days${items[0] ? ` (first: ${items[0].title})` : ""}`); }
+    try { const items = await localMeetings(f, getJSON, getText); console.log(`${f.id}: ${items.length} meeting${items.length === 1 ? "" : "s"} in the next 30 days${items[0] ? ` (first: ${items[0].title})` : ""}`); }
     catch (e) { bad(f.id, `live check failed: ${e.message}`); }
   }
 }

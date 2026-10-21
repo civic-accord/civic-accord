@@ -12,7 +12,7 @@
 // Every call takes a turn from the shared Open States limit, so all copies together stay under the free limits.
 // If the day's share runs out, the run stops and lists show their real (older) download time.
 const crypto = require("crypto");
-const { getJSON: get, publicError, onlyRead, openStatesCaps } = require("./_shared");
+const { getJSON: get, getText, publicError, onlyRead, openStatesCaps } = require("./_shared");
 const { STATE_NAMES, stateBills } = require("./_states");
 const store = require("./_store");
 const { localMeetings, dueLocal } = require("./_local");
@@ -87,7 +87,7 @@ const handler = async (req, res) => {
       if (Date.now() - start > LOCAL_BY) break;
       const e = localIndex[feed.id] = localIndex[feed.id] || {};
       try {
-        const items = await localMeetings(feed, (u, h) => get(u, h, null, "refresh-local"));
+        const items = await localMeetings(feed, (u, h) => get(u, h, null, "refresh-local"), getText);
         const at = Date.now();
         await store.write(`local/${feed.id}.json`, { at: new Date(at).toISOString(), items });
         e.at = at; delete e.errAt; localDone.push(feed.id);
