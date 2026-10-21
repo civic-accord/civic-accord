@@ -24,4 +24,6 @@ Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs
 
 `local-feeds.json` lists local governments whose public meeting agendas Civic Accord reads automatically (today: Maui County Council and Oakland City Council, through Legistar's public data service). Lists are downloaded by the scheduled job (api/refresh.js) about every 3 hours and saved; the Issues page reads the saved copy, so adding governments never slows a visit. Each entry gives the government's name, state, level, Census county, place, or town/township ID (`countyId`, `placeId`, `townId`, so only residents can respond), and its agenda system. Adding a government that uses the same system takes one entry.
 
+To connect a government, follow [CONNECT.md](CONNECT.md): one entry, checked by `node scripts/check-feeds.js`.
+
 **Goal: load every municipality whose agendas are publicly available.** Next: check other governments on the same agenda system (for example, San Jose and Long Beach share data publicly), then add readers for other common agenda systems so more cities, counties, and school boards can be connected.
