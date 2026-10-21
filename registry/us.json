@@ -38,7 +38,7 @@
    "branch": "Executive",
    "seat": "President, elected nationally; agency heads appointed",
    "civic": "later",
-   "how": "Federal agencies take public comments on proposed rules. A later version could file a deliberation's common ground as a formal comment."
+   "how": "Federal agencies take public comments on proposed rules, and anyone can comment. Open rules are listed under Issues."
   },
   {
    "id": "us-courts",
@@ -46,7 +46,7 @@
    "branch": "Judicial",
    "seat": "Judges appointed by the President with Senate consent",
    "civic": "never",
-   "how": "Courts decide cases. They don't take proposals, so Civic Accord never sends anything to a court."
+   "how": "Courts decide cases. They don't take public comment or proposals."
   }
  ],
  "stateDefaults": [
@@ -72,7 +72,7 @@
    "branch": "Executive",
    "seat": "Governor, elected statewide",
    "civic": "later",
-   "how": "State agencies hold public hearings on proposed rules. A later version could submit common ground there."
+   "how": "State agencies hold public hearings on proposed rules, and anyone can testify."
   },
   {
    "id": "st-courts",
@@ -80,7 +80,7 @@
    "branch": "Judicial",
    "seat": "How judges are chosen varies by state",
    "civic": "never",
-   "how": "Courts decide cases. Civic Accord never sends anything to a court."
+   "how": "Courts decide cases. They don't take public comment or proposals."
   }
  ],
  "eligibilityDefault": {
