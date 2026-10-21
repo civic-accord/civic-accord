@@ -271,7 +271,6 @@ ol.path li.planned::before{border-style:dashed}
     <p class="tally" id="tally" hidden></p>
   </header>
   <section class="panel topics" id="topics" aria-labelledby="th"></section>
-  <section class="panel me" id="me"></section>
   <section class="panel" id="feed">
     <div class="filters">
       <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search</label><input id="q" type="search" placeholder="Search everything, for example: water, schools">
@@ -287,6 +286,7 @@ ol.path li.planned::before{border-style:dashed}
     <div class="list" id="list"></div>
     <div class="cta" style="display:flex;justify-content:center"><button class="btn ghost" id="more" type="button" hidden>Show more</button></div>
   </section>
+  <section class="panel me" id="me"></section>
   <section class="panel">
     <h2>Where this comes from</h2>
     <p class="meta">Every item comes directly from an official or public-interest source, with no AI summaries. Each card links to the original.</p>
@@ -323,9 +323,9 @@ async function loadReps(){
 }
 function renderMe(){
   const m=$("me");
-  if(DIST){m.innerHTML=`<div><div class="eyebrow">Your representatives</div><p style="margin:4px 0 0">Writing as a resident of ${esc(DIST.stateName||DIST.state)}${DIST.cd?` · congressional district ${esc(DIST.cd)}`:""}${DIST.sldl?` · state house ${esc(DIST.sldl)}`:""}${DIST.sldu?` · state senate ${esc(DIST.sldu)}`:""}. <a href="#" id="chg" style="color:var(--koa)">Change</a></p></div>`;
+  if(DIST){m.innerHTML=`<div><h2>Who represents you</h2><p style="margin:4px 0 0">Writing as a resident of ${esc(DIST.stateName||DIST.state)}${DIST.cd?`, congressional district ${esc(DIST.cd)}`:""}${DIST.sldl?`, state house ${esc(DIST.sldl)}`:""}${DIST.sldu?`, state senate ${esc(DIST.sldu)}`:""}. <a href="#" id="chg" style="color:var(--koa)">Change</a></p></div>`;
     $("chg").onclick=e=>{e.preventDefault();DIST=null;try{localStorage.removeItem(DKEY)}catch(x){}renderMe();render()};return}
-  m.innerHTML=`<div><div class="eyebrow">Your representatives</div><p style="margin:4px 0 0">To tell your representatives what you think, enter your address once. Only your districts are kept on this device. The address goes from your browser straight to the U.S. Census Bureau.</p></div>
+  m.innerHTML=`<div><h2>Who represents you</h2><p style="margin:4px 0 0">To tell your representatives what you think, enter your address once. Only your districts are kept on this device. The address goes from your browser straight to the U.S. Census Bureau.</p></div>
    <div class="row"><label for="addr" style="position:absolute;left:-9999px">Home address</label><input id="addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="findme" type="button">Find my representatives</button></div>
    <span class="toast" id="memsg" aria-live="polite"></span>`;
   const go=async()=>{const a=$("addr").value.trim();if(a.length<8){$("memsg").textContent="Enter a full street address, including city and state.";return}
@@ -374,7 +374,7 @@ function composeBox(it){
     ${it.kind==="Proposed rule"?`<p class="meta">For a proposed rule, the agency decides. Your official comment goes through <b>Comment officially</b> above. You can also let your members of Congress know.</p>`:""}
     <label for="cm" class="meta">Add your own words (optional)</label><textarea id="cm" rows="3" maxlength="1200" placeholder="Why it matters to you, in a sentence or two.">${esc(COMMENT[it.id]||"")}</textarea>
     <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
-    ${!DIST?`<p class="meta">Enter your address at the top of the page to see who represents you.</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
+    ${!DIST?`<p>First, find who represents you. <a href="#me" data-gome="1" style="color:var(--koa);font-weight:700">Enter your address</a> (it takes a few seconds, and only your districts are kept on this device).</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
         ${r.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(r.sal)}</a>`:""}
         ${!r.email&&r.url?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
         ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9+]/g,""))}">Call ${esc(r.phone)}</a>`:""}
@@ -423,7 +423,7 @@ function updateTally(){const v=Object.values(PROG),rd=v.filter(x=>x.read).length
 function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;
   const wk=mine.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7}).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
-  $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on ${list} ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
+  $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on your topics ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
   $("subline").textContent=(wk?`${wk} close${wk===1?"s":""} within a week. `:"")+(TP.picked.length?"Start with the one at the top.":"Pick what you care about, and we'll start there.")}
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
@@ -442,7 +442,7 @@ function nextHTML(it){
   const p=PROG[it.id]||{},now=stepOf(it),r=REACT[it.id];
   const start=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
   const reacts=`<div class="go" role="group" aria-label="Where you stand">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>`;
-  if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:"To respond to a state bill, enter your address below so we know it's your state."}</p>
+  if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To respond to a state bill, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know it's your state.`}</p>
     ${safe(it.read)?`<div class="go"><a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a></div>`:""}</div>`;
   if(now===0)return `<div class="next"><p>Start by reading what it actually says. It opens on the official site.</p>
     <div class="go">${safe(it.read)?`<a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a>`:""}<button type="button" data-skip="${esc(it.id)}">I already know it</button></div></div>`;
@@ -505,6 +505,7 @@ function render(){
   document.querySelectorAll("[data-sk2]").forEach(b=>b.onclick=()=>{mark(b.dataset.sk2,"spoke");OPENID=null;keep()});
   document.querySelectorAll("[data-talk]").forEach(a=>a.addEventListener("click",()=>mark(a.dataset.talk,"talk")));
   document.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{OPENID=OPENID===b.dataset.tell?null:b.dataset.tell;keep()});
+  document.querySelectorAll("[data-gome]").forEach(a=>a.onclick=e=>{e.preventDefault();$("me").scrollIntoView({behavior:"smooth",block:"center"});const f=$("addr");if(f)setTimeout(()=>f.focus({preventScroll:true}),400)});
   updateTally();
   const it=OPENID&&DATA.items.find(x=>x.id===OPENID);
   if(it){
