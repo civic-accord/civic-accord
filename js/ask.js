@@ -25,12 +25,10 @@ function letter(o,name,town,why){
 
 I'm a constituent${GEO&&o.districtText?` in ${o.districtText}`:""}. I'm writing to ask your office to offer residents a public way to talk through issues together and send you proposals. Anyone should be able to check the results, and your office would answer in public.
 ${why?"\n"+why+"\n":""}
-An early example, using sample data, is at civicaccord.org. It isn't ready for real use yet, but it shows what's possible. It is nonpartisan, and anyone can read its code. Your office could adopt a tool like it, or any tool that meets these standards:
+An early example, using sample data, is at civicaccord.org, where I also found a suggested version of this message${why?" and added my own words":""}. It isn't ready for real use yet, but it shows what's possible. It is nonpartisan, and anyone can read its code. Your office could adopt a tool like it, or any tool that meets these standards:
 ${STANDARDS.map(x=>"- "+x).join("\n")}
 
-Would your office be willing to try a tool like this for hearing from constituents? I'm not asking you to support any bill, law, or spending. This is only about how your office hears from residents.
-
-I started from a suggested message at civicaccord.org and made it my own.
+Would your office be willing to try a tool like this for hearing from constituents? I'm not asking you to support a particular bill or spending. This is about how your office hears from residents.
 
 Thank you for your time.
 
@@ -65,7 +63,8 @@ async function find(){
    <p>Edit anything you like. It's your message.</p>
    <label for="why" class="meta"><b>In your own words (recommended):</b> why would this help you or your community? One or two sentences.</label>
    <textarea id="why" rows="3" maxlength="600" placeholder="For example, a decision that affected your neighborhood, or a time you wished you could weigh in."></textarea>
-   <p class="meta">Offices get many identical messages and often count them as one. A sentence in your own words makes yours count. The message also says it started from a suggestion here, so it's honest about where it came from.</p>
+   <p class="meta">Offices often give more weight to messages in a person's own words. The message also says it started from a suggestion here, so it's honest about where it came from.</p>
+   <p class="meta" id="editednote" hidden>You've edited the message by hand, so changes above aren't added automatically. Add your sentence, name, or town in the message itself.</p>
    <div class="two"><div class="addr2"><label for="nm" class="meta">Your name</label><input id="nm" autocomplete="name"></div><div class="addr2"><label for="tw" class="meta">Your town (optional)</label><input id="tw" autocomplete="address-level2"></div></div>
    <label for="lt" class="meta">Message</label><textarea class="letter" id="lt" rows="16"></textarea>
    <h3>Send it to each office</h3>
@@ -79,7 +78,7 @@ async function find(){
    <p class="meta">Civic Accord never sends anything for you and keeps no copy of your message. Offices may reply to you directly.</p>`;
     $("lt").value=letter({salutation:"[Office]",districtText:null},"","","");
   let edited=false;$("lt").oninput=()=>edited=true;
-  const regen=()=>{if(!edited)$("lt").value=letter({salutation:"[Office]",districtText:null},$("nm").value.trim(),$("tw").value.trim(),$("why").value.trim())};
+  const regen=()=>{$("editednote").hidden=!edited;if(!edited)$("lt").value=letter({salutation:"[Office]",districtText:null},$("nm").value.trim(),$("tw").value.trim(),$("why").value.trim())};
   $("nm").oninput=regen;$("tw").oninput=regen;$("why").oninput=regen;
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const o=OFFICES[+b.dataset.copy];
     const txt=$("lt").value.replace("Dear [Office],",`Dear ${o.salutation},`).replace("I'm a constituent.",o.districtText?`I'm a constituent in ${o.districtText}.`:"I'm a constituent.");
