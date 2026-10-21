@@ -315,7 +315,7 @@ function card(it){
     </div>
     <div class="acts" role="group" aria-label="Your quick reaction"><span class="meta">Your reaction:</span>
       ${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}
-      ${VER?"":`<a href="verify.html" class="meta" style="border:0;padding:0;color:var(--koa)">Verify so it counts</a>`}</div>
+      ${VER?"":`<span class="meta">Your reaction stays on this device. Public counting is planned.</span>`}</div>
     ${OPENID===it.id&&r?composeBox(it):""}
   </article>`;
 }

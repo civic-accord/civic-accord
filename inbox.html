@@ -153,10 +153,10 @@ input[type=text],select{font:inherit;width:100%;border:1px solid var(--line);bor
 <noscript><p class="note"><b>This page needs JavaScript</b> to look up your address and load live information. Turn it on in your browser settings, or use a library computer. All the data is also open on <a href="https://github.com/liebeskind8301/civic-accord">GitHub</a>.</p></noscript>
 
   <header>
-    <div class="eyebrow">Civic Accord · representative inbox · working prototype</div>
+    <div class="eyebrow">Civic Accord · office inbox · sample demo</div>
     <h1>Office Inbox</h1>
     <p class="lede">What an elected office receives: verified constituents' common ground, their disagreements, who took part, and what it would cost. The office answers in public, reports what happens next, and can ask its district to weigh in.</p>
-    <p class="note"><b>The inbox belongs to the seat, not the person.</b> Responses are signed by the office and name who approved them. When a new officeholder takes the seat, every open package, request, and past response passes to them, so constituents never start over.</p>
+    <p class="note"><b>The inbox belongs to the seat, not the person.</b> Responses are signed by the office and name who approved them. When a new officeholder takes the seat, every open package, request, and past response passes to them, so the record carries over to the next officeholder.</p>
     <p class="note"><b>Example data.</b> The office, participants, and votes are invented to show how the inbox works. Responses here are not sent anywhere.</p>
     <div>
       <div class="eyebrow" style="margin-bottom:6px">Viewing as the office of</div>
@@ -167,7 +167,7 @@ input[type=text],select{font:inherit;width:100%;border:1px solid var(--line);bor
   <section class="panel" id="seat"></section>
   <section class="panel" id="list"></section>
   <main id="detail"></main>
-  <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Offices see the same public record residents do. No private channel, no campaign use.</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/liebeskind8301/civic-accord" style="color:inherit">Code</a></span></footer>
+  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Offices see the same public record residents do. No private channel, no campaign use.</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/liebeskind8301/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
 <script>
 const words=n=>n.toLocaleString();
@@ -230,7 +230,7 @@ function renderSeat(){
         <span>${j.legalReview.reviewer?`Reviewed by ${esc(j.legalReview.reviewer)}${j.legalReview.date?" on "+esc(j.legalReview.date):""}`:"Reviewer not yet assigned. Suggested: "+esc(j.legalReview.suggested)}</span>
         <span class="meta">Covers: ${j.legalReview.scope.map(esc).join("; ")}. ${esc(j.legalReview.cadence)}.</span></div>`:""}</div>
     <h3>Ask your district to weigh in</h3>
-    <p class="meta">The office can ask constituents to deliberate on a pending bill or a trade-off it faces. A neutral host reviews every request for sourced facts, neutral wording, and cost methods before it opens, and the request itself is public.</p>
+    <p class="meta">The office can ask constituents to deliberate on a pending bill or a trade-off it faces. In the live version, a neutral host would review every request for sourced facts, neutral wording, and cost methods before it opens, and the request itself is public.</p>
     ${q.paused?`<div class="paused" id="quiet"><b>Requests are paused ${q.election?`for the ${esc(q.election.name.toLowerCase())} on ${fmt(q.election.d)}`:`from ${esc(q.rule.window.fromLabel)} until ${esc(q.rule.window.toLabel)}`}.</b>
         <span>This office's ${esc(basis.toLowerCase())} limits official mass communications ${q.election?`in the ${q.days} days before an election${q.rule.onlyIfCandidate?" in which the officeholder is a candidate":""}`:"in this period"}, so the tool applies the same limit to new requests. Requests reopen ${fmt(q.reopens)}.</span>
         <span class="meta">Residents can still deliberate, and the office can still answer packages and report what happened to them.${q.election?` Election dates: <a href="${esc(j.electionsSource?j.electionsSource.url:"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.electionsSource?j.electionsSource.label:"election office")}</a>.`:""}</span></div>`
@@ -243,7 +243,7 @@ function renderSeat(){
       <span class="toast" id="rqmsg" aria-live="polite"></span>
       <button class="btn" type="submit">Send request to the host</button></form>`}
     <h3>Public request record</h3>
-    <div class="record">${reqs.length?reqs.map(r=>`<div class="recrow"><b>${esc(r.bill)}</b><span>${esc(r.q)}</span><span class="meta">${esc(r.date)} · ${esc(sign(r))} · With the neutral host for review</span></div>`).join(""):`<div class="recrow silent"><span class="meta">No requests from this office yet</span></div>`}</div>`;
+    <div class="record">${reqs.length?reqs.map(r=>`<div class="recrow"><b>${esc(r.bill)}</b><span>${esc(r.q)}</span><span class="meta">${esc(r.date)} · ${esc(sign(r))} · Sample request (no host yet)</span></div>`).join(""):`<div class="recrow silent"><span class="meta">No requests from this office yet</span></div>`}</div>`;
   const f=document.getElementById("request");
   if(f) f.onsubmit=e=>{e.preventDefault();const bill=document.getElementById("rq-bill").value.trim(),qq=document.getElementById("rq-q").value.trim(),by=document.getElementById("rq-by").value.trim();
     if(!bill||qq.length<15||!by){document.getElementById("rqmsg").textContent="Add the bill or topic, a question of at least 15 characters, and who approved it.";return}
@@ -297,7 +297,7 @@ function renderDetail(){
     <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}%${s.pp!==null?`, citizen panel ${s.pp}%`:""} · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
     <p class="meta">Every figure links back to the public vote record in the live tool. Starting bill text and cost methods come with the package.</p>
     <h3>The office's public response</h3>
-    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office introduces it.</p>`:""}<p class="meta">${esc(sign(r))}. Residents who took part are notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
+    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office introduces it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
     <p class="meta">Residents see the office's response, or "no response yet" after 30 days. A reason is required for every choice.</p>
     <form id="respond" class="choices">
       ${[["introduce","I will introduce a bill"],["cosponsor","I will support or co-sponsor an existing bill"],["amend","I will introduce it with changes"],["info","I need more information"],["decline","I decline"]].map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}

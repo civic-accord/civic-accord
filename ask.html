@@ -169,7 +169,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <header>
     <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · ask for it</div>
     <h1>Ask Your Representatives</h1>
-    <p class="lede">Ask every office that represents you to offer a public way for residents to work with them, where anyone can check the results. It takes about two minutes. You review the message and send it yourself.</p>
+    <p class="lede">Ask every office that represents you to offer a public way for residents to work with them, built so anyone can check the results. It takes about two minutes. You review the message and send it yourself.</p>
   </header>
   <section class="panel" id="s1">
     <div><div class="eyebrow">Step 1</div><h2>Your address</h2></div>
@@ -195,7 +195,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const SHARE_URL="https://civicaccord.org/ask.html";
-const SHARE_TEXT="I asked my representatives for a public way to work with them, where anyone can check the results. You can ask yours in two minutes: ";
+const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
 function shareBar(el){
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
   el.innerHTML=`${navigator.share?`<button type="button" id="sh-native">Share…</button>`:""}

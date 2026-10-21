@@ -160,13 +160,13 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
   <header>
     <div class="eyebrow">Civic Accord · residency check</div>
     <h1>Verify Residency</h1>
-    <p class="lede">Anyone can read every deliberation. To vote, add statements, or have your choices count, confirm that you live in the district. It takes one check, and your votes can never be traced back to you.</p>
+    <p class="lede">Anyone can read every deliberation. To vote, add statements, or have your choices count, confirm that you live in the district. In the live version, it takes one check, and it's designed so your votes can't be traced back to you.</p>
     <p class="note"><b>Prototype.</b> Codes here are shown on screen instead of mailed, and nothing you enter is stored or sent to Civic Accord.</p>
     <div class="vsteps" id="vsteps"></div>
   </header>
   <section class="panel" id="p"></section>
   <p class="meta"><a href="app.html" style="color:var(--koa)">← Back to the deliberation</a></p>
-  <footer><span>Prototype by Jeffrey Wise with Claude · October 2026</span><span>Identity is used only to confirm residency, never linked to votes.</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/liebeskind8301/civic-accord" style="color:inherit">Code</a></span></footer>
+  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Identity is used only to confirm residency, never linked to votes.</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/liebeskind8301/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
 <script src="lib/registry.js"></script>
 <script>
@@ -182,7 +182,7 @@ async function render(){bar();const p=$("p");
    <p>Your address decides which deliberations count your voice: your congressional district, state house and senate districts, county, and more.</p>
    <div class="addr"><label for="addr" class="meta">Home address</label><input type="text" id="addr" autocomplete="street-address" placeholder="Street address, city, state, ZIP"></div>
    <p class="privacy">Your address goes from your browser straight to the U.S. Census Bureau to find your districts. In the live tool, it is used once to mail your code, then deleted. Only your districts are kept.</p>
-   <div class="grp"><h3>Who decides</h3><p class="meta">Registered voters in the district make up the official result that goes to the office. Other residents 16 and up can take part too. Their views are shown separately and labeled, and aren't part of the official result. Your voter registration status is confirmed during this check.</p></div>
+   <div class="grp"><h3>Who decides</h3><p class="meta">Registered voters in the district make up the official result that goes to the office. Other residents 16 and up can take part too. Their views are shown separately and labeled, and aren't part of the official result. In the live version, your voter registration status would be checked here. In this sample, you choose it.</p></div>
    <div class="actions"><button class="btn" id="go" type="button">Find my districts</button></div>
    <p class="meta">No address handy? Try a state capitol: ${CA_REG.SAMPLES.map((a,i)=>`<a href="#" class="sample" data-i="${i}" style="color:var(--koa)">${esc(a[0])}</a>`).join(" · ")}</p>
    <span class="toast" id="msg" aria-live="polite"></span>`;
@@ -240,12 +240,12 @@ async function render(){bar();const p=$("p");
      window.__ver=v;step=5;render()};
    $("back").onclick=()=>{step=3;render()};return}
  const v=window.__ver||{};
- p.innerHTML=`<div class="submitbox"><h3>✓ You're verified</h3><p>Your voice now counts in deliberations for ${esc([geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).join(", "))}.</p>
+ p.innerHTML=`<div class="submitbox"><h3>✓ Sample check complete</h3><p>In the live version, your voice would now count in deliberations for ${esc([geo.cdName,geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:""].filter(Boolean).join(", "))}.</p>
    <p class="meta">Verification receipt</p><span class="receipt">${esc(v.credential)}</span>
-   <p class="meta">Voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in the official result.":"Your views are shown with other residents, separately from the official result. If you register to vote, they will count in the official result."}</p>
+   <p class="meta">Sample voter status: <b>${esc(v.voterStatus)}</b> (${esc(v.voterStatusHow)}). ${v.voterStatus==="registered"?"Your votes count in the official result.":"Your views are shown with other residents, separately from the official result. If you register to vote, they will count in the official result."}</p>
    ${v.voterStatus==="not registered"?`<p class="meta">Want to register? <a href="${esc(ELIG&&ELIG.voterStatus.registerUrl||"https://vote.gov/")}" target="_blank" rel="noopener" style="color:var(--koa)">${ELIG&&ELIG.voterStatus.registerUrl?"Your state election office":"Vote.gov"}</a>.</p>`:""}
-   <p class="meta">This proves you're a verified resident. It says nothing about how you vote.</p></div>
-   <h3>How your privacy is protected</h3>
+   <p class="meta">This is a sample receipt. Nothing was verified or sent anywhere. In the live version, it would prove you were verified, and say nothing about how you vote.</p></div>
+   <h3>How privacy will be protected (planned)</h3>
    <div class="flow">
     <div><b>1. Residency check</b><span class="meta">Confirms you live in these districts, your voter status, and that you haven't verified before. Keeps only your districts, your status, and a one-way fingerprint to stop duplicates. Your name and address are deleted.</span></div>
     <div><b>2. Your sealed voting key</b><span class="meta">Issued to your device in a way the checker can't see, so even the host can't match the key to you. One key per person per district.</span></div>

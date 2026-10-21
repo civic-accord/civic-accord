@@ -140,7 +140,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 <noscript><p class="note"><b>This page needs JavaScript</b> to look up your address and load live information. Turn it on in your browser settings, or use a library computer. All the data is also open on <a href="https://github.com/liebeskind8301/civic-accord">GitHub</a>.</p></noscript>
 
   <header>
-    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · working prototype · <a href="open.html" style="color:var(--koa)">Open now</a> · <a href="ask.html" style="color:var(--koa)">Ask your representatives for this</a></div>
+    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · sample demo · <a href="open.html" style="color:var(--koa)">Open now</a> · <a href="ask.html" style="color:var(--koa)">Ask your representatives for this</a></div>
     <h1>Civic Accord</h1>
     <p class="lede">Residents talk an issue through, the tool finds where they actually agree, and the result goes to their representatives as a proposed bill with the full public record behind it.</p>
     <div class="who">
@@ -166,7 +166,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
   <main id="panel"></main>
 
   <footer>
-    <span>Prototype by Jeffrey Wise with Claude · October 2026</span>
+    <span>Civic Accord · an open, nonpartisan example · October 2026</span>
     <span id="footnote"></span>
   <span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/liebeskind8301/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
@@ -270,7 +270,7 @@ function costInfo(id){
   if(P.fines&&id===P.fines.statement) return {kind:"rev",amt:P.fines.amt,yr:true,text:`Brings in about ${money(P.fines.amt)} a year`,basis:P.fines.note};
   if(P.fee&&id===P.fee.statement) return {kind:"rev",amt:P.fee.perUnit,yr:true,text:`Brings in about ${money(P.fee.perUnit)} a year per $1 fee · paid by ${P.fee.payers}`,basis:`${P.fee.unitText} The fee amount is chosen in Step 4.`};
   if(P.revUnknown&&P.revUnknown[id]) return {kind:"unknown",text:P.revUnknown[id].text,basis:P.revUnknown[id].note};
-  return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas are sent to analysts for a cost estimate before they can be funded."};
+  return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas don't have a cost estimate yet. Before real use, a reviewer would add one, with how it was made."};
 }
 function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
 function agreedTotals(){
@@ -292,7 +292,7 @@ function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
   if(VER){c.className="chip ok";c.innerHTML=`✓ Verified resident <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
     const u=document.getElementById("unver");if(u)u.onclick=e=>{e.preventDefault();try{localStorage.removeItem("civicaccord-verified")}catch(x){}location.reload()}}
   else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify to take part</a>`}}
-function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. It takes one check, and your votes can never be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
+function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. In the live version, it takes one check, and it's designed so your votes can't be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
 function renderHeader(){verChip();
   const vd=VER&&VER.districts&&!VER.example?VER.districts:null;
   document.getElementById("chip-district").textContent=vd&&P.key===vd.state.toLowerCase()+"-state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
@@ -319,7 +319,7 @@ const srcLinks=list=>list.map(([h,l])=>`<a href="${esc(safeUrl(h))}" target="_bl
 function learn(){
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Issue pack · ${esc(P.name)}</div><h2>${esc(P.issueTitle)}</h2></div>
-  <p class="lede">Everyone starts from the same verified facts before weighing in. Each issue and each level of government gets its own pack like this one; the rest of the tool stays the same.</p>
+  <p class="lede">Everyone starts from the same sourced facts before weighing in. Each issue and each level of government gets its own pack like this one; the rest of the tool stays the same.</p>
   <div class="grid2">${P.facts.map(([k,v])=>`<div class="fact"><span class="k">${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div>
   <div class="grid2">${P.lists.map(([h,items])=>`<div><h3>${esc(h)}</h3><ul class="plain">${items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>
   <p class="src">Sources: ${srcLinks(P.sources)}</p>
@@ -329,8 +329,8 @@ function learn(){
 function submitBox(){
   const c=voteCounts(), t=agreedTotals(), n=all().length;
   if(st.submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
-    <h3>✓ Your votes are recorded</h3>
-    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now count in the results on the next steps.</p>
+    <h3>✓ Your sample votes are saved</h3>
+    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're saved only in this browser.</p>
     <p class="meta">Your receipt</p><span class="receipt">${st.receipt}</span>
     <p class="meta">In the live tool, you can look up this receipt in the public vote record to confirm your votes were counted exactly as cast, without revealing who you are.</p>
     <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
@@ -530,7 +530,7 @@ function draft(){
   </div>
   ${feeNote}
   <h3>Starting bill text</h3>
-  <p class="meta">An AI-written starting point for a ${esc(P.repTitle)}'s office. It is not final legal text.</p>
+  <p class="meta">A starting point for a ${esc(P.repTitle)}'s office, assembled by simple code from the common ground. In the live version, AI would help write it. It is not final legal text, and people decide what's in it.</p>
   <div class="bill">${P.billHead}${body||"     (no provisions yet)"}${extra.length?"\n\n"+extra.join("\n\n"):""}\n\n${approp}\n\n${eff}</div>
   <button class="btn" id="go4">Prepare the hand-off</button>
   </section>`;
@@ -540,7 +540,7 @@ function followThrough(){
   const keys=Object.keys(rec.responses||{}).filter(k=>k.endsWith("|"+P.packId));
   const r=keys.length?rec.responses[keys[0]]:null, ups=keys.length?((rec.updates||{})[keys[0]]||[]):[];
   return `<div class="grp"><h3>Follow it</h3>
-    <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. You're notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
+    <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. In the live version, you'd be notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
     <ol class="timeline">
       <li><b>Package sent to the office</b><span class="meta">${st.submitted?"Your votes are included":"Submit your votes in Step 2 to be included"}</span></li>
       ${r?`<li><b>${esc(r.office?r.office+": ":"")}${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
