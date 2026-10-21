@@ -138,14 +138,14 @@ function renderDetail(){
     ${a.st.filter(s=>s.kind!=="common"&&s.pp!==null&&s.pp>=70).length?`<h3>Panel found more agreement</h3><ul class="plain">${a.st.filter(s=>s.kind!=="common"&&s.pp>=70).map(s=>`<li>${esc(s.text)} <span class="meta">Citizen panel ${s.pp}%, open groups ${s.pa}% and ${s.pb}% · ${costOf(s)}</span></li>`).join("")}</ul>`:""}
     <h3>Where constituents split (${split.length})</h3>
     <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}%${s.pp!==null?`, citizen panel ${s.pp}%`:""} · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
-    <p class="meta">Every figure links back to the public vote record in the live tool. Starting bill text and cost methods come with the package.</p>
+    <p class="meta">Every figure links back to the public vote record in the live tool. ${d.bill&&d.bill.kind==="policy"?"The starting office policy":"Starting bill text"} and cost methods come with the package.</p>
     <h3>The office's public response</h3>
-    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office introduces it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
+    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office ${d.bill&&d.bill.kind==="policy"?"adopts":"introduces"} it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
     <p class="meta">Residents see the office's response, or "no response yet" after 30 days. A reason is required for every choice.</p>
     <form id="respond" class="choices">
       ${(d.bill&&d.bill.kind==="policy"?[["adopt","Our office will adopt this policy"],["amend","Our office will adopt it with changes"],["info","We need more information"],["decline","We decline"]]:[["introduce","I will introduce a bill"],["cosponsor","I will support or co-sponsor an existing bill"],["amend","I will introduce it with changes"],["info","I need more information"],["decline","I decline"]]).map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}
       <div id="changesbox" hidden><label for="changes" class="meta">What would need to change? Residents deliberate on the revised version.</label>
-      <textarea id="changes" rows="2" maxlength="600" placeholder="For example: phase in the inspectors over two years and drop the visitor fee."></textarea></div>
+      <textarea id="changes" rows="2" maxlength="600" placeholder="${d.bill&&d.bill.kind==="policy"?"For example: start with one pilot topic and add more after six months.":"For example: phase in the inspectors over two years and drop the visitor fee."}"></textarea></div>
       <label for="reason" class="meta">The office's reason, shown publicly</label>
       <textarea id="reason" rows="3" maxlength="600" placeholder="${d.bill&&d.bill.kind==="policy"?"For example: we'll adopt the common-ground practices and report back in six months.":"For example: I'll introduce the common-ground items and hold a hearing on the visitor fee."}"></textarea>
       <label for="approver" class="meta">Approver's role</label>
@@ -161,8 +161,8 @@ function renderDetail(){
       ${(DB.updates[rk(d.id)]||[]).map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)} · approved by ${esc(u.approver)}</span></li>`).join("")}
     </ol>
     ${r?`<form id="update" class="choices">
-      <div class="grid2"><div><label for="up-stage" class="meta">Step</label><select id="up-stage">${["Introduced","Hearing scheduled","Heard in committee","Amended","Passed a chamber","The office voted","Enacted","Stalled"].map(x=>`<option>${x}</option>`).join("")}</select></div>
-      <div><label for="up-bill" class="meta">Bill number (optional)</label><input type="text" id="up-bill" maxlength="40"></div></div>
+      <div class="grid2"><div><label for="up-stage" class="meta">Step</label><select id="up-stage">${(d.bill&&d.bill.kind==="policy"?["Adopted","Started a pilot","Changed the policy","Reported results","Paused","Stopped"]:["Introduced","Hearing scheduled","Heard in committee","Amended","Passed a chamber","The office voted","Enacted","Stalled"]).map(x=>`<option>${x}</option>`).join("")}</select></div>
+      <div><label for="up-bill" class="meta">${d.bill&&d.bill.kind==="policy"?"Reference (optional)":"Bill number (optional)"}</label><input type="text" id="up-bill" maxlength="40"></div></div>
       <label for="up-note" class="meta">What happened, and why (for a vote, the office's reasoning)</label>
       <textarea id="up-note" rows="2" maxlength="600"></textarea>
       <label for="up-by" class="meta">Approver's role</label><input type="text" id="up-by" maxlength="80">

@@ -353,11 +353,13 @@ function draft(){
   const t=totals();
   const picked=Object.keys(P.OPT).filter(k=>st.budget[k].on);
   // Provisions: chosen cost options, plus any statement with its own provision text that reached common ground.
-  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n)).concat(P.S.filter(s=>s.billText&&!P.OPT[s.id]).filter(s=>{const x=statusOf(s.id);return x&&x.kind==="common"}).map(s=>s.billText));
-  const plain=picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
+  const stmtProv=P.S.filter(s=>s.billText&&!P.OPT[s.id]).filter(s=>{const x=statusOf(s.id);return x&&x.kind==="common"});
+  const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n)).concat(stmtProv.map(s=>s.billText));
+  const plainStmts=stmtProv.map(s=>`<li>${esc(s.billText)} <span class="meta">(common ground)</span></li>`).join("");
+  const plain=plainStmts+picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
   const sf=P.fee?statusOf(P.fee.statement):null;
   const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
-  const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)};`).join("\n");
+  const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)}${i===secs.length-1?".":";"}`).join("\n");
   let n=P.firstSection; const extra=[];
   if(P.fee&&st.fee){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}`);n++}
   if(P.fines&&st.fines){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fines.billText)}`);n++}
@@ -368,8 +370,9 @@ function draft(){
   else {const fromFees=st.fee?Math.min(tot,Math.round(t.feeRev)):0;
     const so=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of ${A.special} and the sum of $${words(Math.round(t.gf))} out of ${A.general},`:t.gf>0?`out of ${A.general} the sum of $${words(Math.round(t.gf))}`:`out of ${A.special} the sum of $${words(tot)}`;
     src=A.text.replace("{source}",so);}
-  const approp=`     ${P.secWord} ${n}.  ${esc(src)}`;
-  const eff=`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
+  // A policy has no numbered sections, so its closing lines are plain paragraphs.
+  const approp=P.docKind==="policy"?`     ${esc(src)}`:`     ${P.secWord} ${n}.  ${esc(src)}`;
+  const eff=P.docKind==="policy"?`     ${esc(P.effective)}`:`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
   <p class="lede">The proposal is built from your choices in Step 4, starting from what every group agreed on. Anything you added that lacks common ground is flagged.</p>
@@ -420,7 +423,7 @@ function handoff(){
       <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
-      <ul class="plain"><li>Plain-language proposal and starting bill text</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
+      <ul class="plain"><li>Plain-language proposal and ${P.docKind==="policy"?"starting office policy":"starting bill text"}</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
     </div>
     <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
   </div>

@@ -133,7 +133,7 @@ Each option links to the statement it puts a price on.
 | `basis` | **Required.** How the cost was estimated, and from what |
 | `billText` | Clause for the draft bill |
 
-A statement can also carry its own `billText`. It becomes a provision of the draft only if that statement reaches common ground.
+A statement can also carry its own `billText`. It becomes a provision of the draft only if that statement reaches common ground. A statement that has a cost option uses the cost option's `billText` instead, and only when that option is turned on.
 
 Templates you can use in `impact` and `billText`:
 

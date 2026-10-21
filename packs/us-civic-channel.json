@@ -24,7 +24,7 @@
   "representativeTitle": "member of Congress",
   "handoffTitle": "Hand off to your members of Congress",
   "handoffText": "The package goes to the offices of your U.S. representative and both of your state's senators. Each office decides whether to adopt the policy. The public record stays open either way.",
-  "timing": "The 120th Congress convenes January 3, 2027. Bills can be introduced at any time in the two-year Congress, but early introduction gives more time for hearings.",
+  "timing": "An office can adopt a policy like this at any time. The 120th Congress convenes January 3, 2027.",
   "receiptPrefix": "US",
   "elections": [
    {
@@ -209,7 +209,7 @@
      4,
      3
     ],
-    "billText": "Use only tools whose votes are counted by open-source code that anyone can check"
+    "billText": "Use only tools whose votes are counted by code anyone can read and check"
    },
    {
     "id": 4,
