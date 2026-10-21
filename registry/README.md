@@ -12,6 +12,8 @@ Census-designated places are statistical areas, not governments, so they are ign
 
 ## Adding a state
 
+Planned field: `officialEmailDomains`, a list of the government's official email domains with a source for each, used to confirm office accounts (see SECURITY.md, Office identity design). Leave it out if a government has none; those offices are confirmed by letter or at a public meeting.
+
 Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs a source in `sources`, and the file is reviewed in that state's legal review like any pack. `civic` is one of `receives`, `possible`, `later`, or `never` (courts are always `never`).
 
 ## Who can take part
