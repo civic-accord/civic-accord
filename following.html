@@ -238,7 +238,7 @@ textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--li
 .fl{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .fl>li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px;min-width:0}
 .fl>li.changed{border-color:var(--koa)}
-.fl h2{font-size:1.1rem}.fl h2 a{color:var(--ink)}
+.fl h2{font-size:1.1rem}.fl h2 a{color:var(--ink)}.fl h2:focus{outline:3px solid var(--sun);outline-offset:2px}
 .res{font-weight:700}.res.changed{color:var(--koa)}.res.unavailable{color:var(--lehua)}
 .end{text-align:center;color:var(--muted);padding:12px}
 </style>
@@ -254,7 +254,7 @@ textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--li
     <p id="rec-sum"></p>
     <p class="meta">Your follows and records of what you sent are kept only in this browser. They don't sync to your other devices, and clearing this browser's data deletes them. Export makes a copy you keep.</p>
     <div class="acts"><button type="button" class="btn" id="export">Export a copy</button>
-      <label class="btn ghost" for="import" style="display:inline-flex;align-items:center">Import a copy</label><input type="file" id="import" accept="application/json,.json" class="sr-only">
+      <button type="button" class="btn ghost" id="importbtn">Import a copy</button><input type="file" id="import" accept="application/json,.json" hidden>
       <button type="button" class="btn ghost" id="clearall">Delete all follows and records</button></div>
     <p class="toast" id="rec-msg" role="status" aria-live="polite"></p>
     <p class="meta">"Forget me on this device," at the bottom of every page, removes everything Civic Accord saved in this browser, including these.</p>

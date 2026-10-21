@@ -42,7 +42,7 @@ const versionLabel=it=>it.summary?`${esc(it.summary.by)}${it.summary.version?` �
 function topBlock(it,stage,next,following){
   return `<section class="panel top" aria-labelledby="t-h"><h2 id="t-h" class="sr-only">At a glance</h2>
     <dl class="kv">
-      <dt>The request</dt><dd>${esc(it.title)} ${LIVE}<br><span class="meta">Version: ${versionLabel(it)}</span></dd>
+      <dt>The item</dt><dd>${esc(it.title)} ${LIVE}<br><span class="meta">Version: ${versionLabel(it)}</span></dd>
       <dt>Who can act</dt><dd>${esc(whoCanAct(it))}</dd>
       <dt>Where it stands</dt><dd><b>${esc(stage.label)}</b>${stage.date?`, ${fmt(stage.date)}`:""}${stage.detail?`<br><span class="meta">${esc(stage.detail)}</span>`:""}</dd>
       <dt>What you can do next</dt><dd>${next.href&&safe(next.href)?`<a class="nextbtn" href="${esc(next.href)}" target="_blank" rel="noopener">${esc(next.text)}</a>`:next.anchor?`<a class="nextbtn" href="#${esc(next.anchor)}">${esc(next.text)}</a>`:esc(next.text)}</dd>
@@ -129,7 +129,7 @@ function render(it){
 
   <section class="panel" aria-labelledby="h4"><div class="eyebrow">4 · Delivery ${YOURS} ${PLANNED}</div><h2 id="h4">What you sent</h2>
     ${sent.length?`<ul class="sentlist">${sent.map(s=>`<li><div><b>${esc(s.office.name)}</b>${s.office.holder?` <span class="meta">(${esc(s.office.holder)} at the time)</span>`:""} ${YOURS}</div>
-        <div class="meta">${s.sentOn?"You said you sent it on "+fmt(s.sentOn):"No date given"} · ${esc(s.channel==="email"?"by email":s.channel==="contact-form"?"through the office's contact form":s.channel==="official-comment"?"as an official comment":s.channel==="meeting-comment"?"as a meeting comment":s.channel)}</div>
+        <div class="meta">${s.issue.version?"Saved with the summary version you saw":"Summary version not recorded (saved from Open Now)"} · ${s.sentOn?"You said you sent it on "+fmt(s.sentOn):"No date given"} · ${esc(s.channel==="email"?"by email":s.channel==="contact-form"?"through the office's contact form":s.channel==="official-comment"?"as an official comment":s.channel==="meeting-comment"?"as a meeting comment":s.channel)}</div>
         ${s.message?`<details><summary class="meta">What you sent</summary><p class="msg">${esc(s.message)}</p></details>`:""}
         <div class="acts"><button type="button" class="btn ghost" data-copyrec="${esc(s.id)}">Copy as text</button><button type="button" class="btn ghost" data-delrec="${esc(s.id)}">Delete this record</button><span class="toast" id="cr-${esc(s.id)}" role="status" aria-live="polite"></span></div></li>`).join("")}</ul>
       <p class="meta">These records are reported by you. Civic Accord didn't deliver them and can't confirm they were received. They're kept only in this browser: they don't sync to your other devices, and clearing this browser's data deletes them. <a href="following.html#records" style="color:var(--koa)">Export a copy</a>.</p>`
@@ -185,7 +185,7 @@ function bind(it,keys,parts,version,orphans){
   if(sn){sn.oninput=keepS;stw.oninput=keepS}if(cm)cm.oninput=()=>{COMMENT=cm.value};
   const reps=TELL&&DIST?CA_TELL.recipients(it,DIST,FED,STATELEG):[];
   const msg=p=>CA_TELL.message(it,p.sal,{stance:REACT[ID],comment:COMMENT,signer:SIGNER,dist:DIST});
-  const pend=(p,channel,m)=>{const x={officeId:p.officeId,name:p.name,title:p.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};const i=PENDING.findIndex(y=>y.officeId===p.officeId);if(i>=0)PENDING[i]=x;else PENDING.push(x)};
+  const pend=(p,channel,m)=>{const x={officeId:p.officeId,name:p.name,title:p.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};const i=PENDING.findIndex(y=>y.officeId===p.officeId&&y.name===p.name);if(i>=0)PENDING[i]=x;else PENDING.push(x)};
   document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keepS();const p=reps[+a.dataset.mail],m=msg(p);
     let url=`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
     if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}

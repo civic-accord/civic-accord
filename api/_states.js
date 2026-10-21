@@ -1,7 +1,7 @@
 // State bills from Open States, shared by Open Now (api/open.js) and the scheduled download (api/refresh.js).
 // Files starting with "_" are not public routes.
 const { memo } = require("./_shared");
-const { stateEnded } = require("./_final");
+const { stateEnded, simpleResolution } = require("./_final");
 const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
 // getJSON is passed in, so each caller applies its own limit.
@@ -31,7 +31,7 @@ async function stateBills(key, st, out, getJSON, loadSessions) {
   // 2. Bills from the current session that are still moving.
   // A bill is finished only when its latest action says the bill itself ended. Words like "failed" or "tabled" alone
   // aren't enough: "Amendment failed" or "Motion tabled" happen on bills that are still moving.
-  const done = b => stateEnded(b.latest_action_description, (b.classification || []).some(c => /resolution/i.test(c)));
+  const done = b => stateEnded(b.latest_action_description, simpleResolution(b.classification));
   const PAGES = out.pages || 3; // Up to 60 most recently active bills (the scheduled download may ask for fewer when many legislatures are in session). The free tier allows 10 requests a minute; results are cached 6 hours.
   let results = [], total = null;
   for (let page = 1; page <= PAGES; page++) {

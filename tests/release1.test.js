@@ -94,10 +94,10 @@ test("records: follow with a baseline, sent records are labeled reported by you,
   assert.ok(R.isFollowing(b.id)); assert.strictEqual(R.follows()[0].baseline.dataAt, "2026-10-21T10:00:00Z");
   const rec = R.addSent({ issue: { id: b.id, title: b.title, version: base.version }, office: { id: "hi/lower/13", name: "State Representative, district 13", holder: "Example Person" },
     channel: "email", message: "Dear Representative, please support HB 1.", sentOn: "2026-10-21" }, now);
-  assert.strictEqual(rec.status.delivery, "reported-by-you"); assert.strictEqual(rec.status.response, "none-recorded");
+  assert.strictEqual(rec.status.delivery, "reported-by-you"); assert.strictEqual(rec.status.response, "none-recorded"); assert.strictEqual(rec.status.participation, "individual");
   assert.strictEqual(R.sentFor(b.id).length, 1);
   const ex = R.exportData(now);
-  assert.match(ex.notice, /private messages/); assert.ok(ex.data["civicaccord-records"]);
+  assert.match(ex.notice, /private messages/); assert.match(ex.notice, /name and town/); assert.ok(ex.data["civicaccord-records"]);
   assert.ok(!JSON.stringify(ex).includes("civicaccord-verified"));
   R.unfollow(b.id); assert.ok(!R.isFollowing(b.id));
 });
@@ -137,4 +137,40 @@ test("finished bills: the bill itself ended, not an amendment or a motion", () =
   assert.ok(stateEnded("Transmitted", false, ["executive-signature"]));
   assert.ok(!stateEnded("Committee report adopted", false, ["withdrawal"]));
   assert.ok(congressEnded("Became Public Law No: 119-12.")); assert.ok(!congressEnded("Referred to the Committee on Agriculture."));
+});
+
+test("import keeps only known baseline fields with real dates", () => {
+  const z = memStore(), Z = make(z);
+  const evil = { v: 1, follows: { "us-hr1-119": { issue: { id: "us-hr1-119", title: "HR 1" }, since: "x", baseline: { seenAt: "2026-10-01T00:00:00Z", closes: "garbage", extra: "<script>", version: "v1" } } }, sent: [] };
+  Z.importData(JSON.stringify({ format: "civic-accord-records", version: 1, data: { "civicaccord-records": JSON.stringify(evil) } }));
+  const b = Z.follows()[0].baseline;
+  assert.strictEqual(b.closes, null); assert.ok(!("extra" in b)); assert.strictEqual(b.version, "v1");
+});
+
+test("a failed action list is never reported as a new action; a veto is not a final decision", () => {
+  const t0 = at("2026-10-21T12:00:00");
+  const base = I.snapshot(bill({ actions: null }), "2026-10-21T10:00:00Z", t0);
+  assert.strictEqual(I.compare(base, bill(), "2026-10-22T10:00:00Z", at("2026-10-22T12:00:00")).result, "no-change");
+  const v = bill({ vetoed: { date: "2027-06-01", text: "Vetoed by the Governor." } });
+  assert.strictEqual(I.stageOf(v, t0).key, "vetoed"); assert.match(I.stageOf(v, t0).detail, /override/);
+  assert.deepStrictEqual(I.compare(I.snapshot(bill(), "2026-10-21T10:00:00Z", t0), v, "2026-10-22T10:00:00Z", t0).changes.map(x => x.kind), ["vetoed"]);
+});
+
+test("a deadline that passed is noticed even when the source has no newer data", () => {
+  const base = I.snapshot(rule(), "2026-10-21T10:00:00Z", at("2026-10-21T12:00:00"));
+  const c = I.compare(base, rule(), "2026-10-21T10:00:00Z", at("2026-11-05T12:00:00"));
+  assert.strictEqual(c.result, "changed"); assert.deepStrictEqual(c.changes.map(x => x.kind), ["closed"]);
+});
+
+test("outcomes: vetoes, overrides, resolutions, and motions", () => {
+  const F = require("../api/_final.js");
+  assert.strictEqual(F.stateOutcome("Vetoed by Governor", ["bill"]), "vetoed");
+  assert.strictEqual(F.stateOutcome("Veto sustained", ["bill"]), "final");
+  assert.strictEqual(F.stateOutcome("Adopted", ["concurrent resolution"]), null);
+  assert.strictEqual(F.stateOutcome("Adopted", ["resolution"]), "final");
+  assert.strictEqual(F.stateOutcome("Amendment failed", ["bill"]), null);
+  assert.strictEqual(F.congressOutcome("HR", "Vetoed by President."), "vetoed");
+  assert.strictEqual(F.congressOutcome("HR", "Pocket Vetoed by President."), "final");
+  assert.strictEqual(F.congressOutcome("HRES", "On motion to refer Agreed to without objection."), null);
+  assert.strictEqual(F.congressOutcome("SCONRES", "Received in the House. Agreed to in House with an amendment."), null);
 });

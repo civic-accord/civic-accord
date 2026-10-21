@@ -43,7 +43,7 @@ const message=(it,sal)=>CA_TELL.message(it,sal,{stance:REACT[it.id],comment:COMM
 // until they choose to save it.
 const PENDING={};let RECORDING=null;
 function pend(it,r,channel,m){const list=PENDING[it.id]=PENDING[it.id]||[];const x={officeId:r.officeId,name:r.name,title:r.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};
-  const i=list.findIndex(y=>y.officeId===r.officeId);if(i>=0)list[i]=x;else list.push(x)}
+  const i=list.findIndex(y=>y.officeId===r.officeId&&y.name===r.name);if(i>=0)list[i]=x;else list.push(x)}
 function manualOffice(it){return it.kind==="Proposed rule"?{officeId:CA_OFFICES.agency(it.who||"agency"),name:it.who||"The agency",title:it.who||"The agency",channel:"official-comment",text:""}
   :it.level==="local"?{officeId:it.localId?CA_OFFICES.local(it.localId):null,name:it.who,title:it.who,channel:"meeting-comment",text:""}:null}
 function composeBox(it){

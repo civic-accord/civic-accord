@@ -7,7 +7,7 @@ const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("
 const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
 const getJSON = (url, headers, use) => get(url, headers, LIMITS, use || "items");
 const store = require("./_store");
-const { stateEnded, congressEnded } = require("./_final");
+const { stateOutcome, congressOutcome } = require("./_final");
 const MAX_ACTIONS = 20;
 // With a saved-copy store connected, a state bill that's in a downloaded list draws from the main share of the shared
 // Open States limit. Any other state bill address draws from a small separate share, so a bot trying random addresses
@@ -101,19 +101,17 @@ async function congressItem(m, key) {
     actions = (a.actions || []).map(x => ({ date: x.actionDate ? String(x.actionDate).slice(0, 10) : null, text: String(x.text || "").trim() }))
       .filter(x => x.text).sort((x, y) => String(y.date).localeCompare(String(x.date)));
     const seen = new Set(); actions = actions.filter(x => { const key = x.date + "|" + x.text; if (seen.has(key)) return false; seen.add(key); return true; }).slice(0, MAX_ACTIONS);
-  } catch (e) { actions = []; }
+  } catch (e) { actions = null; }   // unknown, not "none": Following never treats a failed call as a change
   const latest = detail.latestAction || null, ltext = latest ? String(latest.text || "") : "";
-  const T = String(type).toUpperCase();
-  // Finished: law, vetoed, failed, a one-chamber resolution agreed to, or a concurrent resolution agreed to by the second chamber.
-  const ended = congressEnded(ltext) || (/^(HRES|SRES)$/.test(T) && /agreed to/i.test(ltext)) ||
-    (/^(HCONRES|SCONRES)$/.test(T) && /agreed to/i.test(ltext) && (T === "HCONRES" ? /Senate/i.test(ltext) : /House/i.test(ltext)) && !/message on/i.test(ltext));
+  const outcome = congressOutcome(type, ltext);
   const page = `https://www.congress.gov/bill/${ordinal(congress)}-congress/${BILL_PATH[type]}/${number}`;
   const { parts, more, dropped, headings, repeats, shownOf } = partsFrom(summary && summary.text);
   const title = `${String(type).toUpperCase()} ${number}: ${detail.title || ""}`.trim();
   return {
     kind: "Bill in Congress", level: "federal", jurisdiction: { name: "U.S. Congress" }, title,
     status: latest ? { date: latest.actionDate || null, text: ltext } : null,
-    final: ended ? { date: latest.actionDate || null, text: ltext } : null, actions, actionsBy: "Congress.gov",
+    final: outcome === "final" ? { date: latest.actionDate || null, text: ltext } : null,
+    vetoed: outcome === "vetoed" ? { date: latest.actionDate || null, text: ltext } : null, actions, actionsBy: "Congress.gov",
     introduced: detail.introducedDate || null, topic: detail.policyArea && detail.policyArea.name || null,
     sponsors: (detail.sponsors || []).map(p => ({ name: noParty(p.fullName), role: "Sponsor" })),
     summary: summary ? { by: "Congressional Research Service (nonpartisan, part of the Library of Congress)", version: summary.actionDesc || null, date: summary.actionDate || null } : null,
@@ -147,12 +145,12 @@ async function stateItem(id, key, use) {
   const acts = (b.actions || []).map(a => ({ date: a.date ? String(a.date).slice(0, 10) : null, text: String(a.description || "").trim(),
     by: a.organization && a.organization.name ? String(a.organization.name) : null, labels: Array.isArray(a.classification) ? a.classification : [] })).filter(a => a.text);
   const lastAct = acts.length ? acts[acts.length - 1] : null;
-  const isResolution = (b.classification || []).some(c => /resolution/i.test(c));
-  const ended = stateEnded(b.latest_action_description, isResolution, lastAct && lastAct.text === String(b.latest_action_description || "").trim() ? lastAct.labels : null);
+  const outcome = stateOutcome(b.latest_action_description, b.classification, lastAct && lastAct.text === String(b.latest_action_description || "").trim() ? lastAct.labels : null);
   return {
     kind: `Bill in the ${body}`, level: "state", jurisdiction: { name: Body, state: name, stateCode }, title,
     status: b.latest_action_description ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
-    final: ended ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
+    final: outcome === "final" ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
+    vetoed: outcome === "vetoed" ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
     actions: acts.slice().reverse().slice(0, MAX_ACTIONS).map(({ date, text, by }) => ({ date, text, by })), actionsBy: "Open States",
     introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: null,
     sponsors: (b.sponsorships || []).filter(s => s.primary).map(s => ({ name: s.name, role: "Sponsor" })),
@@ -210,7 +208,7 @@ async function localItem(m) {
     kind: "Local meeting", level: "local",
     jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null, townId: feed.townId || null }, title: `${body}: meeting`,
     status: e.EventAgendaStatusName ? { date: null, text: `Agenda ${String(e.EventAgendaStatusName).toLowerCase()}` } : null,
-    meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [], actions: [], actionsBy: `${feed.name} agendas`, office: { id: `local/${feed.id}`, name: feed.name },
+    meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [], actions: [], actionsBy: `${feed.name} agendas`, office: { id: `local/${String(feed.id).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`, name: feed.name },
     summary: { by: `The meeting agenda posted by the ${feed.name}`, version: null, date: null }, partsFrom: "the official agenda",
     parts: parts.slice(0, MAX_PARTS), partsMore: parts.length > MAX_PARTS, partsDropped: 0,
     partsNote: parts.length ? null : "This meeting's agenda has no items with legislation attached yet. Read the agenda for what's being discussed.",
