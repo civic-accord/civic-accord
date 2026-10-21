@@ -35,7 +35,7 @@ async function ask(changing){
   const N=await names();
   const opts=Object.keys(N).sort((a,b)=>N[a].localeCompare(N[b])).map(k=>`<option value="${k}"${D&&D.state===k?" selected":""}>${esc(N[k])}</option>`).join("");
   box.innerHTML=`<h2 id="where-h">Where do you live?</h2>
-    <p class="meta">Everything here is about your own governments, so this comes first. Your state is enough to start.</p>
+    <p class="meta">Everything here is about your own governments, so this comes first. Your state is enough to start. Only your districts are kept, in this browser; "Forget me on this device," at the bottom of every page, clears them.</p>
     <div class="row"><label for="where-st" class="meta">State or territory</label><select id="where-st"><option value="">Choose your state</option>${opts}</select><button class="btn" id="where-go" type="button">Show what's open</button></div>
     <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--koa);font-weight:700;min-height:44px;display:flex;align-items:center">Add your address to see your exact districts and representatives</summary>
       <div class="row" style="margin-top:8px"><label for="where-addr" class="meta">Home address (street, city, state, ZIP)</label><input id="where-addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="where-find" type="button">Find my districts</button></div>
