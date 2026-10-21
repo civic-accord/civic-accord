@@ -27,11 +27,17 @@ function partsFrom(text) {
     .map(b => { const li = b.includes(LI); return { li, t: decode(b.replace(/\u0001/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }; })
     .filter(b => b.t);
   const seen = new Set(), parts = []; let lead = null, dropped = 0;
-  for (const b of blocks) {
+  const isHeading = t => /[A-Z]/.test(t) && t === t.toUpperCase();
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i], next = blocks[i + 1];
     if (!b.li) lead = null;
-    if (/:$/.test(b.t) && !b.li) { lead = b.t; continue; }
-    if (b.t.length < 25 || seen.has(b.t)) { dropped++; continue; }
-    seen.add(b.t); parts.push(b.li && lead ? { text: b.t, lead } : { text: b.t });
+    // A line that introduces a list ("This bill:", "A state with a payment error rate that is") travels with each list item.
+    if (!b.li && next && next.li) { lead = b.t; continue; }
+    if (isHeading(b.t) || b.t.length < 25 || seen.has(b.t)) { dropped++; continue; }
+    seen.add(b.t);
+    // "As background, ..." explains the part before it; it's shown with that part, not voted on separately.
+    if (/^as background\b/i.test(b.t) && parts.length) { parts[parts.length - 1].background = b.t; continue; }
+    parts.push(b.li && lead ? { text: b.t, lead } : { text: b.t });
   }
   return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS, dropped };
 }
@@ -62,7 +68,7 @@ async function congressItem(m, key) {
     parts, partsMore: more, partsDropped: dropped,
     partsNote: parts.length ? null : "The Congressional Research Service hasn't published a summary of this bill yet. It usually does within a few weeks. Until then, you can weigh in on the bill as a whole.",
     whole: title,
-    costs: (detail.cboCostEstimates || []).map(c => ({ title: c.title || "CBO cost estimate", date: c.pubDate ? String(c.pubDate).slice(0, 10) : null,
+    costs: (detail.cboCostEstimates || []).map(c => ({ title: decode(c.title || "CBO cost estimate"), date: c.pubDate ? String(c.pubDate).slice(0, 10) : null,
       url: httpsOnly(c.url), description: partsFrom(c.description).parts.map(p => p.text).join(" ") || null, by: "Congressional Budget Office" })).filter(c => c.url),
     costNote: "Only official estimates are shown. The Congressional Budget Office estimates the cost of many bills once a committee acts on them.",
     links: { official: page, text: page + "/text", comment: null },

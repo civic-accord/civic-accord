@@ -59,9 +59,10 @@ function onlyRead(req, res) {
   return true;
 }
 
-// Every call to a source gives up after 8 seconds, so one slow source can't hold everyone else up.
-const TIMEOUT_MS = 8000;
-function fetchWithTimeout(url, opts) { return fetch(url, { ...(opts || {}), signal: AbortSignal.timeout(TIMEOUT_MS) }); }
+// Every call to a source gives up after a set time, so one slow source can't hold everyone else up.
+// Open States' bill searches can take well over 10 seconds, so it gets longer.
+const TIMEOUT_MS = 10000, SLOW_HOSTS = { "v3.openstates.org": 25000 };
+function fetchWithTimeout(url, opts) { const ms = SLOW_HOSTS[new URL(url).host] || TIMEOUT_MS; return fetch(url, { ...(opts || {}), signal: AbortSignal.timeout(ms) }); }
 
 // 3. A spending limit per source in this server copy, kept under the source's own limit, with a pause after it says "busy".
 const BUDGET = new Map();
