@@ -8,32 +8,13 @@ const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get } = 
 const { STATE_NAMES, stateBills } = require("./_states");
 const { CONGRESS_ENDED } = require("./_final");
 const store = require("./_store");
+const { localMeetings: readLocal, LOCAL_EVERY } = require("./_local");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
 const LOCAL = require("../registry/local-feeds.json").feeds;
+const localMeetings = feed => readLocal(feed, getJSON);
 const https = u => { const v = String(u || "").replace(/^http:\/\//i, "https://"); return /^https:\/\/[^\s"<>]+$/.test(v) ? v : null; };
-
-// Upcoming public meetings from a local government's own agenda system (Legistar's public data service), next 30 days.
-async function localMeetings(feed) {
-  // Dates are counted in the government's own time zone, so tonight's meetings aren't dropped early.
-  const day = d => d.toLocaleDateString("en-CA", { timeZone: feed.tz || "UTC" });
-  const now = new Date(), until = new Date(now.getTime() + 30 * 864e5);
-  const q = `$filter=EventDate+ge+datetime'${day(now)}'+and+EventDate+le+datetime'${day(until)}'&$orderby=EventDate&$top=50`;
-  const list = await getJSON(`https://webapi.legistar.com/v1/${feed.client}/events?${q}`);
-  return (Array.isArray(list) ? list : []).map(e => {
-    const body = String(e.EventBodyName || "Meeting").replace(/^[\s*]+/, "").replace(/\s+/g, " ").trim();
-    const date = String(e.EventDate || "").slice(0, 10);
-    return {
-      id: `lg-${feed.client}-${e.EventId}`, level: "local", kind: "Local meeting",
-      title: `${body}, ${new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}`,
-      who: feed.name, summary: [e.EventTime ? `Meets at ${e.EventTime}` : "", e.EventAgendaStatusName ? `Agenda: ${String(e.EventAgendaStatusName).toLowerCase()}` : ""].filter(Boolean).join(" · "),
-      opened: null, closes: null, meets: date, read: https(e.EventAgendaFile) || https(e.EventInSiteURL) || feed.calendar,
-      act: https(e.EventInSiteURL) || feed.calendar, actLabel: "Meeting page and agenda", source: `${feed.name} agendas`,
-      localId: feed.id, countyId: feed.countyId || null, placeId: feed.placeId || null, townId: feed.townId || null, state: feed.state
-    };
-  });
-}
 
 async function federalRules() {
   // Federal comment deadlines are normally end of day Eastern time, so "today" is counted in Eastern time.
@@ -130,10 +111,24 @@ module.exports = async (req, res) => {
   // own page (talk it through) and the official page.
   out.items = out.items.map(i => i.summary && i.summary.length > 700 ? { ...i, summary: i.summary.slice(0, 700).replace(/\s+\S*$/, "") + "…", summaryCut: true } : i);
   // Show when the oldest list here was really fetched, in case a saved copy is being used while a source is down.
+  // Local meetings come from the scheduled download (api/refresh.js) when a saved-copy store is connected, so adding
+  // more governments never slows a visit. A feed not downloaded yet is fetched live, as before.
+  const localTimes = [];
   for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
-    await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)), "lg-" + feed.id);
+    const meta = {};
+    await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, async () => {
+      if (store.on()) {
+        const r = await memo("saved-lg-" + feed.id, 5 * 60e3, () => store.read(`local/${feed.id}.json`)).catch(() => null);
+        if (r && r.data && Array.isArray(r.data.items)) {
+          const age = Date.now() - Date.parse(r.data.at);
+          // A copy more than a day and a half old isn't shown: meetings on it may have passed or moved.
+          if (age <= 36 * 3600e3) { meta.at = r.data.at; meta.stale = age > 4 * LOCAL_EVERY; localTimes.push(Date.parse(r.data.at)); return r.data.items; }
+        }
+      }
+      return memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed));
+    }, "lg-" + feed.id, meta);
   }
-  const times = ["fr", "congress", st && !savedAt && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).concat(savedAt ? [savedAt] : []).filter(Boolean);
+  const times = ["fr", "congress", st && !savedAt && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).concat(savedAt ? [savedAt] : [], localTimes).filter(Boolean);
   if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
   // A list kept only because a refresh failed is cached briefly, so the next visit tries again soon.
   const shortLife = out.shortLife || out.sources.some(x => x.stale); delete out.shortLife;
