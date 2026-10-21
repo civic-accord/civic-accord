@@ -174,3 +174,10 @@ test("outcomes: vetoes, overrides, resolutions, and motions", () => {
   assert.strictEqual(F.congressOutcome("HRES", "On motion to refer Agreed to without objection."), null);
   assert.strictEqual(F.congressOutcome("SCONRES", "Received in the House. Agreed to in House with an amendment."), null);
 });
+
+test("adopted House resolutions stay finished; failed overrides are final; line-item vetoes aren't vetoes", () => {
+  const F = require("../api/_final.js");
+  assert.strictEqual(F.congressOutcome("HRES", "Motion to reconsider laid on the table Agreed to without objection."), "final");
+  assert.strictEqual(F.congressOutcome("HR", "Override of veto failed in House."), "final");
+  assert.strictEqual(F.stateOutcome("Line-item veto", ["bill"], ["executive-veto-line-item"]), null);
+});

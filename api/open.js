@@ -69,7 +69,7 @@ async function congressBills(key) {
   const j = await getJSON(`https://api.congress.gov/v3/bill?format=json&sort=updateDate+desc&limit=100&api_key=${encodeURIComponent(key)}`);
   // Leave out bills that are finished: law, vetoed, failed, or a one-chamber resolution already agreed to.
   const ENDED = CONGRESS_ENDED;
-  const AGREED = { test: t => /agreed to/i.test(t) && !/motion to (refer|table|recommit|reconsider)|with an amendment|with amendments/i.test(t) }, SIMPLE = /^(HRES|SRES)$/i, CONCURRENT = /^(HCONRES|SCONRES)$/i;
+  const AGREED = { test: t => (/agreed to/i.test(t) && !/motion to (refer|table|recommit|reconsider)|with an amendment|with amendments/i.test(t)) || /motion to reconsider laid on the table agreed to/i.test(t) }, SIMPLE = /^(HRES|SRES)$/i, CONCURRENT = /^(HCONRES|SCONRES)$/i;
   // A concurrent resolution is finished once the second chamber agrees to it. Its latest action then names that chamber
   // (for example, "Received in the Senate, considered, and agreed to" for a House concurrent resolution).
   const secondChamberAgreed = b => { const t = (b.latestAction && b.latestAction.text) || "", type = String(b.type).toUpperCase();

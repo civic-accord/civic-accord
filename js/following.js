@@ -5,7 +5,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const when=iso=>{const x=new Date(iso);return isNaN(x)?"an unknown date":x.toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"})};
 const RESULTS={changed:"Changed since you last looked","no-change":"No recorded change","not-refreshed":"No newer data from the source yet",
   unavailable:"Couldn't check right now","no-baseline":"First check",seen:"Marked as seen"};
-let CHECKS={}, CHECKING=false;
+let CHECKS={}, CHECKING=false, RUN=0;
 
 async function fetchItem(id){
   if(id.startsWith("sample-"))return {sample:true};
@@ -47,13 +47,15 @@ function draw(){
 // lose their place while results come in.
 async function checkAll(){
   const ids=CA_RECORDS.follows().map(f=>f.issue.id);if(!ids.length){draw();return}
-  CHECKING=true;CHECKS={};draw();let i=0,n=0;
-  const worker=async()=>{while(i<ids.length){const id=ids[i++];const r=await fetchItem(id);
+  // Each run has a number; a newer run (for example, after an import) replaces an older one's results.
+  const run=++RUN;CHECKING=true;CHECKS={};draw();let i=0,n=0;
+  const worker=async()=>{while(i<ids.length){const id=ids[i++];const r=await fetchItem(id);if(run!==RUN)return;
     const f=CA_RECORDS.follows().find(x=>x.issue.id===id);
     if(r.item)CHECKS[id]={item:r.item,at:r.at,cmp:CA_ISSUE.compare(f&&f.baseline,r.item,r.at,new Date())};
     else CHECKS[id]=r.sample?{sample:true}:{error:r.error};
     n++;const pr=$("progress");if(pr)pr.textContent=`Checking ${n} of ${ids.length} against the latest official data…`}};
   await Promise.all([worker(),worker(),worker()]);
+  if(run!==RUN)return;
   CHECKING=false;draw();
 }
 

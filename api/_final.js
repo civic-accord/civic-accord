@@ -32,7 +32,7 @@ const congressEnded = text => CONGRESS_ENDED.test(String(text || ""));
 // A regular veto isn't final: the legislature can still vote to override it. A pocket veto, a sustained veto, or a
 // failed override is final. Open Now (above) leaves vetoed bills out of its list either way.
 const VETO = /^(vetoed|veto memo|returned without (the )?governor'?s? (approval|signature))|vetoed by (the )?(president|governor)/i;
-const VETO_FINAL = /pocket vetoed|veto sustained|failed to override|override (failed|fails)|veto override failed/i;
+const VETO_FINAL = /pocket vetoed|veto sustained|failed to override|override (failed|fails)|veto override failed|override of (the )?veto failed/i;
 function congressOutcome(type, text) {
   const t = String(text || ""), T = String(type || "").toUpperCase();
   if (VETO_FINAL.test(t)) return "final";
@@ -41,7 +41,9 @@ function congressOutcome(type, text) {
   // Resolutions: "agreed to" counts only for the resolution itself, never for a motion to refer or table, or for
   // agreement with an amendment (which goes back to the other chamber).
   const agreed = /agreed to/i.test(t) && !/motion to (refer|table|recommit|reconsider)|with an amendment|with amendments/i.test(t);
-  if (/^(HRES|SRES)$/.test(T) && agreed) return "final";
+  // After the House adopts a resolution, the last step is often "Motion to reconsider laid on the table Agreed to",
+  // which only follows adoption.
+  if (/^(HRES|SRES)$/.test(T) && (agreed || /motion to reconsider laid on the table agreed to/i.test(t))) return "final";
   if (/^(HCONRES|SCONRES)$/.test(T) && agreed && (T === "HCONRES" ? /Senate/i.test(t) : /House/i.test(t)) && !/message on/i.test(t)) return "final";
   return null;
 }
@@ -50,7 +52,8 @@ const simpleResolution = cls => Array.isArray(cls) && cls.includes("resolution")
 function stateOutcome(text, classification, labels) {
   const t = String(text || "").trim(), L = Array.isArray(labels) ? labels : [];
   if (VETO_FINAL.test(t) || L.includes("veto-override-failure")) return "final";
-  if (VETO.test(t) || L.includes("executive-veto") || L.includes("executive-veto-line-item")) return "vetoed";
+  // A line-item veto strikes some items from a bill that is otherwise signed, so it isn't treated as a veto here.
+  if (VETO.test(t) || L.includes("executive-veto")) return "vetoed";
   if (ABOUT_PART.test(t)) return null;
   if (BILL_END.filter(re => !/vetoed|veto memo/.test(re.source)).some(re => re.test(t))) return "final";
   if (/^(bill )?(failed|died|dead|withdrawn)\b/i.test(t)) return "final";
