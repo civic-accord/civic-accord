@@ -1,15 +1,25 @@
 {
- "note": "Static examples for the convener's review. Written in advance by an AI system (Claude) and checked by code (quotes) and by a person before publishing to the preview. No AI service is called by this page.",
+ "note": "Static examples for the convener's review. Written in advance by an AI system (Claude). Quotes are checked by code. None has been reviewed or approved by a person yet. No AI service is called by this page.",
+ "checklistVersion": "1",
  "items": {
   "fr-2026-21512": {
-   "document": "Federal Register document 2026-21512, proposed rule, published October 21, 2026",
+   "evalType": "straightforward",
+   "title": "Notification to Members/Shareholders",
+   "sourceVersion": "Federal Register document 2026-21512, proposed rule, published October 21, 2026",
    "source": "the agency's official summary in the Federal Register",
    "passage": "The NCUA Board (Board) solicits public comment on a proposal to streamline the methods a federally insured credit union (FICU) may use to provide its members with notice of share insurance coverage. The current regulation is overly prescriptive, mandating that a FICU make available hard copies of certain prescribed materials. While a FICU would still be required to provide notice to members, the proposed rule would defer to the FICU on the method used for such notification. Among other methods, a FICU may elect to provide members with a link to updated online resources that will be maintained on the NCUA website. The Board believes the proposed rule will provide greater flexibility, reduce compliance costs for both NCUA and FICUs, and ensure that members are provided with up-to-date information regarding share insurance coverage.",
-   "scope": "This passage only. The full notice was not given to the tool for these examples.",
-   "actions": [
+   "contextHash": "47563d699cba3584615ec20bf04dc8e00951502c1ee6706869ff14e64be4332b",
+   "scopeReviewed": "The agency's summary only. The full notice wasn't reviewed.",
+   "review": {
+    "status": "unapproved",
+    "reviewedOn": null,
+    "reviewerRole": null,
+    "checklist": "1"
+   },
+   "primary": [
     {
      "id": "explain",
-     "label": "Explain this passage in plain language",
+     "label": "Explain this summary in plain language",
      "claims": [
       {
        "kind": "says",
@@ -43,7 +53,7 @@
       },
       {
        "kind": "reading",
-       "text": "Because the choice of method would be the credit union's, a credit union could still choose printed materials. The passage doesn't say printed materials would be banned.",
+       "text": "Because the method would be the credit union's choice, a credit union could still choose printed materials. This passage doesn't say printed materials would be banned.",
        "quotes": [
         "would defer to the FICU on the method used"
        ]
@@ -57,21 +67,21 @@
       },
       {
        "kind": "unknown",
-       "text": "The passage doesn't list the other methods that would be allowed, or say whether any standards would apply to the method a credit union chooses.",
+       "text": "This passage does not say which other methods would be allowed, or whether any standards would apply to the method a credit union chooses.",
        "quotes": []
       }
      ]
     },
     {
      "id": "term",
-     "label": "What does this term mean here?",
+     "label": "What does a term mean here?",
      "terms": [
       {
        "term": "FICU",
        "claims": [
         {
          "kind": "says",
-         "text": "FICU stands for \"federally insured credit union,\" as the passage itself defines it.",
+         "text": "\"Federally insured credit union,\" as this passage itself defines it.",
          "quotes": [
           "federally insured credit union (FICU)"
          ]
@@ -83,38 +93,40 @@
        "claims": [
         {
          "kind": "unknown",
-         "text": "This passage uses \"share insurance coverage\" but doesn't define it. The full notice may explain it; it wasn't given to the tool for these examples.",
+         "text": "This passage does not define \"share insurance coverage.\" The full notice may; it wasn't reviewed.",
          "quotes": []
         }
        ]
       }
      ]
-    },
+    }
+   ],
+   "limited": [
     {
      "id": "costs",
-     "label": "Where does this document discuss costs?",
+     "label": "Does this passage mention costs?",
      "claims": [
       {
        "kind": "says",
-       "text": "This passage mentions costs once: the board expects the proposal to \"reduce compliance costs\" for the NCUA and credit unions.",
+       "text": "Once: the board expects the proposal to \"reduce compliance costs\" for the NCUA and credit unions.",
        "quotes": [
         "reduce compliance costs for both NCUA and FICUs"
        ]
       },
       {
        "kind": "unknown",
-       "text": "The passage gives no amounts and no cost estimate. Only this passage was available, so the rest of the notice, which may include a cost analysis, wasn't checked.",
+       "text": "This passage does not give amounts or a cost estimate. The full notice wasn't checked.",
        "quotes": []
       }
      ]
     },
     {
      "id": "affected",
-     "label": "Does this document identify who would be affected?",
+     "label": "Does this passage say who would be affected?",
      "claims": [
       {
        "kind": "says",
-       "text": "The passage names federally insured credit unions, which would choose how to notify members.",
+       "text": "It names federally insured credit unions, which would choose the method.",
        "quotes": [
         "the proposed rule would defer to the FICU on the method used"
        ]
@@ -128,23 +140,23 @@
       },
       {
        "kind": "unknown",
-       "text": "The passage doesn't say how many credit unions or members are affected. Only this passage was available, so the full notice wasn't checked.",
+       "text": "This passage does not say how many credit unions or members would be affected.",
        "quotes": []
       }
      ]
     },
     {
      "id": "missing",
-     "label": "What information is missing from the material here?",
+     "label": "What does this passage leave out?",
      "claims": [
       {
        "kind": "unknown",
-       "text": "Cost amounts or an official cost estimate.",
+       "text": "Cost amounts or a cost estimate.",
        "quotes": []
       },
       {
        "kind": "unknown",
-       "text": "A list of the other notification methods that would be allowed.",
+       "text": "Which other notification methods would be allowed.",
        "quotes": []
       },
       {
@@ -154,12 +166,249 @@
       },
       {
        "kind": "unknown",
-       "text": "How members who don't use the internet would be reached, if online links are used. The passage doesn't address this.",
+       "text": "How members without internet access would be reached if a link were used.",
        "quotes": []
       },
       {
        "kind": "unknown",
-       "text": "These may be in the full notice, which wasn't given to the tool. \"Not in this passage\" doesn't mean the notice leaves them out.",
+       "text": "These may be in the full notice, which wasn't reviewed. \"This passage does not say\" doesn't mean the notice leaves them out.",
+       "quotes": []
+      }
+     ]
+    }
+   ]
+  },
+  "fr-2026-21305": {
+   "evalType": "exception",
+   "title": "Safety Zone; FRL Inaugural Invitational eFoil Exhibition Race, Miami Marine Stadium Basin, Miami, FL",
+   "sourceVersion": "Federal Register document 2026-21305, notice of proposed rulemaking, published October 19, 2026",
+   "source": "the agency's official summary in the Federal Register",
+   "passage": "The Coast Guard is proposing to establish a temporary safety zone for certain navigable waters in the Miami Marine Stadium Basin in connection with the FRL Inaugural Invitational eFoil Exhibition Race. The safety zone is needed to protect personnel, vessels, and the marine environment from potential hazards associated with eFoil race operations. This proposed rulemaking would prohibit persons and vessels from being in the safety zone unless specifically authorized by the Captain of the Port, Sector Miami. We invite your comments on this proposed rulemaking.",
+   "contextHash": "bc016631d90ac6ab510c69923e97cbff5fd7a2395b601338efd2fdc54ed00e8e",
+   "scopeReviewed": "The agency's summary only. The full notice, which would give the zone's exact boundaries and times, wasn't reviewed.",
+   "review": {
+    "status": "unapproved",
+    "reviewedOn": null,
+    "reviewerRole": null,
+    "checklist": "1"
+   },
+   "primary": [
+    {
+     "id": "explain",
+     "label": "Explain this summary in plain language",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "The Coast Guard proposes a temporary safety zone on part of the Miami Marine Stadium Basin during an eFoil race.",
+       "quotes": [
+        "temporary safety zone for certain navigable waters in the Miami Marine Stadium Basin"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "Its stated reason is to protect people, boats, and the environment from hazards of the race.",
+       "quotes": [
+        "protect personnel, vessels, and the marine environment from potential hazards associated with eFoil race operations"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "People and vessels could not be in the zone unless the Captain of the Port, Sector Miami, specifically allows it. That exception matters: entry isn't banned outright, it requires permission.",
+       "quotes": [
+        "unless specifically authorized by the Captain of the Port, Sector Miami"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "The Coast Guard is asking for public comments.",
+       "quotes": [
+        "We invite your comments on this proposed rulemaking."
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "This passage does not say the zone's exact boundaries, the dates or hours it would apply, or how to ask for permission to enter.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "term",
+     "label": "What does a term mean here?",
+     "terms": [
+      {
+       "term": "Captain of the Port",
+       "claims": [
+        {
+         "kind": "unknown",
+         "text": "This passage names the Captain of the Port, Sector Miami, as the official who can authorize entry, but it does not define the role.",
+         "quotes": [
+          "Captain of the Port, Sector Miami"
+         ]
+        }
+       ]
+      },
+      {
+       "term": "safety zone",
+       "claims": [
+        {
+         "kind": "says",
+         "text": "In this passage, an area where people and vessels would be prohibited unless specifically authorized.",
+         "quotes": [
+          "prohibit persons and vessels from being in the safety zone unless specifically authorized"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "limited": [
+    {
+     "id": "affected",
+     "label": "Does this passage say who would be affected?",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "It says \"persons and vessels\" would be kept out of the zone without authorization.",
+       "quotes": [
+        "prohibit persons and vessels from being in the safety zone"
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "This passage does not say who uses those waters or how many people would be affected.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "missing",
+     "label": "What does this passage leave out?",
+     "claims": [
+      {
+       "kind": "unknown",
+       "text": "The zone's exact boundaries.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "The dates and hours it would be in effect.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "How to ask the Captain of the Port for permission.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "Any penalties. These may be in the full notice, which wasn't reviewed.",
+       "quotes": []
+      }
+     ]
+    }
+   ]
+  },
+  "fr-2026-21420": {
+   "evalType": "insufficient",
+   "title": "Medicare Program; Implementation of Sections 6219, 6220, and 6224 of the Consolidated Appropriations Act, 2026",
+   "sourceVersion": "Federal Register document 2026-21420, proposed rule, published October 20, 2026",
+   "source": "the agency's official summary in the Federal Register",
+   "passage": "This proposed rule would implement section 6219 (Adjustments to Medicare Part D Cost-Sharing Reductions for Low-Income Individuals), section 6220 (Requiring Enhanced and Accurate Lists of (REAL) Health Providers Act), and section 6224 (Modernizing and Ensuring Pharmacy Benefit Manager Accountability) of the Consolidated Appropriations Act, 2026.",
+   "contextHash": "5192cfc40ee8bb1b2072fe3fe7b481ae1c5e7c8d7cd0c7d1fb5e2d1e4b1452cb",
+   "scopeReviewed": "The agency's summary only. Neither the full notice nor the law it implements was reviewed.",
+   "review": {
+    "status": "unapproved",
+    "reviewedOn": null,
+    "reviewerRole": null,
+    "checklist": "1"
+   },
+   "primary": [
+    {
+     "id": "explain",
+     "label": "Explain this summary in plain language",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "The rule would carry out three sections of a 2026 federal spending law, the Consolidated Appropriations Act, 2026.",
+       "quotes": [
+        "would implement section 6219",
+        "section 6220",
+        "section 6224",
+        "of the Consolidated Appropriations Act, 2026"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "The passage gives each section's title, and nothing more about it.",
+       "quotes": [
+        "Adjustments to Medicare Part D Cost-Sharing Reductions for Low-Income Individuals",
+        "Requiring Enhanced and Accurate Lists of (REAL) Health Providers Act",
+        "Modernizing and Ensuring Pharmacy Benefit Manager Accountability"
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "A plain-language explanation of what would change is withheld. This passage names the sections but doesn't say what they or the rule would do, and section titles alone could mislead. Explaining it would need the full notice or the law itself, which weren't reviewed.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "term",
+     "label": "What does a term mean here?",
+     "terms": [
+      {
+       "term": "Part D",
+       "claims": [
+        {
+         "kind": "unknown",
+         "text": "This passage uses \"Medicare Part D\" in a section title but does not define it.",
+         "quotes": [
+          "Medicare Part D"
+         ]
+        }
+       ]
+      },
+      {
+       "term": "pharmacy benefit manager",
+       "claims": [
+        {
+         "kind": "unknown",
+         "text": "This passage uses the phrase in a section title but does not define it.",
+         "quotes": [
+          "Pharmacy Benefit Manager"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "limited": [
+    {
+     "id": "missing",
+     "label": "What does this passage leave out?",
+     "claims": [
+      {
+       "kind": "unknown",
+       "text": "What the rule would actually change.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "Who would be affected, and how.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "Costs or savings.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "When the changes would take effect. The full notice, which wasn't reviewed, would be the place to check.",
        "quotes": []
       }
      ]
