@@ -8,7 +8,9 @@ Civic Accord lists a local government's public meetings on Issues when its agend
    - `https://<name>.legistar.com/Calendar.aspx`: **Legistar**; `<name>` is the `client`.
    - `https://<name>.granicus.com/ViewPublisher.php?view_id=<N>`: **Granicus**; the host is `<name>.granicus.com` and `viewId` is `<N>`. Civic Accord reads only the agenda feed the system publishes for subscribers.
    - `https://<the government's own site>/AgendaCenter`: **CivicPlus** (also called CivicEngage); the `host` is the site's host, for example `nevadamo.gov`.
-   Readers for other systems (BoardDocs, PrimeGov, eScribe) are planned; see the coverage plan in the review doc.
+   Readers for PrimeGov, eScribe, and others are planned; see the coverage plan in the review doc.
+
+   **BoardDocs (many school boards) can't be connected yet.** It publishes no feed, and its site asks not to be read by programs (its robots.txt disallows everything). Civic Accord only reads what a system publishes for the public to subscribe to, so a BoardDocs board joins when its district also posts agendas on its own site (often a CivicPlus Agenda Center), or when Diligent, which runs BoardDocs, offers a public feed. If your district uses BoardDocs, the most useful thing you can do is ask the district to post a feed or ask Diligent for one.
 2. **Its Census ID.** Only residents of that government can respond to its meetings, so each entry carries the Census GEOID:
    - county: the 5-digit county code (state + county), for example `15009` for Maui County, Hawaiʻi;
    - city or village: the 7-digit place code (state + place), for example `0653000` for Oakland, California;
