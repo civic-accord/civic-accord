@@ -8,7 +8,25 @@
 .viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
 .viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
-</style></head><body><style>
+</style><link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2f5d4a">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Civic Accord">
+<style>
+.appnav{display:none}
+@media (max-width:700px){
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  .appnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .appnav a{flex:1;display:grid;justify-items:center;gap:2px;padding:6px 2px;min-height:48px;color:var(--muted);text-decoration:none;font-size:.72rem;border-radius:10px}
+  .appnav a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .appnav svg{width:22px;height:22px}
+  .btn,button,select,input[type=text],input[type=search]{min-height:44px}
+}
+</style>
+</head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
   --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
@@ -205,6 +223,18 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     </ol>
   </section>
 
+  <section class="panel" id="install">
+    <h2>Use it like an app</h2>
+    <p>Add Civic Accord to your phone's home screen. It opens full screen, like any app, and it's the same site, always up to date. Nothing to download from an app store.</p>
+    <div class="cta"><button class="btn" id="installbtn" type="button" hidden>Install the app</button></div>
+    <ul class="plain">
+      <li><b>iPhone or iPad:</b> open this page in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
+      <li><b>Android:</b> open this page in Chrome, tap the menu (three dots), then <b>Install app</b> or <b>Add to Home screen</b>.</li>
+      <li><b>Computer:</b> in Chrome or Edge, click the install icon at the right end of the address bar.</li>
+    </ul>
+    <p class="meta">The front page and How it works open even without a signal. Live items like Open Now always load fresh, so you never see old information as if it were current.</p>
+  </section>
+
   <section class="panel">
     <h2>Trust you can check</h2>
     <p class="big">This isn't about suspicion or taking sides. It's about a working relationship: residents and the offices that represent them, working on real problems together, in a process open enough that anyone can check it.</p>
@@ -274,4 +304,12 @@ function shareBar(el){
   el.querySelector("#sh-copy").onclick=()=>{const m=el.querySelector("#sh-msg");try{navigator.clipboard.writeText(SHARE_URL).then(()=>m.textContent="Link copied.",()=>m.textContent=SHARE_URL)}catch(e){m.textContent=SHARE_URL}};
 }
 shareBar(document.getElementById("share"));</script>
+<nav class="appnav" aria-label="App menu"><a href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<script>
+let deferredInstall=null;const ib=document.getElementById("installbtn");
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;if(ib)ib.hidden=false});
+if(ib)ib.onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(x){}deferredInstall=null;ib.hidden=true};
+if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){const sct=document.getElementById("install");if(sct)sct.hidden=true}
+</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
 </body></html>
