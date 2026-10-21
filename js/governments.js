@@ -44,8 +44,12 @@ async function show(geo,fromSaved){
 function savedBar(){
   const s=$("saved");let g=null;try{g=JSON.parse(localStorage.getItem(GKEY)||"null")}catch(e){}
   if(!g||!g.state){let d=null;try{d=JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){}
-    if(d&&d.state){s.hidden=false;s.innerHTML=`<p>Your districts in ${esc(d.stateName||d.state)} are saved from Issues. To list every government that represents you, enter your address once here. Only the districts are kept.</p>`}else s.hidden=true;
-    return null}
+    if(!(d&&d.state)){s.hidden=true;return null}
+    // Districts saved from the home page or Issues, without the fuller record this page keeps: show what we can.
+    s.hidden=false;s.innerHTML=`<p><b>Using what's saved on this device</b> (${esc(d.stateName||d.state)}${d.cd?`, ${d.cd==="at-large"?"at-large district":"congressional district "+esc(d.cd)}`:", state only"}). ${d.cd?"":"Enter your address once to see your exact districts and every government that represents you. "}Your address itself is never saved.</p>
+      <div class="actions"><button type="button" class="btn ghost" id="change">${d.cd?"Use a different address":"Add my address"}</button></div>`;
+    $("change").onclick=()=>{s.hidden=true;$("out").hidden=true;$("addr").focus()};
+    return {state:d.state,stateName:d.stateName,cd:d.cd||null,sldl:d.sldl||null,sldu:d.sldu||null,county:d.countyId?{geoid:d.countyId,name:d.county}:null,place:d.placeId?{geoid:d.placeId,name:d.place}:null,township:d.townId?{geoid:d.townId,name:d.town}:null,school:null,secondary:null};}
   s.hidden=false;s.innerHTML=`<p><b>Using your saved districts</b> (${esc(g.stateName||g.state)}${g.cd?`, ${g.cd==="at-large"?"at-large district":"congressional district "+esc(g.cd)}`:""}). Your address itself was never saved.</p>
     <div class="actions"><button type="button" class="btn ghost" id="change">Use a different address</button></div>`;
   $("change").onclick=()=>{s.hidden=true;$("out").hidden=true;$("addr").focus()};
