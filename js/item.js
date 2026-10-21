@@ -90,7 +90,9 @@ function recordBlock(it,stage){
   const fullLink=full?` <a href="${esc(full)}" target="_blank" rel="noopener" style="color:var(--koa)">Open the full official ${local?"agenda":"text"}</a> <span class="meta">(opens in a new tab${/\.pdf($|\?)/i.test(full)?"; a PDF":""})</span>.`:"";
   const ex=excerpt(it);
   const unit=local?"agenda item":"part";
-  const exNote=ex?ex.shown===ex.total?`<span class="meta">Quoted in full from ${esc(by)}.</span>`:`<span class="meta">Excerpt from ${esc(by)}: ${ex.shown===1?unit+" 1":`${unit}s 1 to ${ex.shown}`} of ${ex.total}.${ex.total>ex.shown?` <a href="#h1" style="color:var(--koa)">All parts are below</a>, in order.`:""}</span>`:"";
+  // A meeting's list holds only agenda items with legislation attached, so it's never called the full agenda.
+  const exNote=ex&&local?`<span class="meta">Agenda items with legislation attached, copied from ${esc(by)}${ex.total>ex.shown?`: ${ex.shown} of ${ex.total}. <a href="#h1" style="color:var(--koa)">All are below</a>`:""}. The full agenda may list more.</span>`
+    :ex?ex.shown===ex.total?`<span class="meta">Quoted in full from ${esc(by)}.</span>`:`<span class="meta">Excerpt from ${esc(by)}: ${ex.shown===1?unit+" 1":`${unit}s 1 to ${ex.shown}`} of ${ex.total}.${ex.total>ex.shown?` <a href="#h1" style="color:var(--koa)">All parts are below</a>, in order.`:""}</span>`:"";
   const foot=`<p class="meta">Quoted passages are copied from the linked official sources. Civic Accord adds headings, instructions, and status labels. These are separate from the quoted text.</p>`;
   const nextStep=`<dt>Your next step</dt><dd>You can support it as written, suggest a change, oppose it, or ask for more information. <a href="#h2" style="color:var(--koa)">Take part below</a>${rule&&safe(L.comment)?`, or <a href="${esc(L.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">comment officially</a>`:""}.</dd>`;
   if(local){
