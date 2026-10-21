@@ -430,7 +430,8 @@ function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
   $("headline").textContent=TP.picked.length?`${nm} thing${nm===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} you can weigh in on right now.`:`${na} things you can weigh in on right now.`;
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
-function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
+// Your own county or city's meetings always show in "your topics", since meeting titles rarely name a topic.
+function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id))||(it.level==="local"&&canRespond(it)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
 function canRespond(it){if(it.level==="federal")return true;
   // Local meetings: only for residents of that county or city (from the address on this device).
@@ -450,7 +451,7 @@ function nextHTML(it){
   const p=PROG[it.id]||{},now=stepOf(it),r=REACT[it.id];
   const start=`item.html?id=${encodeURIComponent(it.id)}`, build=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
   const reacts=`<div class="go" role="group" aria-label="Where you stand">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>`;
-  if(!canRespond(it)&&it.level==="local")return `<div class="next ro"><p>${DIST?`This meeting is for ${esc(it.who)}, so it's here to read. Reactions are for your own county or city.`:`To respond to a local meeting, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know your county and city.`} Anyone can read the agenda or testify.</p></div>`;
+  if(!canRespond(it)&&it.level==="local")return `<div class="next ro"><p>${DIST&&!DIST.countyId&&!DIST.placeId?`Your saved address is from before local meetings were added. <a href="#me" data-gome="1" style="color:var(--koa)">Enter your address again</a> so we know your county and city.`:DIST?`This meeting is for ${esc(it.who)}, so it's here to read. Reactions are for your own county or city.`:`To respond to a local meeting, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know your county and city.`} Anyone can read the agenda or testify.</p></div>`;
   if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To respond to a state bill, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know it's your state.`}</p>
     ${safe(it.read)?`<div class="go"><a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a></div>`:""}</div>`;
   if(now===0)return `<div class="next"><p>Start by reading what it actually says. It opens on the official site.</p>
@@ -458,7 +459,7 @@ function nextHTML(it){
   if(now===1)return `<div class="next"><p>Where do you stand? You can change this anytime.</p>${reacts}</div>`;
   if(now===2){
     const local=it.level==="local"&&!!safe(it.act), rule=(it.kind==="Proposed rule"||local)&&!!safe(it.act);
-    return `<div class="next"><p>${local?`The council decides this one. Testifying, in person, online, or in writing, is how it hears from residents. The meeting page says how and by when.`:rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
+    return `<div class="next"><p>${local?`This is a public meeting of ${esc(it.who)}. Speaking up at or before the meeting is how it hears from residents. The meeting page and agenda say how to comment and by when.`:rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
       ${p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
       ${reacts}
       ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel||"Comment officially")}</a>${local?"":`<button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button>`}</div>`:""}
@@ -488,7 +489,7 @@ function render(){
   const qraw=$("q").value.trim(), q=qraw.toLowerCase(), lvl=$("lvl").value, kd=$("kind").value;
   const base=q?(DATA.items||[]):VIEW==="mine"&&TP.picked.length?mineItems():VIEW!=="all"&&VIEW!=="mine"?(DATA.items||[]).filter(it=>topicsOf(it).some(m=>m.id===VIEW)):(DATA.items||[]);
   const items=base.filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
-    .sort((a,b)=>(a.closes||"9999").localeCompare(b.closes||"9999"));
+    .sort((a,b)=>(a.closes||a.meets||"9999").localeCompare(b.closes||b.meets||"9999"));
   const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
   $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}`;
   const wk=items.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7});

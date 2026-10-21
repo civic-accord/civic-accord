@@ -3,7 +3,7 @@
 // by people or by AI. Costs come only from official estimates. Party is never returned.
 const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
 // Open States' free key allows 10 calls a minute in all. Open Now (api/open.js) keeps 8 per server copy; item pages get 2.
-const LIMITS = { "v3.openstates.org": 2 };
+const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
 
 const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)(\d{1,5})-(\d{2,3})$/;
@@ -156,7 +156,7 @@ async function localItem(m) {
   const date = String(e.EventDate || "").slice(0, 10);
   const page = httpsOnly(e.EventInSiteURL) || feed.calendar;
   return {
-    kind: feed.level === "county" ? "County council meeting" : "City council meeting", level: "local",
+    kind: "Local meeting", level: "local",
     jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null }, title: `${body}: meeting`,
     status: e.EventAgendaStatusName ? { date: null, text: `Agenda ${String(e.EventAgendaStatusName).toLowerCase()}` } : null,
     meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [],
@@ -165,7 +165,7 @@ async function localItem(m) {
     partsNote: parts.length ? null : "This meeting's agenda has no items with legislation attached yet. Read the agenda for what's being discussed.",
     whole: `${body}: meeting`,
     costs: [], costNote: "Agenda data doesn't include cost figures. Staff reports in the agenda packet often do; read the agenda.",
-    links: { official: page, text: httpsOnly(e.EventAgendaFile) || page, comment: page, commentLabel: "How to testify (meeting page)" },
+    links: { official: page, text: httpsOnly(e.EventAgendaFile) || page, comment: page, commentLabel: "Meeting page and agenda" },
     source: { label: `${feed.name} agendas`, url: feed.calendar }
   };
 }

@@ -1,5 +1,5 @@
 {
- "about": "Local governments whose public meeting agendas Civic Accord reads automatically. Each entry is one government. Agendas come straight from the government's own public agenda system; nothing is written or reworded. Add a government by adding one entry with a source for each field.",
+ "about": "Local governments whose public meeting agendas Civic Accord reads automatically. Each entry is one government. Agendas come straight from the government's own public agenda system; nothing is written or reworded. Add a government by adding one entry with a source for each field. The first two pilots were chosen because their agenda systems offer public data with no key needed, and because they test a county (Maui County, Hawaiʻi) and a city (Oakland, California).",
  "feeds": [
   {
    "id": "hi-maui-county",
@@ -10,7 +10,8 @@
    "system": "legistar",
    "client": "mauicounty",
    "calendar": "https://mauicounty.legistar.com/Calendar.aspx",
-   "note": "Council and committee meetings. Testimony in person, online, or in writing; each meeting page says how."
+   "note": "Council, committee, and other public meetings. Each meeting page and agenda says how to comment.",
+   "tz": "Pacific/Honolulu"
   },
   {
    "id": "ca-oakland",
@@ -21,7 +22,8 @@
    "system": "legistar",
    "client": "oakland",
    "calendar": "https://oakland.legistar.com/Calendar.aspx",
-   "note": "Council and committee meetings. Each meeting page says how to comment."
+   "note": "Council, committee, and other public meetings. Each meeting page and agenda says how to comment.",
+   "tz": "America/Los_Angeles"
   }
  ]
 }

@@ -14,7 +14,8 @@ const https = u => { const v = String(u || "").replace(/^http:\/\//i, "https://"
 
 // Upcoming public meetings from a local government's own agenda system (Legistar's public data service), next 30 days.
 async function localMeetings(feed) {
-  const day = d => d.toISOString().slice(0, 10);
+  // Dates are counted in the government's own time zone, so tonight's meetings aren't dropped early.
+  const day = d => d.toLocaleDateString("en-CA", { timeZone: feed.tz || "UTC" });
   const now = new Date(), until = new Date(now.getTime() + 30 * 864e5);
   const q = `$filter=EventDate+ge+datetime'${day(now)}'+and+EventDate+le+datetime'${day(until)}'&$orderby=EventDate&$top=50`;
   const list = await getJSON(`https://webapi.legistar.com/v1/${feed.client}/events?${q}`);
@@ -22,11 +23,11 @@ async function localMeetings(feed) {
     const body = String(e.EventBodyName || "Meeting").replace(/^[\s*]+/, "").replace(/\s+/g, " ").trim();
     const date = String(e.EventDate || "").slice(0, 10);
     return {
-      id: `lg-${feed.client}-${e.EventId}`, level: "local", kind: feed.level === "county" ? "County council meeting" : "City council meeting",
+      id: `lg-${feed.client}-${e.EventId}`, level: "local", kind: "Local meeting",
       title: `${body}, ${new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}`,
       who: feed.name, summary: [e.EventTime ? `Meets at ${e.EventTime}` : "", e.EventAgendaStatusName ? `Agenda: ${String(e.EventAgendaStatusName).toLowerCase()}` : ""].filter(Boolean).join(" · "),
       opened: null, closes: null, meets: date, read: https(e.EventAgendaFile) || https(e.EventInSiteURL) || feed.calendar,
-      act: https(e.EventInSiteURL) || feed.calendar, actLabel: "How to testify (meeting page)", source: `${feed.name} agendas`,
+      act: https(e.EventInSiteURL) || feed.calendar, actLabel: "Meeting page and agenda", source: `${feed.name} agendas`,
       localId: feed.id, countyId: feed.countyId || null, placeId: feed.placeId || null, state: feed.state
     };
   });
@@ -156,7 +157,7 @@ module.exports = async (req, res) => {
   for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
     await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)));
   }
-  const times = ["fr", "congress", st && "st-" + st].filter(Boolean).map(asOf).filter(Boolean);
+  const times = ["fr", "congress", st && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).filter(Boolean);
   if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
   const shortLife = out.shortLife; delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
