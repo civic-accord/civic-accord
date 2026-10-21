@@ -163,13 +163,13 @@ function card(it,first){
   return `<article class="item lvl-${esc(it.level)}" id="it-${esc(it.id)}">
     <div class="top"><span class="kindtag">${esc(KIND(it))}</span>${far(it)?`<span class="kindtag" title="This item names another state in its official title">About ${esc(CA_PLACE.statesNamed(it.title).map(k=>CA_PLACE.NAMES[k]).join(" and "))}</span>`:""}${first?`<span class="start">Start here</span>`:""}
       ${it.closes&&dl!==null?`<span class="clock ${CA_DATES.closesSoon(it.closes)?"soon":""}">${CA_DATES.label(it.closes)}</span>`:""}</div>
-    <h3><a href="item.html?id=${encodeURIComponent(it.id)}" style="color:inherit">${esc(it.title)}</a></h3>
+    <h3><a href="item.html?id=${encodeURIComponent(it.id)}" style="color:inherit" title="Open this issue's page">${esc(it.title)}</a></h3>
     ${whyLine(it)}
     <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}${dl===0?" (check the notice for the exact time)":""}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
     ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm)}${it.summaryCut?` <a href="item.html?id=${encodeURIComponent(it.id)}" style="color:var(--koa)">Full summary</a>`:""}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}
-    <div class="also"><a href="item.html?id=${encodeURIComponent(it.id)}">Open the issue page (follow, keep a record, talk it through)</a>${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
+    <div class="also">${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<span class="meta">From ${esc(it.source)}</span></div>
   </article>`;
 }
 // Federal items about one other state (an air plan for North Carolina, a water program for Arkansas) sort after your
