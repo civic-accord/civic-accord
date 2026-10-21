@@ -256,6 +256,7 @@ const safe=u=>/^https:\/\//.test(u||"")?u:null;
 const STATES=["","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
 let VER=null;try{VER=JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){}
 const REKEY="civicaccord-reactions";let REACT={};try{REACT=JSON.parse(localStorage.getItem(REKEY)||"{}")}catch(e){}
+let GROUPS=[], OPENG=new Set();
 let DATA=null, shown=10, OPENID=null; const COMMENT={};
 window.__openMail=window.__openMail||(u=>{location.href=u});
 const DKEY="civicaccord-districts", SKEY="civicaccord-signer";
@@ -400,10 +401,19 @@ function render(){
   const wk=items.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7});
   $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
   const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:`<p class="meta">Nothing matches. Try another word.</p>`;
-  $("list").innerHTML=items.slice(0,shown).map(card).join("")||empty;
+  // Many near-identical rules (for example, dozens of "Airworthiness Directives") are folded into one group.
+  const groups=[],gi={};
+  items.forEach(it=>{const k=it.kind==="Proposed rule"&&it.title.includes(";")?it.who+"|"+it.title.split(";")[0].trim():it.id;
+    if(gi[k]===undefined){gi[k]=groups.length;groups.push({k,name:it.title.split(";")[0].trim(),list:[it]})}else groups[gi[k]].list.push(it)});
+  GROUPS=groups;
+  $("list").innerHTML=groups.slice(0,shown).map(g=>{const rest=g.list.length-1;
+    if(!rest)return card(g.list[0]);
+    const open=OPENG.has(g.k);
+    return card(g.list[0])+(open?g.list.slice(1).map(card).join(""):"")+`<button class="linkbtn" type="button" data-g="${esc(g.k)}" aria-expanded="${open}">${open?`Hide the other ${rest}`:`Show ${rest} more like this: “${esc(g.name)}”`}</button>`}).join("")||empty;
+  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const k=b.dataset.g;OPENG.has(k)?OPENG.delete(k):OPENG.add(k);const y=window.scrollY;render();window.scrollTo({top:y})});
   const sa=$("seeall");if(sa)sa.onclick=()=>{VIEW="all";shown=10;renderTopics();render()};
-  $("more").textContent=`Show ${Math.min(10,items.length-shown)} more (${items.length-shown} left)`;
-  $("more").hidden=items.length<=shown;
+  $("more").textContent=`Show ${Math.min(10,groups.length-shown)} more (${groups.length-shown} left)`;
+  $("more").hidden=groups.length<=shown;
   document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;OPENID=REACT[id]?id:null;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}const y=window.scrollY;render();window.scrollTo({top:y})});
   const it=OPENID&&DATA.items.find(x=>x.id===OPENID);
   if(it){
