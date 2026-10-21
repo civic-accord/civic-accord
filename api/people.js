@@ -1,7 +1,8 @@
 // Current state legislators for a whole state, from Open States' nightly public CSV files (no key, no rate limit).
 // The browser filters to its own districts, so no district or address is ever sent here. Party is never returned.
-const cache = new Map(); // per-instance memory cache: state -> {at, data}
+const { canonical, memo, publicError } = require("./_shared");
 const TTL = 12 * 3600 * 1000;
+const STATES = new Set("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA PR RI SC SD TN TX UT VT VA WA WV WI WY".split(" "));
 function parseCSV(text) {
   const rows = []; let row = [], f = "", q = false;
   for (let i = 0; i < text.length; i++) {
@@ -18,9 +19,8 @@ function parseCSV(text) {
 }
 const okEmail = e => /^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$/.test(e || "") ? e : null;
 const okUrl = u => /^https:\/\/\S+$/.test(u || "") ? u : null;
-async function load(st) {
-  const hit = cache.get(st);
-  if (hit && Date.now() - hit.at < TTL) return hit.data;
+const load = st => memo("people-" + st, TTL, () => fetchState(st));
+async function fetchState(st) {
   const r = await fetch(`https://data.openstates.org/people/current/${st.toLowerCase()}.csv`, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)" } });
   if (!r.ok) throw new Error(String(r.status));
   const data = parseCSV(await r.text()).map(p => ({
@@ -29,15 +29,15 @@ async function load(st) {
     email: okEmail(p.email), phone: p.capitol_voice || p.district_voice || null,
     url: okUrl((p.links || "").split(";")[0].trim()) || okUrl((p.sources || "").split(";")[0].trim())
   })).filter(p => p.name && p.district);
-  cache.set(st, { at: Date.now(), data });
   return data;
 }
 module.exports = async (req, res) => {
   const st = String((req.query && req.query.state) || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
   const out = { state: st, legislators: [], errors: [], fetchedAt: new Date().toISOString(),
     source: { label: "Open States, current legislators (published nightly)", url: "https://open.pluralpolicy.com/data/legislator-csv/" } };
-  if (st.length !== 2) out.errors.push("Unknown state");
-  else { try { out.legislators = await load(st); } catch (e) { out.errors.push(`Couldn't load legislators right now (${e.message}).`); } }
+  if (canonical(req, res, "/api/people", { state: STATES.has(st) ? st : "" })) return;
+  if (!STATES.has(st)) out.errors.push("Unknown state");
+  else { try { out.legislators = await load(st); } catch (e) { out.errors.push(publicError("State legislators", e)); } }
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", out.errors.length ? "public, s-maxage=300" : "public, s-maxage=86400, stale-while-revalidate=604800");
   res.status(200).send(JSON.stringify(out));
