@@ -313,13 +313,13 @@ function itemCard(it){
   const open=OPENG===it.id, n=NOTES[it.id]||{};
   return `<article class="item"><span class="eyebrow">${esc(it.kind)} · ${esc(it.source)}</span><h3>${esc(it.title)}</h3>
     ${(()=>{const ms=TOP.match(it),mine=ms.filter(m=>LT.includes(m.id)),sh=mine.length?mine:ms;return sh.length?`<span class="why">${mine.length?"Your topic":"Topic"}: ${sh.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`:""})()}
-    <span class="meta">${esc(it.who)}${it.closes?` · comments close ${esc(it.closes)}`:""}</span>
+    <span class="meta">${esc(it.who)}${it.closes?`. Comments close ${esc(new Date(it.closes+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))}.`:""}</span>
     <div class="acts">${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text</a>`:""}
       <button type="button" data-g="${esc(it.id)}">${open?"Hide the guide":"Read it with the guide"}</button>
       ${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}</div>
     ${open?`<div class="guide"><p class="meta">Answer in your own words. Your notes stay on this device.</p>
       ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
-      <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} Copies of the same message count for little, so write your own.</p>
+      <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} A message in your own words is usually more useful than a copied one.</p>
       <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">Open the official comment page</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
   </article>`;
 }

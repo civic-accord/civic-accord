@@ -267,7 +267,7 @@ ol.path li.planned::before{border-style:dashed}
 
   <header class="lead">
     <a class="brand" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord</a>
-    <h1 id="headline">Your governments are asking for input right now.</h1>
+    <h1 id="headline">See what your governments are deciding, and weigh in.</h1>
     <p class="sub" id="subline">Straight from official sources, refreshed through the day.</p>
     <p class="tally" id="tally" hidden></p>
   </header>
@@ -420,13 +420,14 @@ function renderTopics(){
 }
 function updateTally(){const v=Object.values(PROG),rd=v.filter(x=>x.read).length,rc=Object.values(REACT).filter(Boolean).length,sp=v.filter(x=>x.spoke).length;
   const t=$("tally");if(!rd&&!rc){t.hidden=true;return}t.hidden=false;
-  const parts=[rd&&`read ${rd} item${rd===1?"":"s"}`,rc&&`said where you stand on ${rc}`,sp&&`spoken up on ${sp}`].filter(Boolean);
+  const parts=[rd&&`looked at ${rd} item${rd===1?"":"s"}`,rc&&`said where you stand on ${rc}`,sp&&`spoken up on ${sp}`].filter(Boolean);
   const list=parts.length>1?parts.slice(0,-1).join(", ")+", and "+parts[parts.length-1]:parts[0];
-  t.textContent=`Your voice so far: you've ${list}. This stays on your device.`}
-function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;
+  t.textContent=`Your steps so far, kept only on this device: you've ${list}.`}
+function gcount(list){const k=new Set();list.forEach(it=>k.add(it.kind==="Proposed rule"&&it.title.includes(";")?it.who+"|"+it.title.split(";")[0].trim():it.id));return k.size}
+function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;const nm=gcount(mine),na=gcount(all);
   const wk=mine.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7}).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
-  $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
+  $("headline").textContent=TP.picked.length?`${nm} thing${nm===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} you can weigh in on right now.`:`${na} things you can weigh in on right now.`;
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
@@ -436,7 +437,7 @@ function whyLine(it){const ms=topicsOf(it);if(!ms.length)return "";const mine=ms
 function stepOf(it){const p=PROG[it.id]||{};return !p.read?0:!REACT[it.id]?1:!p.spoke?2:!p.talk?3:4}
 const KIND=it=>it.kind==="Proposed rule"?"Federal rule":it.kind==="Bill in Congress"?"Bill in Congress":it.level==="state"?"State bill":it.kind;
 function pathHTML(it){const p=PROG[it.id]||{},now=stepOf(it),ro=!canRespond(it);
-  const st=[["Read",p.read],["Where you stand",REACT[it.id]],["Speak up",p.spoke],["Talk it through",p.talk],["Counted",0]];
+  const st=[["Read",p.read],["Where you stand",REACT[it.id]],["Speak up",p.spoke],["Go further",p.talk],["Counted",0]];
   const keys=["read","react","spoke","talk"];
   return `<ol class="path" aria-label="Your steps on this item">${st.map(([l,d],i)=>{const cls=i===4?"planned":d?"done":(!ro&&i===now)?"now":"";
     const just=JUST&&JUST===it.id+":"+keys[i]?" just":"";
@@ -452,14 +453,15 @@ function nextHTML(it){
   if(now===1)return `<div class="next"><p>Where do you stand? You can change this anytime.</p>${reacts}</div>`;
   if(now===2){
     const rule=it.kind==="Proposed rule"&&!!safe(it.act);
-    return `<div class="next"><p>${rule?`The agency decides this one, and it has to read every official comment. That's the comment that counts most.`:`You said ${esc(r.toLowerCase())}. Now tell the people who represent you, in your own words.`}</p>
+    return `<div class="next"><p>${rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
+      ${p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
       ${reacts}
       ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">Comment officially</a><button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button></div>`:""}
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
       ${OPENID===it.id?composeBox(it):""}
-      ${rule?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
-  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Set up a deliberation, where neighbors weigh in and see where they agree. Deliberations are a working sample today, and their votes aren't counted yet.</p>
-    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Set up a deliberation</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
+      ${rule||p.started?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
+  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Start a draft deliberation, where neighbors could weigh in and see where they agree. Today it's a sample that only you can preview. Neighbors can take part once a host reviews it and opens it.</p>
+    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Start a draft deliberation</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
   return `<div class="next"><p>You've done everything you can here today. Next, verified voters' views will be counted in a public record anyone can check. That part is planned. <a href="verify.html" style="color:var(--koa)">See how verification will work</a>.</p>${OPENID===it.id?composeBox(it):`<div class="go"><button type="button" data-tell="${esc(it.id)}">Write another message</button></div>`}</div>`;
 }
 function card(it,first){
@@ -504,7 +506,8 @@ function render(){
   document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;mark(id,"read");if(REACT[id])JUST=id+":react";try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}keep()});
   document.querySelectorAll("[data-read]").forEach(a=>a.addEventListener("click",()=>{const id=a.dataset.read;if(!(PROG[id]||{}).read){mark(id,"read");setTimeout(keep,50)}}));
   document.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>{mark(b.dataset.skip,"read");keep()});
-  document.querySelectorAll("[data-spoke]").forEach(a=>a.addEventListener("click",()=>{mark(a.dataset.spoke,"spoke");setTimeout(keep,50)}));
+  document.querySelectorAll("[data-spoke]").forEach(a=>a.addEventListener("click",()=>{mark(a.dataset.spoke,"started");setTimeout(keep,50)}));
+  document.querySelectorAll("[data-sent]").forEach(b=>b.onclick=()=>{mark(b.dataset.sent,"spoke");OPENID=null;keep()});
   document.querySelectorAll("[data-sk2]").forEach(b=>b.onclick=()=>{mark(b.dataset.sk2,"spoke");OPENID=null;keep()});
   document.querySelectorAll("[data-talk]").forEach(a=>a.addEventListener("click",()=>mark(a.dataset.talk,"talk")));
   document.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{OPENID=OPENID===b.dataset.tell?null:b.dataset.tell;keep()});
@@ -518,9 +521,9 @@ function render(){
     document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal);
       let url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
       if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}
-      window.__openMail(url);mark(it.id,"spoke");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);
+      window.__openMail(url);mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);
       $("rm-"+a.dataset.mail).textContent="Opening your email app…"});
-    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{mark(it.id,"spoke")}));
+    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
     document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);const txt=`Subject: ${m.subject}\n\n${m.body}`;
       const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
   }
