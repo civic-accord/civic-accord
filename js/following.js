@@ -81,7 +81,7 @@ function records(){
   $("importbtn").onclick=()=>$("import").click();
   $("import").onchange=e=>{const file=e.target.files&&e.target.files[0];if(!file)return;const rd=new FileReader();
     rd.onload=()=>{try{const r=CA_RECORDS.importData(String(rd.result));
-      $("rec-msg").textContent=`Imported ${r.follows} followed issue${r.follows===1?"":"s"} and ${r.sent} record${r.sent===1?"":"s"}. ${r.kept?`Kept what was already here for ${r.kept} other setting${r.kept===1?"":"s"}.`:""}`;checkAll()}
+      $("rec-msg").textContent=`Imported ${r.follows} followed issue${r.follows===1?"":"s"} and ${r.sent} record${r.sent===1?"":"s"}. ${r.other?`Restored ${r.other} other setting${r.other===1?"":"s"} (such as topics, notes, or practice votes). `:""}${r.kept?`Kept what was already here for ${r.kept} other setting${r.kept===1?"":"s"}. `:""}${r.skipped?`Skipped ${r.skipped} setting${r.skipped===1?"":"s"} that didn't look right.`:""}`;checkAll()}
       catch(x){$("rec-msg").textContent=x.message}e.target.value=""};
     rd.onerror=()=>{$("rec-msg").textContent="Couldn't read that file."};rd.readAsText(file)};
   $("clearall").onclick=()=>{if(!confirm("Delete every issue you follow and every record of what you sent, from this browser? This can't be undone unless you have an exported copy."))return;

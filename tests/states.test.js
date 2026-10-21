@@ -8,7 +8,7 @@ test("common ways legislatures record a bill becoming law are treated as finishe
    "Public Act . . . 104-0012", "Chapter No. 2025-123", "Secretary of State Chapter 12", "Governor: Acts of Assembly Chapter text (CHAP0123)",
    "Ch. SL 2025-12", "Governor signed", "Pocket vetoed by Governor"].forEach(t => {
     assert.strictEqual(stateEnded(t, false), true, t); assert.strictEqual(stateOutcome(t, null, null), "final", t); });
-  ["Referred to Committee on Effective Government", "Amendment failed", "Passed House", "Approved by committee", "Public hearing scheduled"]
+  ["Approved placed on Third Reading", "Referred to Committee on Effective Government", "Amendment failed", "Passed House", "Approved by committee", "Public hearing scheduled"]
     .forEach(t => assert.strictEqual(stateEnded(t, false), false, t));
   assert.strictEqual(stateOutcome("Vetoed by Governor", null, null), "vetoed");
 });
@@ -24,6 +24,10 @@ test("an old special session with no end date isn't treated as running; the regu
   assert.strictEqual(r.out.inSession, false);
   r = await pick([{ identifier: "r", name: `${y} Regular`, start_date: ago(200), end_date: null }, { identifier: "s1", name: "Special Session 1", start_date: ago(10), end_date: null }]);
   assert.strictEqual(r.session, "r");
+  const out2 = {}, calls2 = [];
+  await stateBills("k", "TX", out2, async u => { calls2.push(u); return { results: [], pagination: { total_items: 0, max_page: 1 } }; },
+    async () => [{ identifier: "r", name: `${y} Regular`, start_date: ago(200), end_date: null }, { identifier: "s1", name: "Special Session 1", start_date: ago(20), end_date: null }]);
+  assert.ok(calls2.some(u => /session=s1/.test(u)), "the special session is read too");
   r = await pick([{ identifier: "x", name: "x", start_date: null, end_date: null }]);
   assert.match(r.out.quiet, /couldn't confirm/);
 });

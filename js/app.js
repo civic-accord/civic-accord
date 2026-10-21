@@ -143,7 +143,7 @@ function renderHeader(){verChip();
   document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">My representatives →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
   const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
   jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
-    const status=live?"● Sample deliberation":"No deliberation yet · anyone can start one";
+    const status=live?"● Sample deliberation":"No deliberation yet · anyone can draft one";
     const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
     b.onclick=()=>{if(!live){location.href="new.html";return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
   const ib=document.getElementById("issues");ib.innerHTML="";

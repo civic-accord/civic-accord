@@ -159,6 +159,18 @@ test("import skips other settings that carry markup or a made-up state", () => {
   assert.deepStrictEqual(JSON.parse(z.getItem("civicaccord-districts")), { state: "HI", cd: "2", sldl: "13" });
 });
 
+test("import restores notes and practice votes with quotes and angle brackets", () => {
+  const z = memStore(), Z = make(z);
+  const notes = JSON.stringify({ "us-hr1-119": 'She said "fund it" & x < y > z' });
+  const votes = JSON.stringify({ "us-hr1-119": { 'Funds the "Rapid Response" program.': 0 } });
+  const r = Z.importData(JSON.stringify({ format: "civic-accord-records", version: 1, data: {
+    "civicaccord-records": JSON.stringify({ v: 1, follows: {}, sent: [] }), "civicaccord-learn-notes": notes, "civicaccord-item-votes": votes,
+    "civicaccord-signer": JSON.stringify({ name: "Pat O'Neil", town: "Coeur d'Alene" }) } }));
+  assert.strictEqual(z.getItem("civicaccord-learn-notes"), notes);
+  assert.strictEqual(z.getItem("civicaccord-item-votes"), votes);
+  assert.ok(z.getItem("civicaccord-signer")); assert.strictEqual(r.skipped, 0); assert.strictEqual(r.other, 3);
+});
+
 test("a failed action list is never reported as a new action; a veto is not a final decision", () => {
   const t0 = at("2026-10-21T12:00:00");
   const base = I.snapshot(bill({ actions: null }), "2026-10-21T10:00:00Z", t0);

@@ -13,7 +13,7 @@ const BILL_END = [
   /^signed chap/i, /^approval memo/i, /^veto memo/i,  // New York: governor signed (chapter) or vetoed
   // How other legislatures record a bill becoming law (New Jersey, Michigan, Wisconsin, Texas, Illinois, Florida,
   // Minnesota, Virginia, North Carolina), and a governor's signature or veto worded differently.
-  /^approved p\.? ?l\.?/i, /^assigned pa\b/i, /^filed with (the )?secretary of state/i, /^published \d/i,
+  /^approved p\.\s?l\.\s?\d/i, /^assigned pa\b/i, /^filed with (the )?secretary of state/i, /^published \d/i,
   /^effective (on |immediately|\d)/i, /^public act\b/i, /^chapter no\.?\s*\d/i, /^secretary of state,? chapter\b/i,
   /acts of assembly chapter/i, /^ch\.? ?sl\b/i, /^governor signed\b/i, /\bpocket vetoed\b/i, /^vetoed by (the )?governor/i
 ];
