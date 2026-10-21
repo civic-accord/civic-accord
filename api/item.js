@@ -94,20 +94,21 @@ async function stateItem(id, key) {
   const { parts, more, dropped } = partsFrom(latest);
   const stateCode = ((String((b.jurisdiction || {}).id || "").match(/\/(?:state|district|territory):([a-z]{2})\//) || [])[1] || "").toUpperCase() || null;
   const name = (b.jurisdiction && b.jurisdiction.name) || "State";
+  const body = name === "District of Columbia" ? "D.C. Council" : `${name} legislature`, Body = name === "District of Columbia" ? "D.C. Council" : `${name} Legislature`;
   const title = `${b.identifier || ""}: ${b.title || ""}`.trim();
   const docs = (b.documents || []).filter(d => /fiscal note|fiscal impact|fiscal estimate|cost estimate/i.test(d.note || ""));
   const latestVersion = (b.versions || []).slice(-1)[0];
   const sourceUrl = httpsOnly(((b.sources || [])[0] || {}).url);
   return {
-    kind: `Bill in the ${name} legislature`, level: "state", jurisdiction: { name: `${name} Legislature`, state: name, stateCode }, title,
+    kind: `Bill in the ${body}`, level: "state", jurisdiction: { name: Body, state: name, stateCode }, title,
     status: b.latest_action_description ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
     introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: null,
     sponsors: (b.sponsorships || []).filter(s => s.primary).map(s => ({ name: s.name, role: "Sponsor" })),
-    summary: latest ? { by: `The summary posted by the ${name} legislature (collected by Open States)`, version: null, date: null } : null,
+    summary: latest ? { by: `The summary posted by the ${body} (collected by Open States)`, version: null, date: null } : null,
     parts, partsMore: more, partsDropped: dropped,
-    partsNote: parts.length ? null : `The ${name} legislature hasn't published a summary of this bill that Open States carries. You can weigh in on the bill as a whole, and read the official text for the details.`,
+    partsNote: parts.length ? null : `The ${body} hasn't published a summary of this bill that Open States carries. You can weigh in on the bill as a whole, and read the official text for the details.`,
     whole: title,
-    costs: docs.map(d => ({ title: d.note || "Fiscal note", date: d.date ? String(d.date).slice(0, 10) : null, url: httpsOnly(((d.links || [])[0] || {}).url), description: null, by: `${name} legislature` })).filter(c => c.url),
+    costs: docs.map(d => ({ title: d.note || "Fiscal note", date: d.date ? String(d.date).slice(0, 10) : null, url: httpsOnly(((d.links || [])[0] || {}).url), description: null, by: body })).filter(c => c.url),
     costNote: `Only official estimates are shown. Many legislatures publish a fiscal note for bills that spend or raise money; not every bill has one.`,
     links: { official: sourceUrl || httpsOnly(b.openstates_url), text: httpsOnly(latestVersion && ((latestVersion.links || [])[0] || {}).url), comment: null },
     source: { label: "Open States", url: "https://docs.openstates.org/api-v3/" }

@@ -57,6 +57,7 @@ async function congressBills(key) {
 
 async function stateBills(key, st, out) {
   const name = STATE_NAMES[st]; if (!name) return [];
+  const body = st === "DC" ? "D.C. Council" : `${name} legislature`;
   const H = { "X-API-KEY": key };
   const today = new Date().toISOString().slice(0, 10);
   // 1. Is the legislature in session? Ask Open States for its sessions.
@@ -67,7 +68,7 @@ async function stateBills(key, st, out) {
     .sort((a, b) => b.start_date.localeCompare(a.start_date));
   if (!active.length) {
     const next = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
-    out.quiet = `The ${name} legislature isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
+    out.quiet = `The ${body} isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
     return [];
   }
   // 2. Bills from the current session that are still moving.
@@ -105,10 +106,10 @@ async function stateBills(key, st, out) {
   }
   const checked = results.length;
   results = results.filter(b => !done(b));
-  if (total !== null && total > checked) out.partial = `Showing bills from the ${checked} most recently active of ${total.toLocaleString("en-US")} in this session, leaving out ones that are finished. See every bill on the ${name} legislature's website.`;
-  if (!results.length) out.quiet = `No bills are moving in the ${name} legislature right now. New bills appear here as soon as they're filed.`;
+  if (total !== null && total > checked) out.partial = `Showing bills from the ${checked} most recently active of ${total.toLocaleString("en-US")} in this session, leaving out ones that are finished. See every bill on the ${body}'s website.`;
+  if (!results.length) out.quiet = `No bills are moving in the ${body} right now. New bills appear here as soon as they're filed.`;
   return results.map(b => ({
-    id: "os-" + b.id, level: "state", kind: "Bill in the " + name + " legislature",
+    id: "os-" + b.id, level: "state", kind: "Bill in the " + body,
     title: `${b.identifier}: ${b.title}`, who: b.from_organization ? b.from_organization.name : name + " Legislature",
     summary: b.latest_action_description ? `Latest action (${String(b.latest_action_date).slice(0, 10)}): ${b.latest_action_description}` : "",
     opened: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, closes: null, read: b.openstates_url, act: null, actLabel: null, source: "Open States"
