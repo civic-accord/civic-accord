@@ -3,9 +3,10 @@
 // Federal Register needs no key. Congress.gov and Open States activate when their free keys are set as
 // environment variables (CONGRESS_API_KEY, OPENSTATES_API_KEY). Responses are cached at the edge and refreshed every few hours.
 const FR = "https://www.federalregister.gov/api/v1/documents.json";
-const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
 const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get } = require("./_shared");
+const { STATE_NAMES, stateBills } = require("./_states");
+const store = require("./_store");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
@@ -83,80 +84,43 @@ async function congressBills(key) {
   }));
 }
 
-async function stateBills(key, st, out) {
-  const name = STATE_NAMES[st]; if (!name) return [];
-  const body = st === "DC" ? "D.C. Council" : `${name} legislature`;
-  const H = { "X-API-KEY": key };
-  const today = new Date().toISOString().slice(0, 10);
-  // 1. Is the legislature in session? Ask Open States for its sessions.
-  // Session dates change rarely, so they are remembered for a day and a busy minute never wastes this call.
-  const jur = await memo("jur-" + st, 24 * 3600e3, () => getJSON(`https://v3.openstates.org/jurisdictions/${encodeURIComponent(name)}?include=legislative_sessions`, H));
-  const sessions = (jur.legislative_sessions || []).filter(x => x.start_date);
-  const active = sessions.filter(x => x.start_date.slice(0, 10) <= today && (!x.end_date || x.end_date.slice(0, 10) >= today))
-    .sort((a, b) => b.start_date.localeCompare(a.start_date));
-  if (!active.length) {
-    const next = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
-    out.quiet = `The ${body} isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
-    return [];
-  }
-  // 2. Bills from the current session that are still moving.
-  // A bill is finished only when its latest action says the bill itself ended. Words like "failed" or "tabled" alone
-  // aren't enough: "Amendment failed" or "Motion tabled" happen on bills that are still moving.
-  const BILL_END = [
-    /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
-    /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
-    /^indefinitely postponed/i, /\bdied in committee\b/i,
-    /^signed chap/i, /^approval memo/i, /^veto memo/i  // New York: governor signed (chapter) or vetoed
-  ];
-  // "Failed", "died", and "withdrawn" end a bill only when they're about the bill itself, not an amendment, a motion,
-  // or a step like "Withdrawn from committee", which moves a bill forward.
-  const ABOUT_PART = /amendment|motion|from committee|from the committee|report|reconsider/i;
-  const done = b => {
-    const t = String(b.latest_action_description || "").trim();
-    if (BILL_END.some(re => re.test(t))) return true;
-    if (/^(bill )?(failed|died|dead|withdrawn)\b/i.test(t) && !ABOUT_PART.test(t)) return true;
-    // "Adopted" ends a resolution, but on a bill it usually means a committee report or amendment was adopted.
-    const isResolution = (b.classification || []).some(c => /resolution/i.test(c));
-    if (isResolution && /^(resolution )?adopted\b/i.test(t) && !ABOUT_PART.test(t)) return true;
-    return false;
-  };
-  const PAGES = 3; // Up to 60 most recently active bills. The free tier allows 10 requests a minute; results are cached 6 hours.
-  let results = [], total = null;
-  for (let page = 1; page <= PAGES; page++) {
-    const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20", page: String(page) });
-    let j;
-    // If a later page is refused (for example, the source is busy), keep what we already have instead of failing.
-    try { j = await getJSON(`https://v3.openstates.org/bills?${q}`, H); } catch (e) { if (page === 1) throw e; out.cut = true; break; }
-    results.push(...(j.results || []));
-    const pg = j.pagination || {};
-    if (total === null && typeof pg.total_items === "number") total = pg.total_items;
-    if (!pg.max_page || page >= pg.max_page) break;
-  }
-  const checked = results.length;
-  results = results.filter(b => !done(b));
-  if (total !== null && total > checked) out.partial = `Showing bills from the ${checked} most recently active of ${total.toLocaleString("en-US")} in this session, leaving out ones that are finished. See every bill on the ${body}'s website.`;
-  if (!results.length) out.quiet = `No bills are moving in the ${body} right now. New bills appear here as soon as they're filed.`;
-  return results.map(b => ({
-    id: "os-" + b.id, level: "state", kind: "Bill in the " + body,
-    title: `${b.identifier}: ${b.title}`, who: b.from_organization ? b.from_organization.name : name + " Legislature",
-    summary: b.latest_action_description ? `Latest action (${String(b.latest_action_date).slice(0, 10)}): ${b.latest_action_description}` : "",
-    opened: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, closes: null, read: b.openstates_url, act: null, actLabel: null, source: "Open States"
-  }));
-}
-
 module.exports = async (req, res) => {
   if (onlyRead(req, res)) return;
   let st = String((req.query && req.query.state) || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
   if (!STATE_NAMES[st]) st = "";
   if (canonical(req, res, "/api/open", { state: st })) return;
   const out = { fetchedAt: new Date().toISOString(), items: [], sources: [], notConnected: [], errors: [] };
+  let savedAt = null, maxAge = 21600;
   // Each source reports when its list was really fetched, and whether a refresh just failed (so an older list is shown).
-  const run = async (label, short, url, fn, key) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length, at: key && asOf(key) ? new Date(asOf(key)).toISOString() : null, stale: !!(key && isStale(key)) }); } catch (e) { out.errors.push(publicError(short, e)); } };
+  // meta lets a source report its own download time (saved copies of state lists carry theirs).
+  const run = async (label, short, url, fn, key, meta) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length, at: meta && meta.at ? meta.at : key && asOf(key) ? new Date(asOf(key)).toISOString() : null, stale: meta && "stale" in meta ? meta.stale : !!(key && isStale(key)) }); } catch (e) { out.errors.push(publicError(short, e)); } };
   await run("Federal Register: proposed rules open for public comment", "Federal rules", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules), "fr");
   if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)), "congress");
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; }, "st-" + st);
+    // With a saved-copy store connected, state lists come from the scheduled download (api/refresh.js). Visits call
+    // Open States for a list only if it hasn't been downloaded yet or the store can't be read, and then only within
+    // the shared limit.
+    if (process.env.OPENSTATES_API_KEY && store.on()) { const meta = {}; await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => {
+      const r = await memo("saved-st-" + st, 5 * 60e3, () => store.read(`states/${st}.json`)).catch(() => null);
+      // Not downloaded yet (for example, right after the store is connected): fetch it now, taking turns from the same
+      // shared limit as everything else, and remember it in this copy for 6 hours.
+      if (!r) { const live = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o, (u, h) => get(u, h, LIMITS, "items")); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; });
+        meta.at = asOf("st-" + st) ? new Date(asOf("st-" + st)).toISOString() : null; meta.stale = isStale("st-" + st);
+        if (live.quiet) out.quiet = live.quiet; if (live.partial) out.partial = live.partial; out.shortLife = true; return live.items; }
+      const d = r.data, age = Date.now() - Date.parse(d.at);
+      // A list more than 36 hours old isn't shown: bills on it may have been signed or vetoed since.
+      if (!(age <= 36 * 3600e3)) { out.quiet = "This list is out of date, so it isn't shown. It's being downloaded again; check back in a few hours."; out.shortLife = true; return []; }
+      meta.at = d.at;
+      // Lists in session are refreshed every few hours; others about daily. Older than that means downloads are behind.
+      const staleIn = (d.items.length ? 12 : 30) * 3600e3 - age;
+      meta.stale = staleIn <= 0;
+      // This answer is cached only until the list would become out of date.
+      if (!meta.stale) maxAge = Math.min(maxAge, Math.max(120, Math.floor(staleIn / 1000)));
+      if (d.quiet) out.quiet = d.quiet; if (d.partial) out.partial = d.partial; if (d.cut) out.shortLife = true;
+      return d.items; }, null, meta);
+      if (meta.at) savedAt = Date.parse(meta.at); }
+    else if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o, getJSON); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; }, "st-" + st);
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st]} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   // Keep the feed light on phones: summaries are cut at a word near 700 characters. The full summary is on each item's
@@ -166,12 +130,12 @@ module.exports = async (req, res) => {
   for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
     await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)), "lg-" + feed.id);
   }
-  const times = ["fr", "congress", st && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).filter(Boolean);
+  const times = ["fr", "congress", st && !savedAt && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).concat(savedAt ? [savedAt] : []).filter(Boolean);
   if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
   // A list kept only because a refresh failed is cached briefly, so the next visit tries again soon.
   const shortLife = out.shortLife || out.sources.some(x => x.stale); delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=3600");
+  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : `public, s-maxage=${maxAge}, stale-while-revalidate=${maxAge >= 21600 ? 3600 : 60}`);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(200).send(JSON.stringify(out));
 };

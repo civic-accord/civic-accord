@@ -2,9 +2,19 @@
 // The parts people weigh in on are copied word for word from the official summary. Nothing is written or rewritten here,
 // by people or by AI. Costs come only from official estimates. Party is never returned.
 const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
-// Open States' free key allows 10 calls a minute in all. Open Now (api/open.js) keeps 8 per server copy; item pages get 2.
+// Open States' free key allows 10 calls a minute in all. With a saved-copy store connected, every copy shares one count
+// (see _shared.js and _store.js). Without one, each copy keeps its own: Open Now 8, item pages 2.
 const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
-const getJSON = (url, headers) => get(url, headers, LIMITS);
+const getJSON = (url, headers, use) => get(url, headers, LIMITS, use || "items");
+const store = require("./_store");
+// With a saved-copy store connected, a state bill that's in a downloaded list draws from the main share of the shared
+// Open States limit. Any other state bill address draws from a small separate share, so a bot trying random addresses
+// can't use up the day's calls for everyone else.
+async function stateUse(id) {
+  if (!store.on()) return "items";
+  try { const r = await memo("saved-ids", 5 * 60e3, () => store.read("states/ids.json")); return r && r.data && r.data.ids && r.data.ids[id] ? "items" : "unlisted"; }
+  catch (e) { return "unlisted"; }
+}
 
 const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)(\d{1,5})-(\d{2,3})$/;
 const STATE_ID = /^os-ocd-bill\/[0-9a-f-]{36}$/;
@@ -102,10 +112,10 @@ async function congressItem(m, key) {
   };
 }
 
-async function stateItem(id, key) {
+async function stateItem(id, key, use) {
   const ocd = id.slice(3);
   const q = ["abstracts", "sponsorships", "documents", "versions", "sources"].map(x => "include=" + x).join("&");
-  const b = await getJSON(`https://v3.openstates.org/bills/${ocd}?${q}`, { "X-API-KEY": key });
+  const b = await getJSON(`https://v3.openstates.org/bills/${ocd}?${q}`, { "X-API-KEY": key }, use);
   // Use only the most recent summary the legislature posted, so earlier versions don't repeat. A "summary" that only repeats the title isn't one.
   const abstracts = (b.abstracts || []).map(a => a.abstract).filter(a => a && a.trim() && a.trim() !== String(b.title || "").trim());
   const latest = abstracts.length ? abstracts[abstracts.length - 1] : "";
@@ -205,7 +215,7 @@ const handler = async (req, res) => {
       } else if (STATE_ID.test(id)) {
         label = "State bills";
         if (!process.env.OPENSTATES_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
-        fn = () => stateItem(id, process.env.OPENSTATES_API_KEY);
+        fn = async () => stateItem(id, process.env.OPENSTATES_API_KEY, await stateUse(id));
       } else if (lm) { label = "Local meetings"; fn = () => localItem(lm); }
       else { label = "Federal rules"; fn = () => ruleItem(id); }
       // An address that doesn't exist at the source is remembered for 12 hours, so made-up addresses can't keep spending the free limits.

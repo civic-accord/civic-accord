@@ -1,0 +1,9 @@
+{
+  "name": "civic-accord",
+  "private": true,
+  "description": "Civic Accord: a public, checkable way for people to work with their government.",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@vercel/blob": "2.8.0"
+  }
+}

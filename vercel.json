@@ -84,5 +84,16 @@
         }
       ]
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/refresh",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "functions": {
+    "api/refresh.js": {
+      "maxDuration": 300
+    }
+  }
 }
