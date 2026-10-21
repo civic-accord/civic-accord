@@ -54,7 +54,7 @@ a:focus-visible,summary:focus-visible,select:focus-visible,label:focus-visible{o
 /* Shared accessibility rules. Form controls and tappable chips have edges at least 3:1 against the page (WCAG 1.4.11).
    On phones, focused items scroll clear of the bottom tab bar (2.4.11). At very high zoom, the fixed bars stop
    following the screen so content has room (1.4.10). */
-input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea,.chips button,.vote button,button.agree,button.disagree,button.pass{border-color:var(--muted)}
+input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea,button[aria-pressed="false"],button[data-g]{border-color:var(--muted)!important}
 button[data-g]{min-height:44px}
 a.sample{display:inline-block;padding:10px 0}
 @media (max-width:700px){html{scroll-padding-bottom:calc(84px + env(safe-area-inset-bottom))}}
