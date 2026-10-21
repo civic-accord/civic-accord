@@ -8,11 +8,11 @@ Please report security problems privately at https://github.com/civic-accord/civ
 
 ## What the system is designed to guarantee
 
-- **Votes can be recounted by anyone.** Votes go into a public, append-only record; counting is done by simple open-source code.
+- **Votes can be recounted by anyone (design goal).** Votes go into a public, append-only record; counting is done by simple code anyone can read.
 - **Each person can check their vote is included, and no one else can learn how they voted (design goal).** A receipt (tracking code) shows a voter's sealed ballot is in the record but not its choices, so it is designed so it can't be used to sell a vote or prove it to someone applying pressure.
 - **Votes can be changed until close (design goal).** Only a voter's last ballot counts, which makes pressure much harder. This depends on new ballots not being visibly linked to earlier ones; see the design below.
-- **AI never counts.** AI may summarize and draft, never touch the vote count or residency and voter-status checks.
-- **Identity is separated from votes.** The residency check never sees votes; the vote record never sees names or addresses.
+- **AI never counts.** AI may summarize and draft, never touch the vote count or voter checks.
+- **Identity is separated from votes (design goal).** The voter check never sees votes; the vote record never sees names or addresses.
 - **Addresses stay out of Civic Accord's servers.** Address lookups go from the browser straight to the U.S. Census Bureau. Legislator lookups send only the state; the browser picks its own districts.
 
 "Verifiable," never "impossible to tamper with."
@@ -21,13 +21,15 @@ Please report security problems privately at https://github.com/civic-accord/civ
 
 - Static pages served by Vercel, with security headers (HSTS, CSP, no framing) set in `vercel.json`. Pages load only their own script files (`js/`, `lib/`); the Content Security Policy allows no inline scripts (`script-src 'self'`). Inline styles are still allowed.
 - The U.S. Census Bureau geocoder only offers JSONP, which means running its script. It runs only inside `geo-frame.html`, a sandboxed iframe (`sandbox="allow-scripts"`, so it has an opaque origin: no access to Civic Accord pages, storage, or cookies) with its own policy (`default-src 'none'`; scripts limited to its one inline script by hash, plus the Census host). The page sends it an address by `postMessage` and accepts only results from that frame. Only Civic Accord's own pages can embed it (`frame-ancestors 'self'`). After editing `geo-frame.html`, run `node scripts/check-csp.js --fix` so the policy hash matches; the automatic checks (`.github/workflows/checks.yml`) fail any change where it doesn't.
-- Four read-only serverless functions (`api/open.js`, `api/item.js`, `api/people.js`, `api/congress.js`) that fetch public data (including local agendas from Legistar's public data service, for governments listed in `registry/local-feeds.json` only), with API keys stored as Vercel secrets. They accept no personal data.
-- Browser storage on the visitor's own device (districts, reactions, demo verification). Nothing is sent back. "Forget me on this device" (`lib/forget.js`, in every page footer) removes it all.
-- The data functions answer only their exact expected address (anything else is redirected), accept only GET and HEAD, share one request among simultaneous visitors, give up on a source after 10 seconds (25 for Open States, which can be slow), remember failures briefly (keeping the last good answer, with its real fetch time), limit calls to Open States in each server copy to stay under its free limit, and show visitors plain error messages without source details.
+- Four visitor-facing serverless functions (`api/open.js`, `api/item.js`, `api/people.js`, `api/congress.js`) that fetch public data (including local agendas from Legistar's public data service, for governments listed in `registry/local-feeds.json` only), with API keys stored as Vercel secrets. They accept no personal data.
+- One scheduled function (`api/refresh.js`), started only by Vercel's scheduler with a `CRON_SECRET` bearer token checked in constant time (it fails closed if the secret or store is missing). It downloads public state bill lists and saves them.
+- A private Vercel Blob store (`api/_store.js`), read and written only by the functions. It holds public state bill lists, shared call counts for Open States, and locks; nothing personal. Writes are conditional (etag compare-and-swap).
+- Browser storage on the visitor's own device (districts, follows, records of what was sent, reactions, practice votes, topics, notes, drafts, demo verification), plus the service worker's offline copy of pages (saved without query strings). None of it is sent to Civic Accord; checking a followed issue requests that issue's public record. "Forget me on this device" (`lib/forget.js`, in every page footer) removes all of it, including the offline copy, then reloads the page. Imported records files are cleaned field by field; other settings are restored only if they are plain data.
+- The data functions answer only their exact expected address (anything else is redirected), accept only GET and HEAD, share one request among simultaneous visitors, give up on a source after 10 seconds (25 for Open States, which can be slow), remember failures briefly (keeping the last good answer, with its real fetch time), draw every Open States call from one shared daily limit kept in the private store (with a per-copy limit as a fallback), cap calls to Congress.gov and the Federal Register from item pages, accept only tightly formatted item ids, and show visitors plain error messages without source details.
 
 ## Verification plan (not in place yet)
 
-See the Security section of the National Blueprint. In short, planned: automated checks on every change, an independent code review and penetration test against OWASP ASVS before launch, a public bug bounty, cryptographic end-to-end verifiability for the vote record, and recurring audits with public reports.
+Works now: automatic checks on every change (`.github/workflows/checks.yml`: the lookup frame's policy hash, the main policy's key protections, no inline scripts, valid code and data, known dependency problems, and the regression tests), plus Dependabot. Planned: more automatic checks, an independent code review and penetration test against OWASP ASVS before launch, a public bug bounty, cryptographic end-to-end verifiability for the vote record, and recurring audits with public reports.
 
 ## Vote record design (planned)
 

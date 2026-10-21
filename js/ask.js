@@ -4,6 +4,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const SHARE_URL="https://civicaccord.org/ask.html";
 const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
 function shareBar(el){
+  if(!el)return;
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
   el.innerHTML=`${navigator.share?`<button type="button" id="sh-native">Share…</button>`:""}
    <button type="button" id="sh-copy">Copy link</button>
@@ -43,7 +44,10 @@ async function find(){
   let sd=null;try{sd=await (await fetch("registry/states.json")).json()}catch(e){}
   const sx=sd&&sd.states?sd.states[GEO.state]:null;
   OFFICES=[];
-  if(people.rep) OFFICES.push({who:people.rep.name,title:`U.S. Representative, ${GEO.stateLabel} ${GEO.cd==="at-large"?"at large":"District "+GEO.cd}`,salutation:`Representative ${people.rep.name.split(" ").slice(-1)[0]}`,districtText:`${GEO.stateLabel}'s ${GEO.cd==="at-large"?"at-large":"District "+GEO.cd} congressional district`,url:people.rep.contact||people.rep.url,phone:people.rep.phone});
+  // D.C. and the territories elect a Delegate (Puerto Rico, a Resident Commissioner) instead of a Representative.
+  const houseT=GEO.state==="PR"?"Resident Commissioner":["DC","GU","VI","AS","MP"].includes(GEO.state)?"Delegate":"U.S. Representative";
+  const surname=n=>String(n||"").trim().split(/\s+/).filter(x=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(x)).slice(-1)[0]||"";
+  if(people.rep) OFFICES.push({who:people.rep.name,title:`${houseT}, ${GEO.stateLabel} ${GEO.cd==="at-large"?"at large":"District "+GEO.cd}`,salutation:`${houseT==="U.S. Representative"?"Representative":houseT} ${surname(people.rep.name)}`,districtText:`${GEO.stateLabel}'s ${GEO.cd==="at-large"?"at-large":"District "+GEO.cd} congressional district`,url:people.rep.contact||people.rep.url,phone:people.rep.phone});
   (people.sen||[]).forEach(p=>OFFICES.push({who:p.name,title:`U.S. Senator for ${GEO.stateLabel}`,salutation:`Senator ${p.name.split(" ").slice(-1)[0]}`,districtText:GEO.stateLabel,url:p.contact||p.url,phone:p.phone}));
   const lvl=map.levels[1].offices.filter(o=>o.civic==="receives");
   let leg=null;try{leg=await CA_REG.stateLegislators(CA_REG.districtsOf(GEO))}catch(e){}

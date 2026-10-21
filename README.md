@@ -1,16 +1,16 @@
 # Civic Accord
 
-Civic Accord is a tool where residents talk through a public issue, find where people with different views actually agree, weigh the costs, and hand their representatives a proposed bill backed by a full public record.
+Civic Accord is a free, open, nonpartisan way for residents to work with their governments. Today it shows what each government has open for public input, finds who represents you, and helps you speak up and follow what happens, all from official sources.
 
-AI organizes and drafts. People decide. A legislator decides whether to introduce anything.
+Planned: verified voters talk issues through, find where people with different views actually agree, weigh the costs, and hand the office a proposed bill or office policy backed by the full public record. AI organizes and drafts. People decide. The office decides whether to act.
 
-**Live prototype:** https://civicaccord.org (example data only)
+**Live site:** https://civicaccord.org (live official data; deliberations and votes are samples)
 
 **How it works, in plain language:** https://civicaccord.org/how.html
 
-Civic Accord is built for every U.S. jurisdiction: any address finds its federal, state, county, city or town, and school district governments, and any government can host a deliberation. The first pilot deliberation happens to be in Hawaiʻi; nothing in the core is specific to it.
+Civic Accord is built for every U.S. jurisdiction: any address finds its federal, state, county, city or town, and school district governments, and any government can host a deliberation. Sample deliberations exist for the U.S. Congress and one state legislature; nothing in the core is specific to any place.
 
-## How it works
+## How deliberations would work (planned; samples today)
 
 1. **Learn.** Everyone reads the same short, sourced briefing.
 2. **Weigh in.** Verified voters vote agree, disagree, or pass on short statements, and add their own.
@@ -25,9 +25,10 @@ Civic Accord is built for every U.S. jurisdiction: any address finds its federal
 - **Issue packs:** shared facts, current law, seed statements, cost options for one topic.
 - **Jurisdiction packs:** districts, committees, calendar, bill format, budget figures for one government.
 
-Live packs:
+Sample packs:
+- **U.S. Congress**: invasive species at the federal level, with federal facts, cost options, per-U.S.-resident costs, congressional bill format, and hand-off to the district's House office and the state's Senate offices.
+- **U.S. offices, any level**: whether offices should offer a public, checkable way to work with residents (ends in an office policy, not a bill).
 - **Hawaiʻi State Legislature** (pilot): invasive species, 2027 session.
-- **U.S. Congress**: the same issue at the federal level, with federal facts, cost options, per-U.S.-resident costs, congressional bill format, and hand-off to a member's representative and senators.
 
 ## For representatives
 
@@ -46,23 +47,23 @@ Every statement can also carry citizen panel results (`panel: [agree, disagree, 
 The two-way conversation is between residents and an **office** (a seat), not an individual politician. The office inbox (`inbox.html`) belongs to the seat: responses are signed by the office and give the approver's role (not their name), and when the officeholder changes, every open package, request, and past response passes to the next one.
 
 - **Offices can ask.** An office can request a deliberation on a pending bill or a trade-off. A neutral host reviews it before it opens, and the request is public.
-- **Counter-drafts.** An office can answer "I will introduce it with changes" and say what would need to change. Residents weigh in on the revised version.
+- **Counter-drafts.** An office can answer "Our office will introduce it with changes" and say what would need to change. Residents weigh in on the revised version.
 - **Follow-through.** The office reports each step (introduced, heard, amended, voted, enacted, stalled) with its reasoning. Residents see the same timeline in the hand-off step.
 - **Rules come from each government's law.** Each seat carries its own rules, cited, in its pack. For example, the U.S. House seat follows 39 U.S.C. § 3210 (no unsolicited mass communications in the 60 days before an election in which the member is a candidate), the Hawaiʻi State House seat follows the House rule on mass mailings after the candidate filing deadline, and the State Senate seat, which has no such rule, gets none. The tool pauses office-initiated requests during those windows; residents can still deliberate and offices can still respond.
 - **No campaign use.** No party branding, campaign links, photos, fundraising, or ratings of officials.
 
 ## Trust rules
 
-- AI never touches the vote count.
-- Public, append-only, tamper-evident vote record; anyone can recount.
-- Every AI summary links to the votes behind it.
+- AI never touches the vote count, voter checks, or the official items on Issues.
+- Planned: a public, append-only, tamper-evident vote record; anyone can recount.
+- Planned: every AI summary links to the votes behind it.
 - Disagreements travel with the proposal.
-- One verified voter, one voice.
-- Independent security audits.
+- Planned: one verified voter, one voice.
+- Planned: independent security audits before launch and on a schedule.
 
 ## Status
 
-Early example, not yet run by a host. Live today: My representatives (address lookup through the U.S. Census Bureau), Issues (official federal, state, and some local sources), issue pages built from official text, Following and your own records of what you sent (kept in your browser), and messages you send yourself. Deliberations, votes, verification, and office responses are samples. Civic Accord's servers collect no personal data; your browser contacts outside services as described in How it works (civicaccord.org/how.html#privacy).
+Early example, not yet run by a host. Live today: My representatives (address lookup through the U.S. Census Bureau), Issues (official federal, state, and some local sources), issue pages built from official text, Following and your own records of what you sent (kept in your browser), and messages you send yourself. Deliberations, votes, verification, and office responses are samples. Civic Accord never receives your address, messages, or views; like any website, the hosting service briefly logs requests. Your browser contacts outside services as described in How it works (civicaccord.org/how.html#privacy).
 
 ## License
 

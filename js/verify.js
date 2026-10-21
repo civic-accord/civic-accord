@@ -78,7 +78,7 @@ async function render(){bar();const p=$("p");
     <div><b>2. Your sealed voting key</b><span class="meta">Issued to your device in a way the checker can't see, so even the host can't match the key to you. One key per person per district.</span></div>
     <div><b>3. The public vote record</b><span class="meta">Holds only sealed votes, never names, and is designed so votes can't be traced back to a voter. Anyone can check that a district's verified voters never outnumber its registered voters. Anyone can recount. Your receipt shows your sealed votes are included, without showing how you voted, and you can change your votes until the deliberation closes.</span></div>
    </div>
-   <p class="meta">Verification lasts one year, or until you move. What's kept, and for how long, follows each state's privacy law and is checked in that state's legal review.</p>
+   <p class="meta">Voter status is checked again before each hand-off. What's kept, and for how long, follows each state's privacy law and is checked in that state's legal review.</p>
    <div class="actions"><a class="btn" href="app.html" style="text-decoration:none">Start taking part</a></div>`;
 }
 (async()=>{try{const idx=await (await fetch("packs/index.json")).json();OPEN=[...new Set(idx.packs.map(p=>p.jurisdiction))]}catch(e){}render()})();

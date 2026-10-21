@@ -7,7 +7,7 @@
   "level": "federal",
   "district": "Nationwide · your U.S. representative and senators",
   "session": "120th Congress convenes Jan 3, 2027",
-  "drafting": "AI organizes and drafts. People decide. Each office decides whether to adopt the policy.",
+  "drafting": "In the live version, AI would help organize and draft. People decide. Each office decides whether to adopt the policy.",
   "residents": 341800000,
   "residentLabel": "U.S. resident",
   "residentNote": "about 341.8 million U.S. residents (2025 estimate)",
@@ -115,7 +115,7 @@
    [
     "What a tool like this would do",
     [
-     "Confirm residents live in the district, without linking their identity to their votes",
+     "Confirm participants are registered voters in the district, without linking who they are to how they vote",
      "Count votes with open code and publish a record anyone can recount",
      "Show where people with different views agree, and where they don't",
      "Send the result to the office, which answers publicly"
@@ -233,7 +233,7 @@
    },
    {
     "id": 5,
-    "text": "Only people confirmed to live in the district should take part, one person, one voice.",
+    "text": "Only registered voters in the district, each confirmed, should take part: one voter, one voice.",
     "a": [
      34,
      2,

@@ -30,7 +30,7 @@ let IT=null, FETCHED=null, FED=null, STATELEG=null, TELL=false, PENDING=[], RECO
 
 // Who can act on it, in plain words. The office record for each seat is planned (offices haven't joined yet).
 function whoCanAct(it){const J=it.jurisdiction||{};
-  if(it.kind==="Bill in Congress")return "The U.S. Congress. Your U.S. representative and senators vote on it.";
+  if(it.kind==="Bill in Congress")return DIST&&["DC","PR","GU","VI","AS","MP"].includes(DIST.state)?"The U.S. Congress. Your delegate in the House can vote in committee but not on final passage, and D.C. and the territories have no senators.":"The U.S. Congress. Your member of the U.S. House and your two U.S. senators vote on it.";
   if(it.kind==="Proposed rule")return `${J.name||"The federal agency"}. The agency decides, and must consider the official comments.`;
   if(it.level==="local")return `${J.name}. Its members decide at public meetings.`;
   return `The ${J.name||"state legislature"}. Your state legislators vote on it.`}

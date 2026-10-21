@@ -20,7 +20,7 @@ function buildPack(){
     else {bill.centerLines=[bill.centerLines[0],`RELATING TO ${nm.toUpperCase()}.`,bill.centerLines[bill.centerLines.length-1]];
       bill.preamble=[`SECTION 1.  The legislature finds that residents have identified ${nm.toLowerCase()} as a priority, and that residents with differing views share common ground on the measures in this Act.`,"SECTION 2.  The appropriate state agencies shall:"];}
   } else {const c=B.custom;
-    j={key:slug(c.name)||"custom",name:c.name,level:c.level,district:c.district,session:c.session,drafting:`AI organizes and drafts. People decide. ${c.drafting||"Staff"} write final text for any ${c.title||"representative"} who takes it up.`,
+    j={key:slug(c.name)||"custom",name:c.name,level:c.level,district:c.district,session:c.session,drafting:`In the live version, AI would help organize and draft. People decide. ${c.drafting||"Staff"} write final text for any ${c.title||"representative"} who takes it up.`,
       residents:+c.res||0,residentLabel:c.reslabel||"resident",residentNote:`${(+c.res||0).toLocaleString()} residents`,populationSource:{url:c.popurl,label:"Population source"},
       baseline:{amount:+c.base||0,label:c.baselabel||"current spending"},generalFundName:c.fund||"the general fund",generalFundTradeoff:`${c.fund||"the general fund"}, where it competes with everything else the government pays for`,
       representativeTitle:c.title||"representative",handoffTitle:"Hand off to your representatives",handoffText:`The package goes to the ${c.title||"representative"} for this district. They decide whether to take it up. The public record stays open either way.`,

@@ -43,7 +43,7 @@ const packsFor=jk=>Object.values(PACKS).filter(x=>x.key===jk);
 const selectPack=k=>{cur=k;P=PACKS[k];st=ST[k];render();window.scrollTo({top:0})};
 const VD=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verified")||"null");return v&&v.districts&&v.districts.state&&!v.example?v.districts:null}catch(e){return null}})();
 const JURIS=VD?[
-  {key:"federal",name:"U.S. Congress",sub:`${VD.state} ${VD.cd==="at-large"?"at large":"district "+VD.cd} · 2 senators`},
+  {key:"federal",name:"U.S. Congress",sub:`${VD.state} ${VD.cd==="at-large"?"at large":"district "+VD.cd}${["DC","PR","GU","VI","AS","MP"].includes(VD.state)?" · delegate, no senators":" · 2 senators"}`},
   {key:VD.state.toLowerCase()+"-state",name:`${VD.stateName||VD.state} Legislature`,sub:[VD.sldl&&"House "+VD.sldl,VD.sldu&&"Senate "+VD.sldu].filter(Boolean).join(" · ")||"Your state legislators"},
   ...(VD.county?[{key:VD.state.toLowerCase()+"-county-"+(VD.countyId||VD.county),name:VD.county,sub:"County government"}]:[]),
   ...(VD.place?[{key:VD.state.toLowerCase()+"-city-"+VD.place,name:VD.place,sub:"City or town government"}]:[])]
@@ -138,12 +138,12 @@ function renderHeader(){verChip();
   document.getElementById("footnote").textContent=P.footnote;
   const jb=document.getElementById("juris");jb.innerHTML="";
   document.getElementById("juris-label").textContent=VD?"Your governments · verified districts":"Open deliberations";
-  document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">Find your governments →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
+  document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">My representatives →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
   const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
   jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
-    const status=live?"● Sample deliberation":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
+    const status=live?"● Sample deliberation":"No deliberation yet · anyone can start one";
     const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
-    b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
+    b.onclick=()=>{if(!live){location.href="new.html";return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
   const ib=document.getElementById("issues");ib.innerHTML="";
   packsFor(P.key).forEach(x=>{const b=el(`<button class="issue" aria-pressed="${x.packKey===cur}">${esc(x.issueName)}<small>${x.draft?"Draft preview":"Sample deliberation"}</small></button>`);b.onclick=()=>{if(x.packKey!==cur)selectPack(x.packKey)};ib.appendChild(b)});
   ib.appendChild(el(`<a class="issue newissue" href="new.html">＋ Start a deliberation<small>On any issue, for any government</small></a>`));
@@ -192,7 +192,7 @@ function weigh(){
         <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted||!CANVOTE?"disabled":""}>Disagree</button>
         <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted||!CANVOTE?"disabled":""}>Pass / unsure</button>
       </div>
-      ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
+      ${s.mine?`<span class="meta">Your statement · on this device only (sample)</span>`:""}
     </div>`}).join("");
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
@@ -237,7 +237,7 @@ function ground(){
   <h3>Both groups agree (${common.length})</h3>
   ${common.map(card).join("")||'<p class="meta">Nothing yet.</p>'}
   <h3>Where they split (${split.length})</h3>
-  <p class="meta">These go to the representative too, so the strongest dissent isn't lost.</p>
+  <p class="meta">These go to the office too, so the strongest dissent isn't lost.</p>
   ${split.map(card).join("")||'<p class="meta">No sharp splits right now.</p>'}
   ${forming.length?`<h3>Still forming (${forming.length})</h3>${forming.map(card).join("")}`:""}
   <button class="btn" id="go3">Weigh the costs</button>
@@ -408,7 +408,7 @@ function handoff(){
       <div><strong>${perRes(netYearly(t))}</strong><span>per ${esc(P.resLabel)} a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
-      <ul class="plain"><li>Plain-language proposal and ${P.docKind==="policy"?"starting office policy":"starting bill text"}</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>
+      <ul class="plain"><li>Plain-language proposal and ${P.docKind==="policy"?"starting office policy":"starting bill text"}</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as registered voters in the district</li></ul>
     </div>
     <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
   </div>
@@ -454,7 +454,7 @@ function render(){
     const m=document.getElementById("addmsg");
     if(t.length<10){m.textContent="Write at least a short sentence so others can vote on it.";return}
     const id=st.nextId++;st.added.push({id,t,a:[0,0,0],b:[0,0,0],mine:true});st.mine[id]=0;if(st.submitted){st.submitted=false;st.receipt=""}
-    const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added. Others can now vote on it.";};
+    const y=window.scrollY;render();window.scrollTo({top:y});document.getElementById("addmsg").textContent="Added on this device only. In the live version, a moderator would check it before others could vote on it.";};
   const c=document.getElementById("copy");
   if(c) c.onclick=()=>{
     const list=all().map(s=>({...s,...tally(s)})), t=totals();

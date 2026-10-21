@@ -1,6 +1,7 @@
 const SHARE_URL="https://civicaccord.org/ask.html";
 const SHARE_TEXT="I asked my representatives for a public way to work with them, built so anyone can check the results. You can ask yours in two minutes: ";
 function shareBar(el){
+  if(!el)return;
   const u=encodeURIComponent(SHARE_URL), t=encodeURIComponent(SHARE_TEXT);
   el.innerHTML=`${navigator.share?`<button type="button" id="sh-native">Share…</button>`:""}
    <button type="button" id="sh-copy">Copy link</button>

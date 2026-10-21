@@ -22,6 +22,6 @@ Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs
 
 ## Local agenda feeds
 
-`local-feeds.json` lists local governments whose public meeting agendas Open Now reads automatically (today: Maui County Council and Oakland City Council, through Legistar's public data service). Each entry gives the government's name, state, level, Census county, place, or town/township ID (`countyId`, `placeId`, `townId`, so only residents can respond), and its agenda system. Adding a government that uses the same system takes one entry.
+`local-feeds.json` lists local governments whose public meeting agendas the Issues page reads automatically (today: Maui County Council and Oakland City Council, through Legistar's public data service). Each entry gives the government's name, state, level, Census county, place, or town/township ID (`countyId`, `placeId`, `townId`, so only residents can respond), and its agenda system. Adding a government that uses the same system takes one entry.
 
 **Goal: load every municipality whose agendas are publicly available.** Next: check other governments on the same agenda system (for example, San Jose and Long Beach share data publicly), then add readers for other common agenda systems so more cities, counties, and school boards can be connected.
