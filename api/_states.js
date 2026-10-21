@@ -19,6 +19,9 @@ async function stateBills(key, st, out, getJSON, loadSessions) {
   const active = sessions.filter(x => x.start_date.slice(0, 10) <= today && (!x.end_date || x.end_date.slice(0, 10) >= today))
     .sort((a, b) => b.start_date.localeCompare(a.start_date));
   out.inSession = active.length > 0;
+  // When the next session starts, so a scheduled download can check more often as that day nears.
+  const upcoming = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
+  out.nextStart = upcoming ? upcoming.start_date.slice(0, 10) : null;
   if (!active.length) {
     const next = sessions.filter(x => x.start_date.slice(0, 10) > today).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
     out.quiet = `The ${body} isn't in session right now, so no bills are moving.` + (next ? ` Its next session, ${next.name}, starts ${new Date(next.start_date.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.` : " Bills appear here as soon as the next session opens.");
@@ -45,7 +48,7 @@ async function stateBills(key, st, out, getJSON, loadSessions) {
     if (isResolution && /^(resolution )?adopted\b/i.test(t) && !ABOUT_PART.test(t)) return true;
     return false;
   };
-  const PAGES = 3; // Up to 60 most recently active bills. The free tier allows 10 requests a minute; results are cached 6 hours.
+  const PAGES = out.pages || 3; // Up to 60 most recently active bills (the scheduled download may ask for fewer when many legislatures are in session). The free tier allows 10 requests a minute; results are cached 6 hours.
   let results = [], total = null;
   for (let page = 1; page <= PAGES; page++) {
     const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20", page: String(page) });

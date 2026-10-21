@@ -90,7 +90,7 @@ module.exports = async (req, res) => {
   if (!STATE_NAMES[st]) st = "";
   if (canonical(req, res, "/api/open", { state: st })) return;
   const out = { fetchedAt: new Date().toISOString(), items: [], sources: [], notConnected: [], errors: [] };
-  let savedAt = null;
+  let savedAt = null, maxAge = 21600;
   // Each source reports when its list was really fetched, and whether a refresh just failed (so an older list is shown).
   // meta lets a source report its own download time (saved copies of state lists carry theirs).
   const run = async (label, short, url, fn, key, meta) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length, at: meta && meta.at ? meta.at : key && asOf(key) ? new Date(asOf(key)).toISOString() : null, stale: meta && "stale" in meta ? meta.stale : !!(key && isStale(key)) }); } catch (e) { out.errors.push(publicError(short, e)); } };
@@ -103,9 +103,15 @@ module.exports = async (req, res) => {
     if (process.env.OPENSTATES_API_KEY && store.on()) { const meta = {}; await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => {
       const r = await memo("saved-st-" + st, 5 * 60e3, () => store.read(`states/${st}.json`));
       if (!r) { out.quiet = `The ${STATE_NAMES[st] === "District of Columbia" ? "D.C. Council" : STATE_NAMES[st] + " legislature"} list hasn't been downloaded yet. Lists are downloaded on a schedule, so check back in a few hours.`; out.shortLife = true; return []; }
-      const d = r.data; meta.at = d.at;
-      // Lists in session are refreshed every few hours; others daily. Older than that means downloads are behind.
-      meta.stale = Date.now() - Date.parse(d.at) > (d.items.length ? 12 : 36) * 3600e3;
+      const d = r.data, age = Date.now() - Date.parse(d.at);
+      // A list more than 36 hours old isn't shown: bills on it may have been signed or vetoed since.
+      if (!(age <= 36 * 3600e3)) throw new Error("saved list too old");
+      meta.at = d.at;
+      // Lists in session are refreshed every few hours; others about daily. Older than that means downloads are behind.
+      const staleIn = (d.items.length ? 12 : 30) * 3600e3 - age;
+      meta.stale = staleIn <= 0;
+      // This answer is cached only until the list would become out of date.
+      if (!meta.stale) maxAge = Math.min(maxAge, Math.max(120, Math.floor(staleIn / 1000)));
       if (d.quiet) out.quiet = d.quiet; if (d.partial) out.partial = d.partial; if (d.cut) out.shortLife = true;
       return d.items; }, null, meta);
       if (meta.at) savedAt = Date.parse(meta.at); }
@@ -124,7 +130,7 @@ module.exports = async (req, res) => {
   // A list kept only because a refresh failed is cached briefly, so the next visit tries again soon.
   const shortLife = out.shortLife || out.sources.some(x => x.stale); delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=3600");
+  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : `public, s-maxage=${maxAge}, stale-while-revalidate=${maxAge >= 21600 ? 3600 : 60}`);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(200).send(JSON.stringify(out));
 };
