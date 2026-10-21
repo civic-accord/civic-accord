@@ -1,11 +1,12 @@
 const words=n=>n.toLocaleString();
-const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
+const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:v>=1000?`$${Math.round(v/1000)}K`:`$${Math.round(v).toLocaleString("en-US")}`};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let OFFICES=[];
 let PK={}, office=null, open=null;
 const SKEY="civicaccord-office";
-const load=()=>{try{const v=JSON.parse(localStorage.getItem(SKEY)||"{}");return {responses:v.responses||{},updates:v.updates||{},requests:v.requests||{}}}catch(e){return {responses:{},updates:{},requests:{}}}};
-const DB=load(); const responses=DB.responses; const rk=id=>office+"|"+id;
+const load=()=>{try{const v=JSON.parse(localStorage.getItem(SKEY)||"{}");return {responses:v.responses||{},updates:v.updates||{},requests:v.requests||{},history:v.history||{}}}catch(e){return {responses:{},updates:{},requests:{},history:{}}}};
+// Responses are append-only on the public record: a new response supersedes the earlier one, which stays in history.
+const DB=load(); const responses=DB.responses, history=DB.history; const rk=id=>office+"|"+id;
 const persist=()=>{try{localStorage.setItem(SKEY,JSON.stringify(DB))}catch(e){}};
 const TODAY=(()=>{const q=new URLSearchParams(location.search).get("today");const d=q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?new Date(q+"T12:00:00"):new Date();d.setHours(12,0,0,0);return d})();
 const fmt=d=>d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
@@ -35,6 +36,7 @@ function analyze(d){
   const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null,n=s.a.concat(s.b).reduce((x,y)=>x+y,0);const kind=consensusLabel([s.a,s.b]);return {...s,pa,pb,pp,kind,n}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
   let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
+  // Costs here use each common-ground option at its default amount; a resident's own Step 4 choices on the sample page can differ.
   return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
 }
 function renderOffices(){
@@ -109,7 +111,7 @@ function renderDetail(){
       ${pt?`<div><strong>${pn}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${words(a.votes)}</strong><span>votes</span></div>
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
-      <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year</span></div>
+      <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year (common-ground options at default amounts)</span></div>
     </div>
     <p class="meta">${!pt?"":j.registeredVoters?`<b>${pt.open.count} verified voters took part, ${shareText(pt.open.count,j.registeredVoters)} of ${j.registeredVoters.toLocaleString("en-US")} ${esc(j.registeredVotersLabel||"registered voters")}</b>${j.registeredVotersSource&&httpsOnly(j.registeredVotersSource.url)?` (<a href="${esc(j.registeredVotersSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.registeredVotersSource.label||"source")}</a>)`:""}. Common ground means agreement among those who took part, not everyone you represent. The citizen panel is the check on whether it reflects the district.`:"This package doesn't list the number of registered voters yet, so the share who took part isn't shown."}</p>
     <h3>Who took part</h3>
@@ -125,7 +127,8 @@ function renderDetail(){
     <ul class="plain">${split.map(s=>`<li>${esc(s.text)} <span class="meta">Group A ${s.pa}%, Group B ${s.pb}%${s.pp!==null?`, citizen panel ${s.pp}%`:""} · ${costOf(s)}</span></li>`).join("")||"<li>No sharp splits.</li>"}</ul>
     <p class="meta">Every figure links back to the public vote record in the live tool. ${d.bill&&d.bill.kind==="policy"?"The starting office policy":"Starting bill text"} and cost methods come with the package.</p>
     <h3>The office's public response</h3>
-    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office ${d.bill&&d.bill.kind==="policy"?"adopts":"introduces"} it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Change response</button></div>`:`
+    ${(history[rk(d.id)]||[]).length?`<details><summary class="meta" style="cursor:pointer;padding:8px 0">${(history[rk(d.id)]).length} earlier response${(history[rk(d.id)]).length===1?"":"s"}, kept on the record</summary><ul class="plain">${history[rk(d.id)].map(h=>`<li class="meta"><b>${esc(h.label)}</b> · ${esc(h.date)} · ${esc(h.reason)} (superseded)</li>`).join("")}</ul></details>`:""}
+    ${r?`<div class="submitbox"><h3>✓ Response recorded publicly</h3><p><b>${esc(r.label)}</b> · ${esc(r.date)}</p><p>${esc(r.reason)}</p>${r.changes?`<p><b>Changes the office needs:</b> ${esc(r.changes)}</p><p class="meta">Residents are invited to weigh in on the revised version before the office ${d.bill&&d.bill.kind==="policy"?"adopts":"introduces"} it.</p>`:""}<p class="meta">${esc(sign(r))}. In the live version, residents who took part would be notified and see this on the public record.</p><button class="btn ghost" id="change">Add a new response (the earlier one stays on the record)</button></div>`:`
     <p class="meta">Residents see the office's response, or "no response yet" after 30 days. A reason is required for every choice.</p>
     <form id="respond" class="choices">
       ${(d.bill&&d.bill.kind==="policy"?[["adopt","Our office will adopt this policy"],["amend","Our office will adopt it with changes"],["info","We need more information"],["decline","We decline"]]:[["introduce","Our office will introduce a bill"],["cosponsor","Our office will support or co-sponsor an existing bill"],["amend","Our office will introduce it with changes"],["info","We need more information"],["decline","We decline"]]).map(([v,l],i)=>`<label class="choice"><input type="radio" name="resp" value="${v}" ${i===0?"checked":""}><span>${l}</span></label>`).join("")}
@@ -163,7 +166,7 @@ function renderDetail(){
     if(v.value==="amend"&&changes.length<10){document.getElementById("rmsg").textContent="Describe the changes the office needs.";return}
     responses[rk(d.id)]={office:office$().title+", "+office$().where,value:v.value,label,reason,changes,approver,date:today()};persist();render()};
   if(f) f.onchange=()=>{document.getElementById("changesbox").hidden=f.querySelector("input[name=resp]:checked").value!=="amend"};
-  const c=document.getElementById("change");if(c)c.onclick=()=>{delete responses[rk(d.id)];persist();render()};
+  const c=document.getElementById("change");if(c)c.onclick=()=>{const old=responses[rk(d.id)];if(old){(history[rk(d.id)]=history[rk(d.id)]||[]).push(old)}delete responses[rk(d.id)];persist();render()};
   const u=document.getElementById("update");
   if(u) u.onsubmit=e=>{e.preventDefault();const note=document.getElementById("up-note").value.trim(),by=document.getElementById("up-by").value.trim();
     if(note.length<10||!by){document.getElementById("upmsg").textContent="Add what happened and the approver's role.";return}

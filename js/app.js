@@ -1,5 +1,5 @@
 // ---------- Shared formatting ----------
-const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
+const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:v>=1000?`$${Math.round(v/1000)}K`:`$${Math.round(v).toLocaleString("en-US")}`};
 const unitMoney=v=>v>=1e6?`$${+(v/1e6).toFixed(2)}M`:v>=1000?`$${+(v/1000).toFixed(1)}K`:`$${v}`;
 const el=(h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild};
 const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -81,7 +81,7 @@ function panelNote(s){if(s.pp===null)return "";
   const story=s.kind==="common"&&s.pkind==="agrees"?"Confirms the common ground.":s.kind==="common"?"The open group agreed, but the panel did not. Worth a closer look.":s.pkind==="agrees"?"The panel found agreement the open group didn't.":"";
   return `<p class="panelnote ${s.pkind}"><b>${label}: ${s.pp}%</b> of ${s.pn} panelists. ${story}</p>`}
 function statusOf(id){const s=all().find(x=>x.id===+id);return s?{...s,...tally(s)}:null}
-function seedBudget(){if(!st.budgetSeeded){Object.keys(P.OPT).forEach(k=>{const s=statusOf(k);st.budget[k].on=!!s&&s.kind==="common"});st.budgetSeeded=true}}
+function seedBudget(force){if(force)st.budgetSeeded=false;if(!st.budgetSeeded){Object.keys(P.OPT).forEach(k=>{const s=statusOf(k);st.budget[k].on=!!s&&s.kind==="common"});st.budgetSeeded=true}}
 function totals(){
   let yearly=0, once=0;
   Object.keys(P.OPT).forEach(k=>{const b=st.budget[k];if(!b.on)return;const c=P.OPT[k].per*b.n;P.OPT[k].yr?yearly+=c:once+=c});
@@ -198,7 +198,7 @@ function weigh(){
     </div>`}).join("");
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
-  <p class="lede">Vote on what other voters wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
+  <p class="lede">Vote on what other voters wrote, or add your own. There is no reply button, so nobody can pile on. In the live version, the tool would learn from the pattern of votes, not from who argues loudest. In this sample, the groups come from the pack's example counts, and your vote joins whichever group voted closer to you.</p>
   ${CANVOTE?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
   <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${esc(P.resLabel)} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also agreed with a visitor fee; Step 4 shows what it would bring in.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
@@ -230,7 +230,7 @@ function ground(){
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
   ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
-  <p class="lede">The tool sorted participants into groups by how they voted. It shows what every group agrees on, and gives the disagreements equal space. A group counts toward a label only once at least 10 of its members have voted on that statement.</p>
+  <p class="lede">In the live version, the tool would sort participants into groups by how they voted (sample: the two groups and their counts are example data from the pack). It shows what every group agrees on, and gives the disagreements equal space. A group counts toward a label only once at least 10 of its members have voted on that statement.</p>
   ${participationBox()}
   <div class="groups">
     <div class="grp"><h3>Group A</h3><p class="meta">${esc(P.groups[0])}</p></div>
@@ -284,7 +284,7 @@ function costs(){
       <div class="r"><span>One-time cost</span><span id="t-once"></span></div>
       ${P.fee?`<div class="r"><span>Visitor fee brings in</span><span id="t-fee"></span></div>`:""}
       ${P.fines?`<div class="r"><span>${esc(P.fines.label.replace(/^Raise /,"Higher ").replace(/ for .*$/,""))} bring in</span><span id="t-fines"></span></div>`:""}
-      <div class="r total"><span>Still needed from ${esc(P.genFundName)}</span><span id="t-gf"></span></div>
+      <div class="r total"><span>Still needed from ${esc(P.genFundName)} (first year, including one-time costs)</span><span id="t-gf"></span></div>
       <div class="r"><span>Your share as a ${esc(P.resLabel)}</span><span id="t-per"></span></div>
     </div>
     <div class="gauge" title="Compared with current spending"><div class="g" id="g-bar"></div></div>
@@ -346,10 +346,14 @@ function draft(){
   const plain=plainStmts+picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${esc(breakdown(o,st.budget[k].n))}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
   const sf=P.fee?statusOf(P.fee.statement):null;
   const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
-  const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)}${i===secs.length-1?".":";"}`).join("\n");
+  const sfi=P.fines&&P.fines.statement!=null?statusOf(P.fines.statement):null;
+  const finesNote=P.fines&&st.fines&&sfi&&sfi.kind!=="common"?`<p class="warn">The ${esc(P.fines.label.toLowerCase())} ${sfi.kind==="split"?"divides participants":"hasn't reached common ground"} (A ${sfi.pa}%, B ${sfi.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
+  const flag=(kind)=>kind==="common"?"":kind==="split"?" [flagged: divides groups]":" [flagged: not common ground]";
+  const secFlags=picked.map(k=>{const s=statusOf(k);return s?flag(s.kind):""}).concat(stmtProv.map(()=>""));
+  const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)}${secFlags[i]?esc(secFlags[i]):""}${i===secs.length-1?".":";"}`).join("\n");
   let n=P.firstSection; const extra=[];
-  if(P.fee&&st.fee){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}`);n++}
-  if(P.fines&&st.fines){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fines.billText)}`);n++}
+  if(P.fee&&st.fee){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}${sf?esc(flag(sf.kind)):""}`);n++}
+  if(P.fines&&st.fines){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fines.billText)}${sfi?esc(flag(sfi.kind)):""}`);n++}
   const tot=Math.round(t.yearly+t.once);
   let src;
   const A=P.approp;
@@ -368,10 +372,10 @@ function draft(){
   <div class="stat">
     <div><strong>${money(t.yearly)}</strong><span>yearly cost</span></div>
     <div><strong>${money(t.once)}</strong><span>one-time cost</span></div>
-    <div><strong>${money(t.gf)}</strong><span>from general funds</span></div>
+    <div><strong>${money(t.gf)}</strong><span>from general funds (first year, including one-time costs)</span></div>
     <div><strong>${perRes(netYearly(t))}</strong><span>per ${esc(P.resLabel)} a year</span></div>
   </div>
-  ${feeNote}
+  ${feeNote}${finesNote}
   <h3>${esc(P.docLabel)}</h3>
   <p class="meta">A starting point for a ${esc(P.repTitle)}'s office, assembled by simple code from the common ground. In the live version, AI would help write it. ${P.docKind==="policy"?"It's a practice an office can adopt on its own, not a bill.":"It is not final legal text, and people decide what's in it."}</p>
   <div class="bill">${P.billHead}${body||"     (no provisions yet)"}${extra.length?"\n\n"+extra.join("\n\n"):""}\n\n${approp}\n\n${eff}</div>
@@ -385,7 +389,7 @@ function followThrough(){
   return `<div class="grp"><h3>Follow it</h3>
     <p class="meta">The package goes to the office, not a person, so the record carries over if the officeholder changes. In the live version, you'd be notified at each step.${P.draft?"":" Example record: responses made in the office inbox on this device show up here."}</p>
     <ol class="timeline">
-      <li><b>Package sent to the office</b><span class="meta">${st.submitted?"Your votes are included":"Submit your votes in Step 2 to be included"}</span></li>
+      <li><b>Package sent to the office <span class="tag forming">Sample</span></b><span class="meta">Nothing is sent in this sample. ${st.submitted?"Your practice votes are counted on this device":"Submit your votes in Step 2 to see them counted on this device"}</span></li>
       ${r?`<li><b>${esc(r.office?r.office+": ":"")}${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}${r.approver?` · approved by ${esc(r.approver)}`:""}</span></li>
         ${r.changes?`<li class="wait"><b>The office asked for changes</b><span class="meta">${esc(r.changes)} Residents weigh in on the revised version once the host reviews it.</span></li>`:""}`
        :`<li class="wait"><b>Waiting for the office's response</b><span class="meta">If there's none after 30 days, the public record says "no response yet."</span></li>`}
@@ -409,7 +413,9 @@ function handoff(){
       <div><strong>${money(t.yearly)}</strong><span>estimated yearly cost</span></div>
       <div><strong>${perRes(netYearly(t))}</strong><span>per ${esc(P.resLabel)} a year</span></div>
     </div>
-    <div class="grp"><h3>What's in the package</h3>
+    <p class="meta">These figures follow your own choices in Step 4. The sample office inbox shows the package built from common ground alone, each option at its default amount, so its totals can differ.</p>
+    ${turnoutLine(people)}
+    <div class="grp"><h3>What's in the package <span class="tag forming">Planned</span></h3><p class="meta">What an office would receive in the live version. In this sample, only the summary below can be copied.</p>
       <ul class="plain"><li>Plain-language proposal and ${P.docKind==="policy"?"starting office policy":"starting bill text"}</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as registered voters in the district</li></ul>
     </div>
     <div class="grp"><h3>Timing</h3><p class="meta">${esc(P.timing)}</p></div>
@@ -448,7 +454,7 @@ function render(){
     });
   });
   const sv=document.getElementById("submitvotes");
-  if(sv) sv.onclick=()=>{st.submitted=true;st.receipt=makeReceipt();render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
+  if(sv) sv.onclick=()=>{st.submitted=true;st.receipt=makeReceipt();seedBudget(true);render();const b=document.getElementById("submitbox");if(b){b.scrollIntoView({block:"center"});b.focus()}};
   const us=document.getElementById("unsubmit");
   if(us) us.onclick=()=>{st.submitted=false;st.receipt="";render()};
   const bs=document.getElementById("backsubmit");
@@ -462,7 +468,9 @@ function render(){
   const c=document.getElementById("copy");
   if(c) c.onclick=()=>{
     const list=all().map(s=>({...s,...tally(s)})), t=totals();
-    const txt=`Civic Accord summary: ${P.copyTitle} (example data)\n\nEstimated cost: ${money(t.yearly)} a year, about ${perRes(netYearly(t))} per ${P.resLabel}\n\nCommon ground:\n`+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
+    const people=(P.participation?P.participation.open.count:0)+(st.submitted?1:0);
+    const turnout=P.regVoters?`${people} verified voters took part: ${shareText(people,P.regVoters)} of ${P.regVoters.toLocaleString("en-US")} ${P.regLabel}. Common ground means agreement among those who took part, not everyone this government represents.`:`${people} verified voters took part (registered-voter count not listed in this pack).`;
+    const txt=`Civic Accord summary: ${P.copyTitle} (example data)\n\n${turnout}\n\nEstimated cost: ${money(t.yearly)} a year, about ${perRes(netYearly(t))} per ${P.resLabel}\n\nCommon ground:\n`+list.filter(s=>s.kind==="common").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n")+"\n\nOpen disagreements:\n"+list.filter(s=>s.kind==="split").map(s=>"- "+s.t+` (A ${s.pa}%, B ${s.pb}%)`).join("\n");
     const msg=document.getElementById("copymsg");
     const fallback=()=>{const ta=document.getElementById("summarytext");ta.hidden=false;ta.value=txt;ta.select();msg.textContent="Select and copy the text below."};
     try{navigator.clipboard.writeText(txt).then(()=>msg.textContent="Copied.",fallback)}catch(e){fallback()}
