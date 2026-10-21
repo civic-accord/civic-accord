@@ -14,6 +14,7 @@ window.__openMail=window.__openMail||(u=>{location.href=u});
 const DKEY="civicaccord-districts", SKEY="civicaccord-signer";
 let DIST=(VER&&VER.districts&&VER.districts.state)?VER.districts:(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){return null}})();
 let SIGNER=(()=>{try{return JSON.parse(localStorage.getItem(SKEY)||"null")||{name:"",town:""}}catch(e){return {name:"",town:""}}})();
+let SIGNER_EDIT=false; // true while the name and town fields are open for editing
 let FED=null, STATELEG=null;
 async function loadReps(){
   FED=null;STATELEG=null;if(!DIST)return;
@@ -55,13 +56,13 @@ function composeBox(it){
     <b>Tell your representatives you ${v==="Support"?"support":v==="Oppose"?"oppose":"have questions about"} this</b>
     ${it.kind==="Proposed rule"?`<p class="meta">For a proposed rule, the agency decides. ${it.commentForm===false?"The notice, linked above, explains how to send your official comment.":safe(it.act)?`Your official comment goes through <a href="${esc(it.act)}" target="_blank" rel="noopener" style="color:var(--koa);font-weight:700">Comment officially</a>.`:"Send your official comment through the agency's notice."} This message is a second step: it lets your members of Congress know.</p>`:""}
     <label for="cm" class="meta">Add your own words (optional)</label><textarea id="cm" rows="3" maxlength="1200" placeholder="Why it matters to you, in a sentence or two.">${esc(COMMENT[it.id]||"")}</textarea>
-    <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
+    ${SIGNER.name&&!SIGNER_EDIT?`<p class="meta">Signed as <b>${esc(SIGNER.name)}</b>${SIGNER.town?`, ${esc(SIGNER.town)}`:""} (remembered on this device). <a href="#" data-sedit="1" style="color:var(--koa)">Change</a></p>`:`<div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>`}
     ${!DIST?`<p>First, find who represents you. <a href="#me" data-gome="1" style="color:var(--koa);font-weight:700">Enter your address</a> (it takes a few seconds, and only your districts are kept on this device).</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
         ${r.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(r.sal)}</a>`:""}
-        ${!r.email&&safe(r.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
+        ${!r.email&&safe(r.url)?`<a class="btn" href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}" style="text-decoration:none">Open contact form</a><button type="button" class="linkbtn" data-copy="${i}">Show the message</button>`:""}
         ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9+]/g,""))}">Call ${esc(r.phone)}</a>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">${errs.length?esc(errs.join(" ")):"We couldn't find contact details for these offices yet."} Your legislature's website lists them.</p>`}
-    <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them, copy the message and paste it into their contact form. Civic Accord never sees what you send.</p>
+    <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them the message is copied as their contact form opens; paste it there. Civic Accord never sees what you send.</p>
   </div>`;
 }
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
@@ -215,17 +216,21 @@ function render(){
   updateTally();
   const it=OPENID&&DATA.items.find(x=>x.id===OPENID);
   if(it){
-    const keep=()=>{SIGNER={name:$("sn").value.trim(),town:$("stw").value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}};
-    $("sn").oninput=keep;$("stw").oninput=keep;$("cm").oninput=()=>{COMMENT[it.id]=$("cm").value};
+    const keep=()=>{const sn=$("sn"),stw=$("stw");if(sn&&stw){SIGNER={name:sn.value.trim(),town:stw.value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}}};
+    if($("sn")){$("sn").oninput=keep;$("stw").oninput=keep}$("cm").oninput=()=>{COMMENT[it.id]=$("cm").value};
+    document.querySelectorAll("[data-sedit]").forEach(a=>a.onclick=e=>{e.preventDefault();SIGNER_EDIT=true;const y=window.scrollY;render();window.scrollTo({top:y});const f=$("sn");if(f)f.focus({preventScroll:true})});
     const reps=recipients(it);
     document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=async e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal),el=$("rm-"+a.dataset.mail);
       const {url,shown}=await CA_TELL.mailUrl(r.email,m,el);
       pend(it,r,"email",m);window.__openMail(url);mark(it.id,"started");
       if(!shown){setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);el.textContent="Opening your email app…"}});
-    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const r=reps[+a.dataset.form];if(r)pend(it,r,"contact-form",message(it,r.sal));mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
+    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const i=+a.dataset.form,r=reps[i];if(!r)return;keep();const m=message(it,r.sal);pend(it,r,"contact-form",m);mark(it.id,"started");
+      const txt=`Subject: ${m.subject}\n\n${m.body}`,t=$("rm-"+i),noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: replace that after pasting.":"";
+      CA_TELL.copy(txt).then(ok=>{if(ok){if(t)t.textContent="Message copied. Paste it into the form that just opened."+noName}else CA_TELL.showText(t,txt,"Couldn't copy automatically. Select the message below, copy it, and paste it into the form."+noName)});
+      setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y});const t2=$("rm-"+i);if(t2&&t&&t.textContent)t2.textContent=t.textContent},1200)}));
     document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);pend(it,r,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`;
       const t=$("rm-"+i),noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: add your name above first, or replace it after pasting.":"";
-      CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; now open the contact form and paste it.":"Couldn't copy automatically. Select the message below and copy it.")+noName))});
+      CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; paste it into the contact form.":"Select the message below and copy it, then paste it into the contact form.")+noName))});
   }
 }
 // Only the latest state choice is ever shown: earlier requests are cancelled, and a late answer is ignored.
