@@ -1,0 +1,27 @@
+{
+ "about": "Local governments whose public meeting agendas Civic Accord reads automatically. Each entry is one government. Agendas come straight from the government's own public agenda system; nothing is written or reworded. Add a government by adding one entry with a source for each field.",
+ "feeds": [
+  {
+   "id": "hi-maui-county",
+   "name": "Maui County Council",
+   "state": "HI",
+   "level": "county",
+   "countyId": "15009",
+   "system": "legistar",
+   "client": "mauicounty",
+   "calendar": "https://mauicounty.legistar.com/Calendar.aspx",
+   "note": "Council and committee meetings. Testimony in person, online, or in writing; each meeting page says how."
+  },
+  {
+   "id": "ca-oakland",
+   "name": "Oakland City Council",
+   "state": "CA",
+   "level": "city",
+   "placeId": "0653000",
+   "system": "legistar",
+   "client": "oakland",
+   "calendar": "https://oakland.legistar.com/Calendar.aspx",
+   "note": "Council and committee meetings. Each meeting page says how to comment."
+  }
+ ]
+}

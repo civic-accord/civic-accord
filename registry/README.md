@@ -19,3 +19,7 @@ Copy `hi.json` to `<state>.json` (two-letter code, lowercase). Every entry needs
 ## Who can take part
 
 `eligibility` in a state file sets how voter registration status is confirmed under that state's law. Only active registered voters in the district can vote or add statements; there is no separate result for anyone else. In Hawaiʻi, a voter's name, district or precinct, and voter status are public for any purpose (HRS § 11-97, HAR § 3-177-160), so the check matches only those. States without an entry fall back to `us.json`'s `eligibilityDefault`, where status is self-reported and labeled that way. `participants` is a plain sentence saying who can take part, kept with the state's data for reviewers. Preregistration ages in `states.json` are shown in Civic Accord Learn, not used to let anyone take part.
+
+## Local agenda feeds
+
+`local-feeds.json` lists local governments whose public meeting agendas Open Now reads automatically (today: Maui County Council and Oakland City Council, through Legistar's public data service). Each entry gives the government's name, state, level, Census county or place ID (so only residents can respond), and its agenda system. Adding a government that uses the same system takes one entry.

@@ -204,6 +204,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .item{padding:18px 18px 16px;gap:10px;border-left:5px solid var(--line)}
 .item.lvl-federal{border-left-color:var(--koa)}
 .item.lvl-state{border-left-color:var(--sun)}
+.item.lvl-local{border-left-color:var(--muted)}
 .item .top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
 .kindtag{font-size:.82rem;font-weight:700;color:var(--ink)}
 .start{font-size:.8rem;font-weight:700;background:var(--koa);color:var(--surface);border-radius:999px;padding:2px 10px}
@@ -278,7 +279,7 @@ ol.path li.planned::before{border-style:dashed}
       <label for="st" style="position:absolute;left:-9999px">State</label><select id="st"></select>
     </div>
     <details class="morefilters"><summary>More filters</summary><div class="filters">
-      <label for="lvl" style="position:absolute;left:-9999px">Show</label><select id="lvl"><option value="">All governments</option><option value="federal">Federal</option><option value="state">State</option></select>
+      <label for="lvl" style="position:absolute;left:-9999px">Show</label><select id="lvl"><option value="">All governments</option><option value="federal">Federal</option><option value="state">State</option><option value="local">Local</option></select>
       <label for="kind" style="position:absolute;left:-9999px">Type</label><select id="kind"><option value="">All types</option></select>
     </div></details>
     <p class="meta" id="where"></p>
@@ -431,11 +432,14 @@ function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
-function canRespond(it){if(it.level==="federal")return true;return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
+function canRespond(it){if(it.level==="federal")return true;
+  // Local meetings: only for residents of that county or city (from the address on this device).
+  if(it.level==="local")return !!(DIST&&((it.countyId&&DIST.countyId===it.countyId)||(it.placeId&&DIST.placeId===it.placeId)));
+  return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
 function whyLine(it){const ms=topicsOf(it);if(!ms.length)return "";const mine=ms.filter(m=>TP.picked.includes(m.id)),show=mine.length?mine:ms;
   return `<span class="why">${mine.length?"Your topic":"Topic"}: ${show.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`}
 function stepOf(it){const p=PROG[it.id]||{};return !p.read?0:!REACT[it.id]?1:!p.spoke?2:!p.talk?3:4}
-const KIND=it=>it.kind==="Proposed rule"?"Federal rule":it.kind==="Bill in Congress"?"Bill in Congress":it.level==="state"?"State bill":it.kind;
+const KIND=it=>it.kind==="Proposed rule"?"Federal rule":it.kind==="Bill in Congress"?"Bill in Congress":it.level==="state"?"State bill":it.level==="local"?"Local meeting":it.kind;
 function pathHTML(it){const p=PROG[it.id]||{},now=stepOf(it),ro=!canRespond(it);
   const st=[["Read",p.read],["Where you stand",REACT[it.id]],["Speak up",p.spoke],["Go further",p.talk],["Counted",0]];
   const keys=["read","react","spoke","talk"];
@@ -446,17 +450,18 @@ function nextHTML(it){
   const p=PROG[it.id]||{},now=stepOf(it),r=REACT[it.id];
   const start=`item.html?id=${encodeURIComponent(it.id)}`, build=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
   const reacts=`<div class="go" role="group" aria-label="Where you stand">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>`;
+  if(!canRespond(it)&&it.level==="local")return `<div class="next ro"><p>${DIST?`This meeting is for ${esc(it.who)}, so it's here to read. Reactions are for your own county or city.`:`To respond to a local meeting, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know your county and city.`} Anyone can read the agenda or testify.</p></div>`;
   if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To respond to a state bill, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know it's your state.`}</p>
     ${safe(it.read)?`<div class="go"><a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a></div>`:""}</div>`;
   if(now===0)return `<div class="next"><p>Start by reading what it actually says. It opens on the official site.</p>
     <div class="go">${safe(it.read)?`<a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a>`:""}<button type="button" data-skip="${esc(it.id)}">I already know it</button></div></div>`;
   if(now===1)return `<div class="next"><p>Where do you stand? You can change this anytime.</p>${reacts}</div>`;
   if(now===2){
-    const rule=it.kind==="Proposed rule"&&!!safe(it.act);
-    return `<div class="next"><p>${rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
+    const local=it.level==="local"&&!!safe(it.act), rule=(it.kind==="Proposed rule"||local)&&!!safe(it.act);
+    return `<div class="next"><p>${local?`The council decides this one. Testifying, in person, online, or in writing, is how it hears from residents. The meeting page says how and by when.`:rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
       ${p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
       ${reacts}
-      ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel||"Comment officially")}</a><button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button></div>`:""}
+      ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel||"Comment officially")}</a>${local?"":`<button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button>`}</div>`:""}
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
       ${OPENID===it.id?composeBox(it):""}
       ${rule||p.started?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
@@ -472,7 +477,7 @@ function card(it,first){
       ${it.closes&&dl!==null?`<span class="clock ${dl<=7?"soon":""}">${dl<=0?"Closes today":dl===1?"1 day left":dl+" days left"}</span>`:""}</div>
     <h3>${esc(it.title)}</h3>
     ${whyLine(it)}
-    <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}.`:""}</span>
+    <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
     ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm.slice(200).length>1200?sm.slice(0,1400)+"…":sm)}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}

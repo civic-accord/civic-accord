@@ -253,7 +253,7 @@ async function render(){bar();const p=$("p");
    <span class="toast" id="msg" aria-live="polite"></span>
    <div class="actions"><button class="btn" id="check" type="button">Verify</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
    $("check").onclick=()=>{if($("code").value.trim()!==code){$("msg").textContent="That code doesn't match. Check it and try again.";return}
-     const v={districts:{state:geo.state,stateName:geo.stateLabel||geo.stateName,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null,countyId:geo.county?geo.county.geoid:null,place:geo.place?geo.place.name:null},voterStatus:vstatus.status,voterStatusHow:vstatus.how,method,date:new Date().toLocaleDateString("en-CA"),credential:cred(),example:!!geo.example};
+     const v={districts:{state:geo.state,stateName:geo.stateLabel||geo.stateName,cd:geo.cd,sldl:geo.sldl,sldu:geo.sldu,county:geo.county?geo.county.name:null,countyId:geo.county?geo.county.geoid:null,place:geo.place?geo.place.name:null,placeId:geo.place?geo.place.geoid:null},voterStatus:vstatus.status,voterStatusHow:vstatus.how,method,date:new Date().toLocaleDateString("en-CA"),credential:cred(),example:!!geo.example};
      try{localStorage.setItem("civicaccord-verified",JSON.stringify(v))}catch(e){}
      window.__ver=v;step=5;render()};
    $("back").onclick=()=>{step=3;render()};return}

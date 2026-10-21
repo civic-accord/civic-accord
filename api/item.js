@@ -9,6 +9,8 @@ const getJSON = (url, headers) => get(url, headers, LIMITS);
 const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)(\d{1,5})-(\d{2,3})$/;
 const STATE_ID = /^os-ocd-bill\/[0-9a-f-]{36}$/;
 const RULE_ID = /^fr-[0-9A-Za-z-]{4,30}$/;
+const LOCAL_ID = /^lg-([a-z0-9]{2,40})-(\d{1,8})$/;
+const LOCAL = require("../registry/local-feeds.json").feeds;
 const BILL_PATH = { hr: "house-bill", s: "senate-bill", hres: "house-resolution", sres: "senate-resolution", hjres: "house-joint-resolution", sjres: "senate-joint-resolution", hconres: "house-concurrent-resolution", sconres: "senate-concurrent-resolution" };
 const ordinal = n => { n = Number(n); const t = n % 100, o = n % 10; return n + (t >= 11 && t <= 13 ? "th" : o === 1 ? "st" : o === 2 ? "nd" : o === 3 ? "rd" : "th"); };
 const MAX_PARTS = 30;
@@ -136,11 +138,44 @@ async function ruleItem(id) {
   };
 }
 
+// A local meeting: the parts are the agenda items that have legislation attached, with their official titles, word for word.
+async function localItem(m) {
+  const [, client, eventId] = m;
+  const feed = LOCAL.find(f => f.client === client);
+  const base = `https://webapi.legistar.com/v1/${client}/events/${eventId}`;
+  const e = await getJSON(base);
+  let items = [];
+  try { items = await getJSON(`${base}/eventitems`); } catch (x) { items = []; }
+  const seen = new Set(), parts = [];
+  (Array.isArray(items) ? items : []).sort((a, b) => (a.EventItemAgendaSequence || 0) - (b.EventItemAgendaSequence || 0)).forEach(i => {
+    const t = String(i.EventItemTitle || "").replace(/\s+/g, " ").trim();
+    if (!i.EventItemMatterId || !t || seen.has(t)) return;
+    seen.add(t); parts.push({ text: t, ref: i.EventItemMatterFile || null });
+  });
+  const body = String(e.EventBodyName || "Meeting").replace(/^[\s*]+/, "").replace(/\s+/g, " ").trim();
+  const date = String(e.EventDate || "").slice(0, 10);
+  const page = httpsOnly(e.EventInSiteURL) || feed.calendar;
+  return {
+    kind: feed.level === "county" ? "County council meeting" : "City council meeting", level: "local",
+    jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null }, title: `${body}: meeting`,
+    status: e.EventAgendaStatusName ? { date: null, text: `Agenda ${String(e.EventAgendaStatusName).toLowerCase()}` } : null,
+    meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [],
+    summary: { by: `The meeting agenda posted by the ${feed.name}`, version: null, date: null }, partsFrom: "the official agenda",
+    parts: parts.slice(0, MAX_PARTS), partsMore: parts.length > MAX_PARTS, partsDropped: 0,
+    partsNote: parts.length ? null : "This meeting's agenda has no items with legislation attached yet. Read the agenda for what's being discussed.",
+    whole: `${body}: meeting`,
+    costs: [], costNote: "Agenda data doesn't include cost figures. Staff reports in the agenda packet often do; read the agenda.",
+    links: { official: page, text: httpsOnly(e.EventAgendaFile) || page, comment: page, commentLabel: "How to testify (meeting page)" },
+    source: { label: `${feed.name} agendas`, url: feed.calendar }
+  };
+}
+
 module.exports = async (req, res) => {
   if (onlyRead(req, res)) return;
   const raw = String((req.query && req.query.id) || "").trim();
   const id = CONGRESS_ID.test(raw.toLowerCase()) ? raw.toLowerCase() : raw;
-  const valid = CONGRESS_ID.test(id) || STATE_ID.test(id) || RULE_ID.test(id);
+  const lm = id.match(LOCAL_ID);
+  const valid = CONGRESS_ID.test(id) || STATE_ID.test(id) || RULE_ID.test(id) || !!(lm && LOCAL.some(f => f.client === lm[1]));
   if (canonical(req, res, "/api/item", { id: valid ? id : "" })) return;
   const out = { fetchedAt: new Date().toISOString(), id, item: null, errors: [] };
   if (!valid) out.errors.push("This item address isn't one Civic Accord recognizes.");
@@ -155,7 +190,8 @@ module.exports = async (req, res) => {
         label = "State bills";
         if (!process.env.OPENSTATES_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
         fn = () => stateItem(id, process.env.OPENSTATES_API_KEY);
-      } else { label = "Federal rules"; fn = () => ruleItem(id); }
+      } else if (lm) { label = "Local meetings"; fn = () => localItem(lm); }
+      else { label = "Federal rules"; fn = () => ruleItem(id); }
       // An address that doesn't exist at the source is remembered for 12 hours, so made-up addresses can't keep spending the free limits.
       const guarded = async () => { try { return await fn(); } catch (e) { if (e.status === 404) return { notFound: true }; throw e; } };
       try { out.item = await memo("item-" + id, 12 * 3600e3, guarded); if (out.item && out.item.notFound) { out.item = null; out.errors.push("This item wasn't found at the official source."); } const at = asOf("item-" + id); if (at) out.fetchedAt = new Date(at).toISOString(); }
