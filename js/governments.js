@@ -28,7 +28,7 @@ async function show(geo,fromSaved){
     <h3>Who holds these seats, and how to reach them</h3>
     <div class="tbl"><table class="cov"><tr><th>Level</th><th>Officeholders</th><th>Contact</th></tr>
       <tr><td>U.S. Congress</td><td>${cong.length?"Shown below":"Not found"}</td><td>${cong.length?"Websites, contact forms, phone":"Not found"}</td></tr>
-      <tr><td>${geo.state==="DC"?"D.C. Council":"State legislature"}</td><td>${leg.legislators.length?"Shown below":leg.notConnected?"Not connected yet":leg.errors.length?"Couldn't load right now":"Not found"}</td><td>${leg.legislators.length?"Email, phone, and websites where published":"—"}</td></tr>
+      <tr><td>${geo.state==="DC"?"D.C. Council":"State legislature"}</td><td>${leg.legislators.length?"Shown below":geo.partial?"Add your address":leg.notConnected?"Not connected yet":leg.errors.length?"Couldn't load right now":"Not found"}</td><td>${leg.legislators.length?"Email, phone, and websites where published":"—"}</td></tr>
       <tr><td>County, city or town, school board</td><td>Officeholders not listed yet</td><td>Each government's own website lists its officials and meetings.</td></tr></table></div>
     ${cong.length?`<ul class="people">${cong.map(p=>`<li><b>${esc(p.title)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:""}
     ${leg.legislators.length?`<ul class="people">${leg.legislators.map(p=>`<li><b>${esc(legTitle(p))}, ${geo.state==="DC"?"":"district "}${esc(p.district)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:leg.notConnected?`<p class="meta">This territory's legislature isn't in the open data Civic Accord uses yet, so its members aren't listed here.</p>`:leg.errors.length?`<p class="meta">${esc(leg.errors.join(" "))}</p>`:""}
@@ -44,8 +44,12 @@ async function show(geo,fromSaved){
 function savedBar(){
   const s=$("saved");let g=null;try{g=JSON.parse(localStorage.getItem(GKEY)||"null")}catch(e){}
   if(!g||!g.state){let d=null;try{d=JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){}
-    if(d&&d.state){s.hidden=false;s.innerHTML=`<p>Your districts in ${esc(d.stateName||d.state)} are saved from Issues. To list every government that represents you, enter your address once here. Only the districts are kept.</p>`}else s.hidden=true;
-    return null}
+    if(!(d&&d.state)){s.hidden=true;return null}
+    // Districts saved from the home page or Issues, without the fuller record this page keeps: show what we can.
+    s.hidden=false;s.innerHTML=`<p><b>Using what's saved on this device</b> (${esc(d.stateName||d.state)}${d.cd?`, ${d.cd==="at-large"?"at-large district":"congressional district "+esc(d.cd)}`:", state only"}). ${d.cd?"":"Enter your address once to see your exact districts and every government that represents you. "}Your address itself is never saved.</p>
+      <div class="actions"><button type="button" class="btn ghost" id="change">${d.cd?"Use a different address":"Add my address"}</button></div>`;
+    $("change").onclick=()=>{s.hidden=true;$("out").hidden=true;$("addr").focus()};
+    return {partial:!d.cd,state:d.state,stateName:d.stateName,cd:d.cd||null,sldl:d.sldl||null,sldu:d.sldu||null,county:d.countyId?{geoid:d.countyId,name:d.county}:null,place:d.placeId?{geoid:d.placeId,name:d.place}:null,township:d.townId?{geoid:d.townId,name:d.town}:null,school:null,secondary:null};}
   s.hidden=false;s.innerHTML=`<p><b>Using your saved districts</b> (${esc(g.stateName||g.state)}${g.cd?`, ${g.cd==="at-large"?"at-large district":"congressional district "+esc(g.cd)}`:""}). Your address itself was never saved.</p>
     <div class="actions"><button type="button" class="btn ghost" id="change">Use a different address</button></div>`;
   $("change").onclick=()=>{s.hidden=true;$("out").hidden=true;$("addr").focus()};

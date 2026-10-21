@@ -8,7 +8,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const box=document.getElementById("where");if(!box)return;
 const $=id=>document.getElementById(id);
 let D=null;try{D=JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){}
-const save=d=>{try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){}};
+const save=d=>{try{localStorage.setItem(DKEY,JSON.stringify(d));if(!d.cd)localStorage.removeItem("civicaccord-geo")}catch(e){}};
 // State names come from the open registry; Puerto Rico is added because registry/states.json covers the 50 states and DC.
 let NAMES=null;
 async function names(){
@@ -49,7 +49,10 @@ async function ask(changing){
   const find=async()=>{const a=$("where-addr").value.trim();if(a.length<8){$("where-msg").textContent="Enter a full street address, including city and state.";return}
     if(!window.CA_REG){$("where-msg").textContent="The lookup didn't load. Try My representatives.";return}
     $("where-msg").textContent="Looking up your districts with the Census Bureau…";
-    try{const g=await CA_REG.lookup(a);D=CA_REG.districtsOf(g);save(D);$("where-msg").textContent="";known()}
+    try{const g=await CA_REG.lookup(a);D=CA_REG.districtsOf(g);save(D);
+      // The fuller record My representatives keeps, minus the matched address, so that page shows results on load.
+      const keep={...g};delete keep.matched;try{localStorage.setItem("civicaccord-geo",JSON.stringify(keep))}catch(e){}
+      $("where-msg").textContent="";known()}
     catch(e){$("where-msg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau. Try again in a moment, or choose your state above."}};
   $("where-find").onclick=find;$("where-addr").onkeydown=e=>{if(e.key==="Enter")find()};
   if(changing){$("where-keep").onclick=e=>{e.preventDefault();known()}}
