@@ -4,7 +4,7 @@ Civic Accord is an early, open-source example that uses sample data. No real vot
 
 ## Reporting a vulnerability
 
-Please report security problems privately through GitHub's private vulnerability reporting on this repository (Security tab, "Report a vulnerability"). Please don't open a public issue for a security problem. We aim to acknowledge reports within a week and to credit reporters who want credit.
+Private reporting through GitHub (Security tab, "Report a vulnerability") is being turned on. Until it is, please open an issue titled only "Security report", with no details, and a maintainer will contact you privately. Please don't post details of a security problem publicly. We aim to acknowledge reports within a week and to credit reporters who want credit.
 
 ## What the system is designed to guarantee
 
