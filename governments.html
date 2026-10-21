@@ -39,6 +39,7 @@
 .morenav summary::-webkit-details-marker{display:none}
 .morenav ul{position:absolute;right:0;top:calc(100% + 6px);z-index:60;list-style:none;margin:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:230px;display:grid}
 .morenav a.nl{display:flex;color:var(--ink)}
+#content:focus{outline:none}
 .footnav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem}.footnav a{color:inherit;display:inline-flex;align-items:center;min-height:44px}
 @media (max-width:700px){
   .sitenav .primary,.sitenav .secondary{display:none}
@@ -206,20 +207,20 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 </style>
 <a class="skip" href="#content">Skip to content</a>
 <nav class="sitenav" aria-label="Main"><a class="brandlink" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord</a><ul class="primary"><li><a class="nl" href="/">Home</a></li><li><a class="nl" href="/open.html">Issues</a></li><li><a class="nl" href="/governments.html" aria-current="page">My representatives</a></li><li><a class="nl" href="/following.html">Following</a></li></ul><ul class="secondary" aria-label="More"><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul><details class="morenav"><summary>More</summary><ul><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul></details></nav>
-<div class="wrap" id="content" tabindex="-1">
+<div class="wrap" id="content" tabindex="-1" role="main">
 <noscript><p class="note"><b>This page needs JavaScript</b> to look up your address and load live information. Turn it on in your browser settings, or use a library computer. All the data is also open on <a href="https://github.com/civic-accord/civic-accord">GitHub</a>.</p></noscript>
 
   <header>
     <div class="eyebrow" id="crumb">My representatives</div>
     <p class="meta" id="back" hidden></p>
     <h1>My representatives</h1>
-    <p class="lede">Every government that represents your address, from Congress to your school board: what each office does, how it's chosen, and how to contact it where we have that information.</p>
+    <p class="lede">The governments that represent your address, from Congress to your school board: what each office does, how it's chosen, and how to contact it where we have that information.</p>
   </header>
   <section class="panel" id="why" aria-labelledby="why-h">
     <h2 id="why-h">Why we ask for your address</h2>
     <ul class="plain">
       <li>Your address decides your districts: your U.S. House district, your state legislative districts, and your county, city or town, and school district. Those decide who represents you.</li>
-      <li>Your browser sends the address straight to the U.S. Census Bureau to find those districts. It never reaches Civic Accord, and it isn't saved.</li>
+      <li>Your browser sends the address straight to the U.S. Census Bureau to find those districts. It never reaches Civic Accord, and Civic Accord doesn't save it. (Your browser's own autofill may remember what you type.)</li>
       <li>Only the districts are kept, in this browser, so Issues and issue pages know which items are from your own governments. "Forget me on this device," at the bottom of every page, clears them.</li>
     </ul>
   </section>
@@ -238,6 +239,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
 <script src="/lib/registry.js"></script>
 <script src="/js/governments.js"></script>
 <nav class="tabbar" aria-label="Main, on phones"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Issues</a><a href="/governments.html" class="wide" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-5 8 5v10M9 20v-6h6v6M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>My representatives</a><a href="/following.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Following</a></nav>
+<script src="/lib/nav.js"></script>
 <script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>
 </body></html>

@@ -18,7 +18,10 @@ async function show(geo,fromSaved){
   const d=CA_REG.districtsOf(geo);
   let leg={legislators:[],errors:[]};try{leg=await CA_REG.stateLegislators(d)}catch(e){leg={legislators:[],errors:["Couldn't reach the legislator list."]}}
   const o=$("out");o.hidden=false;
-  const cong=[people.rep&&{...people.rep,title:geo.state==="DC"||geo.state==="PR"?"Delegate to the U.S. House":"U.S. Representative"},...(people.sen||[]).map(p=>({...p,title:"U.S. Senator"}))].filter(Boolean);
+  const houseTitle=geo.state==="PR"?"Resident Commissioner in the U.S. House":["DC","GU","VI","AS","MP"].includes(geo.state)?"Delegate to the U.S. House":"U.S. Representative";
+  const cong=[people.rep&&{...people.rep,title:houseTitle},...(people.sen||[]).map(p=>({...p,title:"U.S. Senator"}))].filter(Boolean);
+  // Nebraska's one-chamber legislature calls its members senators; D.C. has a council, not a state legislature.
+  const legTitle=p=>geo.state==="DC"?"D.C. Council member":geo.state==="NE"?"State Senator":"State "+p.title;
   o.innerHTML=`<div><div class="eyebrow">${geo.example?"Example address":fromSaved?"Your saved districts":"Your districts"}</div>
       <h2>${esc([geo.stateName||geo.state,geo.cdName].filter(Boolean).join(" · "))}</h2>
       <p class="meta">${[geo.sldl?"State House district "+geo.sldl:"",geo.sldu?"State Senate district "+geo.sldu:"",geo.county?geo.county.name:"",geo.place?geo.place.name:"",geo.township?geo.township.name:""].filter(Boolean).map(esc).join(" · ")}</p></div>
@@ -26,10 +29,10 @@ async function show(geo,fromSaved){
     <h3>Who holds these seats, and how to reach them</h3>
     <div class="tbl"><table class="cov"><tr><th>Level</th><th>Officeholders</th><th>Contact</th></tr>
       <tr><td>U.S. Congress</td><td>${cong.length?"Shown below":"Not found"}</td><td>${cong.length?"Websites, contact forms, phone":"Not found"}</td></tr>
-      <tr><td>State legislature</td><td>${leg.legislators.length?"Shown below":leg.errors.length?"Couldn't load right now":"Not found"}</td><td>${leg.legislators.length?"Email, phone, and websites where published":"—"}</td></tr>
+      <tr><td>${geo.state==="DC"?"D.C. Council":"State legislature"}</td><td>${leg.legislators.length?"Shown below":leg.errors.length?"Couldn't load right now":"Not found"}</td><td>${leg.legislators.length?"Email, phone, and websites where published":"—"}</td></tr>
       <tr><td>County, city or town, school board</td><td><b>Not covered yet</b></td><td><b>Not covered yet.</b> Check each government's own website.</td></tr></table></div>
     ${cong.length?`<ul class="people">${cong.map(p=>`<li><b>${esc(p.title)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:""}
-    ${leg.legislators.length?`<ul class="people">${leg.legislators.map(p=>`<li><b>State ${esc(p.title)}, district ${esc(p.district)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:leg.errors.length?`<p class="meta">${esc(leg.errors.join(" "))}</p>`:""}
+    ${leg.legislators.length?`<ul class="people">${leg.legislators.map(p=>`<li><b>${esc(legTitle(p))}, ${geo.state==="DC"?"":"district "}${esc(p.district)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:leg.errors.length?`<p class="meta">${esc(leg.errors.join(" "))}</p>`:""}
     <p class="meta">Members of Congress come from the public-domain congress-legislators data; state legislators from Open States, published nightly. Party is never shown. To write about a specific issue, open it from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>
 
     <h3>Every government that represents you</h3>
@@ -41,7 +44,9 @@ async function show(geo,fromSaved){
 
 function savedBar(){
   const s=$("saved");let g=null;try{g=JSON.parse(localStorage.getItem(GKEY)||"null")}catch(e){}
-  if(!g||!g.state){s.hidden=true;return null}
+  if(!g||!g.state){let d=null;try{d=JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){}
+    if(d&&d.state){s.hidden=false;s.innerHTML=`<p>Your districts in ${esc(d.stateName||d.state)} are saved from Issues. To list every government that represents you, enter your address once here. Only the districts are kept.</p>`}else s.hidden=true;
+    return null}
   s.hidden=false;s.innerHTML=`<p><b>Using your saved districts</b> (${esc(g.stateName||g.state)}${g.cd?`, ${g.cd==="at-large"?"at-large district":"congressional district "+esc(g.cd)}`:""}). Your address itself was never saved.</p>
     <div class="actions"><button type="button" class="btn ghost" id="change">Use a different address</button></div>`;
   $("change").onclick=()=>{s.hidden=true;$("out").hidden=true;$("addr").focus()};
@@ -57,7 +62,8 @@ $("go").onclick=async()=>{const a=$("addr").value.trim(),example=$("go").dataset
     // Keep only the districts and government names, never the address, and never for an example address.
     if(!example){const keep={...g};delete keep.matched;try{localStorage.setItem(GKEY,JSON.stringify(keep));localStorage.setItem(DKEY,JSON.stringify(CA_REG.districtsOf(g)))}catch(e){}
       $("msg").textContent="Found your districts. They're saved in this browser; your address isn't."}
-    savedBar();await show(example?{...g,example:true}:g,false);$("out").scrollIntoView({behavior:"smooth",block:"start"})}
+    if(example){$("saved").hidden=true;$("addr").value=""}else savedBar();
+    await show(example?{...g,example:true}:g,false);$("out").scrollIntoView({behavior:"smooth",block:"start"})}
   catch(e){$("msg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau's geocoder. Try again in a moment."}};
 $("addr").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
 (async()=>{try{const idx=await (await fetch("packs/index.json")).json();OPEN=[...new Set(idx.packs.map(p=>p.jurisdiction))]}catch(e){}
