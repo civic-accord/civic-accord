@@ -191,6 +191,17 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .item .acts button[aria-pressed="true"]{background:var(--koa-soft);border-color:var(--koa)}
 .due{font-size:.8rem;font-weight:700}
 .due.soon{color:var(--lehua)}
+.topics{display:grid;gap:10px}
+.topics h2{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:44px}
+.chips button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface);font-weight:700}
+.chips button:disabled{opacity:.55;cursor:not-allowed}
+.chips button .n{font-size:.78rem;opacity:.8;margin-left:4px}
+.topics .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.linkbtn{font:inherit;font-size:.9rem;background:none;border:0;color:var(--koa);text-decoration:underline;cursor:pointer;padding:8px 4px;min-height:44px}
+.why{font-size:.8rem;color:var(--koa);font-weight:700}
+.soonbar{border-left:4px solid var(--lehua);background:var(--lehua-soft);border-radius:8px;padding:8px 12px;font-size:.9rem}
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .filters input,.filters select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
 .filters input{flex:1;min-width:min(100%,220px)}
@@ -214,14 +225,16 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p class="note" id="where"></p>
   </header>
   <section class="panel me" id="me"></section>
-  <section class="panel">
+  <section class="panel topics" id="topics" aria-labelledby="th"></section>
+  <section class="panel" id="feed">
     <div class="filters">
-      <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search</label><input id="q" type="search" placeholder="Search, for example: water, schools, farms">
+      <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search</label><input id="q" type="search" placeholder="Search everything, for example: water, schools">
       <label for="lvl" style="position:absolute;left:-9999px">Show</label><select id="lvl"><option value="">All governments</option><option value="federal">Federal</option><option value="state">State</option></select>
       <label for="kind" style="position:absolute;left:-9999px">Type</label><select id="kind"><option value="">All types</option></select>
       <label for="st" style="position:absolute;left:-9999px">State</label><select id="st"></select>
     </div>
     <p class="meta" id="count" aria-live="polite">Loading what's open…</p>
+    <p class="soonbar" id="soon" hidden></p>
     <div class="list" id="list"></div>
     <div class="cta" style="display:flex;justify-content:center"><button class="btn ghost" id="more" type="button" hidden>Show more</button></div>
   </section>
@@ -235,6 +248,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span id="fetched"></span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
 <script src="lib/registry.js"></script>
+<script src="lib/topics.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -242,7 +256,7 @@ const safe=u=>/^https:\/\//.test(u||"")?u:null;
 const STATES=["","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
 let VER=null;try{VER=JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){}
 const REKEY="civicaccord-reactions";let REACT={};try{REACT=JSON.parse(localStorage.getItem(REKEY)||"{}")}catch(e){}
-let DATA=null, shown=20, OPENID=null; const COMMENT={};
+let DATA=null, shown=10, OPENID=null; const COMMENT={};
 window.__openMail=window.__openMail||(u=>{location.href=u});
 const DKEY="civicaccord-districts", SKEY="civicaccord-signer";
 let DIST=(VER&&VER.districts&&VER.districts.state)?VER.districts:(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){return null}})();
@@ -317,8 +331,44 @@ function composeBox(it){
 }
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
 const daysLeft=d=>{if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/864e5)};
+
+// Topics: a quick pick of what you care about. Saved only on this device. Matching uses published word lists (lib/topics.js), not AI.
+const TKEY="civicaccord-topics", TMAX=5, TOP=window.CA_TOPICS||{list:[],match:()=>[]};
+let TP=(()=>{try{return JSON.parse(localStorage.getItem(TKEY)||"null")}catch(e){return null}})()||{picked:[],skipped:false};
+let EDIT=!TP.picked.length&&!TP.skipped, DRAFT=[...TP.picked], VIEW=TP.picked.length?"mine":"all";
+const MATCH={};
+const topicsOf=it=>MATCH[it.id]||(MATCH[it.id]=TOP.match(it));
+const tlabel=id=>(TOP.list.find(t=>t.id===id)||{}).label||id;
+function saveTP(){try{localStorage.setItem(TKEY,JSON.stringify(TP))}catch(e){}}
+function tcount(id){return DATA?(DATA.items||[]).filter(it=>topicsOf(it).some(m=>m.id===id)).length:null}
+function renderTopics(){
+  const box=$("topics");
+  if(!TOP.list.length){box.hidden=true;VIEW="all";return}
+  if(EDIT){
+    box.innerHTML=`<h2 id="th">What do you care about?</h2>
+      <p class="meta" style="margin:0">Pick up to ${TMAX} topics and we'll show what's open on those first, soonest deadlines at the top. It takes a few seconds. Your picks stay on this device.</p>
+      <div class="chips" role="group" aria-label="Topics">${TOP.list.map(t=>{const on=DRAFT.includes(t.id),n=tcount(t.id);
+        return `<button type="button" data-t="${t.id}" aria-pressed="${on}" ${!on&&DRAFT.length>=TMAX?"disabled":""}>${esc(t.label)}${n!==null?`<span class="n">${n}</span>`:""}</button>`}).join("")}</div>
+      <p class="meta" id="tn" aria-live="polite" style="margin:0">${DRAFT.length} of ${TMAX} picked.${tcount("health")!==null?" Numbers show how many items are open on each topic right now.":""}</p>
+      <div class="row"><button class="btn" id="tsave" type="button" ${DRAFT.length?"":"disabled"}>Show my issues</button><button class="linkbtn" id="tskip" type="button">Skip and show everything</button></div>`;
+    box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const id=b.dataset.t;DRAFT=DRAFT.includes(id)?DRAFT.filter(x=>x!==id):DRAFT.length<TMAX?[...DRAFT,id]:DRAFT;renderTopics();const nb=box.querySelector(`[data-t="${id}"]`);if(nb)nb.focus()});
+    $("tsave").onclick=()=>{TP={picked:[...DRAFT],skipped:false};saveTP();EDIT=false;VIEW="mine";shown=10;renderTopics();if(DATA)render();$("feed").scrollIntoView({behavior:"smooth",block:"start"})};
+    $("tskip").onclick=()=>{TP={picked:TP.picked,skipped:true};saveTP();EDIT=false;VIEW=TP.picked.length?VIEW:"all";shown=10;renderTopics();if(DATA)render()};
+    return;
+  }
+  const opts=TP.picked.length?[["mine","All my topics"],...TP.picked.map(id=>[id,tlabel(id)]),["all","Everything"]]:[["all","Everything"]];
+  box.innerHTML=`<div class="row" style="justify-content:space-between"><h2 id="th" style="font-size:1.05rem">${TP.picked.length?"Your topics":"Showing everything"}</h2>
+      <button class="linkbtn" id="tedit" type="button">${TP.picked.length?"Change topics":"Pick topics to narrow this down"}</button></div>
+    <div class="chips" role="group" aria-label="Show">${opts.map(([v,l])=>{const n=v==="all"?(DATA?DATA.items.length:null):v==="mine"?(DATA?mineItems().length:null):tcount(v);
+      return `<button type="button" data-v="${v}" aria-pressed="${VIEW===v}">${esc(l)}${n!==null?`<span class="n">${n}</span>`:""}</button>`}).join("")}</div>`;
+  box.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;shown=10;renderTopics();render()});
+  $("tedit").onclick=()=>{EDIT=true;DRAFT=[...TP.picked];renderTopics();const f=$("topics").querySelector("[data-t]");if(f)f.focus()};
+}
+function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
 function canRespond(it){if(it.level==="federal")return true;return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
+function whyLine(it){const ms=topicsOf(it);if(!ms.length)return "";const mine=ms.filter(m=>TP.picked.includes(m.id)),show=mine.length?mine:ms;
+  return `<span class="why">${mine.length?"Your topic":"Topic"}: ${show.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`}
 function card(it){
   const dl=daysLeft(it.closes), r=REACT[it.id];
   const start=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
@@ -326,6 +376,7 @@ function card(it){
     <span class="eyebrow">${esc(it.kind)} · ${esc(it.source)}</span>
     <h3>${esc(it.title)}</h3>
     <span class="who">${esc(it.who)}${it.opened?` · opened ${fmt(it.opened)}`:""}</span>
+    ${whyLine(it)}
     ${it.closes?`<span class="due ${dl!==null&&dl<=7?"soon":""}">Comments close ${fmt(it.closes)}${dl!==null?` · ${dl<=0?"closes today":dl===1?"1 day left":dl+" days left"}`:""}</span>`:""}
     ${it.summary?`<p class="meta">${esc(it.summary.length>420?it.summary.slice(0,420)+"…":it.summary)}</p>`:""}
     <div class="acts">
@@ -340,11 +391,18 @@ function card(it){
   </article>`;
 }
 function render(){
-  const q=$("q").value.trim().toLowerCase(), lvl=$("lvl").value, kd=$("kind").value;
-  const items=(DATA.items||[]).filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
+  const qraw=$("q").value.trim(), q=qraw.toLowerCase(), lvl=$("lvl").value, kd=$("kind").value;
+  const base=q?(DATA.items||[]):VIEW==="mine"&&TP.picked.length?mineItems():VIEW!=="all"&&VIEW!=="mine"?(DATA.items||[]).filter(it=>topicsOf(it).some(m=>m.id===VIEW)):(DATA.items||[]);
+  const items=base.filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
     .sort((a,b)=>(a.closes||"9999").localeCompare(b.closes||"9999"));
-  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${q?` matching "${$("q").value.trim()}"`:""}. ${kd||!items.some(i=>!i.closes)?"":" Comment deadlines first, then bills."}`;
-  $("list").innerHTML=items.slice(0,shown).map(card).join("")||`<p class="meta">Nothing matches. Try another word.</p>`;
+  const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
+  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}. ${items.some(i=>i.closes)?"Soonest comment deadlines first, then bills.":""}`;
+  const wk=items.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7});
+  $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
+  const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:`<p class="meta">Nothing matches. Try another word.</p>`;
+  $("list").innerHTML=items.slice(0,shown).map(card).join("")||empty;
+  const sa=$("seeall");if(sa)sa.onclick=()=>{VIEW="all";shown=10;renderTopics();render()};
+  $("more").textContent=`Show ${Math.min(10,items.length-shown)} more (${items.length-shown} left)`;
   $("more").hidden=items.length<=shown;
   document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const id=b.dataset.r;REACT[id]=REACT[id]===b.dataset.v?undefined:b.dataset.v;OPENID=REACT[id]?id:null;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}const y=window.scrollY;render();window.scrollTo({top:y})});
   const it=OPENID&&DATA.items.find(x=>x.id===OPENID);
@@ -371,13 +429,14 @@ async function load(){
   $("fetched").textContent="Fetched "+new Date(DATA.fetchedAt).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"});
   const kinds=[...new Set(DATA.items.map(i=>i.kind))], cur=$("kind").value;
   $("kind").innerHTML=`<option value="">All types</option>`+kinds.map(k=>`<option ${k===cur?"selected":""}>${esc(k)}</option>`).join("");
-  shown=20;render();
+  shown=10;renderTopics();render();
 }
 renderMe();loadReps();
 $("st").innerHTML=STATES.map(s=>`<option value="${s}">${s?s:"Choose your state"}</option>`).join("");
 const vs=DIST&&DIST.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
 $("where").innerHTML=vs?`Showing federal items and items for your state. Reactions here are a prototype and stay on this device.`:`Showing federal items. Choose your state, or <a href="verify.html" style="color:var(--koa)">verify</a> to see your own governments. Reactions here are a prototype and stay on this device.`;
-$("q").oninput=()=>{shown=20;render()};$("lvl").onchange=()=>{shown=20;render()};$("kind").onchange=()=>{shown=20;render()};$("st").onchange=load;$("more").onclick=()=>{shown+=20;render()};
+$("q").oninput=()=>{shown=10;render()};$("lvl").onchange=()=>{shown=10;render()};$("kind").onchange=()=>{shown=10;render()};$("st").onchange=load;$("more").onclick=()=>{const n=shown;shown+=10;render();const c=$("list").children[n];if(c){c.setAttribute("tabindex","-1");c.focus({preventScroll:true})}};
+renderTopics();
 load();
 </script>
 <nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>

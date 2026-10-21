@@ -1,8 +1,8 @@
 // Civic Accord service worker. Pages and files work offline from the last visit.
 // Live data (/api/*) is never served from this cache, so no one sees stale items as if they were current.
-const VERSION = "ca-v2";
+const VERSION = "ca-v3";
 const SHELL = ["/", "/index.html", "/how.html", "/open.html", "/ask.html", "/governments.html", "/verify.html", "/app.html", "/inbox.html", "/new.html", "/learn.html",
-  "/lib/registry.js", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png", "/icons/favicon-32.png",
+  "/lib/registry.js", "/lib/topics.js", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png", "/icons/favicon-32.png",
   "/registry/us.json", "/registry/states.json", "/packs/index.json"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
