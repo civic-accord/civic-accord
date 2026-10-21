@@ -4,7 +4,11 @@ Civic Accord lists a local government's public meetings on Issues when its agend
 
 ## What you need
 
-1. **The government uses Legistar.** Open its meeting calendar. If the address looks like `https://<name>.legistar.com/Calendar.aspx`, it uses Legistar and `<name>` is the client. (Readers for other agenda systems are planned; see the coverage plan in the review doc.)
+1. **Which agenda system the government uses.** Open its meeting calendar or agendas page and look at the address:
+   - `https://<name>.legistar.com/Calendar.aspx`: **Legistar**; `<name>` is the `client`.
+   - `https://<name>.granicus.com/ViewPublisher.php?view_id=<N>`: **Granicus**; the host is `<name>.granicus.com` and `viewId` is `<N>`. Civic Accord reads only the agenda feed the system publishes for subscribers.
+   - `https://<the government's own site>/AgendaCenter`: **CivicPlus** (also called CivicEngage); the `host` is the site's host, for example `nevadamo.gov`.
+   Readers for other systems (BoardDocs, PrimeGov, eScribe) are planned; see the coverage plan in the review doc.
 2. **Its Census ID.** Only residents of that government can respond to its meetings, so each entry carries the Census GEOID:
    - county: the 5-digit county code (state + county), for example `15009` for Maui County, Hawaiʻi;
    - city or village: the 7-digit place code (state + place), for example `0653000` for Oakland, California;
@@ -31,6 +35,8 @@ Add this to the `feeds` list in `registry/local-feeds.json`, with your governmen
  "source": "https://www.sanjoseca.gov/your-government/departments-offices/city-clerk"
 }
 ```
+
+For Granicus, replace `"client"` with `"host": "eagle-id.granicus.com", "viewId": "10"` and set `"system": "granicus"`. For CivicPlus, replace `"client"` with `"host": "nevadamo.gov"` and set `"system": "civicplus"`.
 
 Fields: `id` is the state code, a dash, and a short lowercase name. `level` is `county`, `city`, `town`, `township`, or `school`. Use `countyId` for a county, `placeId` for a city or village, `townId` for a town or township. `source` is a page on the government's own site that points to its agenda system, so a reviewer can confirm the client is really theirs.
 

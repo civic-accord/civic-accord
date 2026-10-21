@@ -4,16 +4,16 @@
 // environment variables (CONGRESS_API_KEY, OPENSTATES_API_KEY). Responses are cached at the edge and refreshed every few hours.
 const FR = "https://www.federalregister.gov/api/v1/documents.json";
 
-const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get } = require("./_shared");
+const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get, getText } = require("./_shared");
 const { STATE_NAMES, stateBills } = require("./_states");
 const { CONGRESS_ENDED } = require("./_final");
 const store = require("./_store");
-const { localMeetings: readLocal, LOCAL_EVERY } = require("./_local");
+const { localMeetings: readLocal, LOCAL_EVERY, SYSTEMS: LOCAL_SYSTEMS } = require("./_local");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
 const LOCAL = require("../registry/local-feeds.json").feeds;
-const localMeetings = feed => readLocal(feed, getJSON);
+const localMeetings = feed => readLocal(feed, getJSON, getText);
 const https = u => { const v = String(u || "").replace(/^http:\/\//i, "https://"); return /^https:\/\/[^\s"<>]+$/.test(v) ? v : null; };
 
 async function federalRules() {
@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
   // Local meetings come from the scheduled download (api/refresh.js) when a saved-copy store is connected, so adding
   // more governments never slows a visit. A feed not downloaded yet is fetched live, as before.
   const localTimes = [];
-  for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
+  for (const feed of LOCAL.filter(f => st && f.state === st && LOCAL_SYSTEMS.includes(f.system))) {
     const meta = {};
     await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, async () => {
       if (store.on()) {
