@@ -98,11 +98,16 @@ module.exports = async (req, res) => {
   if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)), "congress");
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    // With a saved-copy store connected, state lists come only from the scheduled download (api/refresh.js).
-    // Visits never call Open States for them, however many people visit at once.
+    // With a saved-copy store connected, state lists come from the scheduled download (api/refresh.js). Visits call
+    // Open States for a list only if it hasn't been downloaded yet or the store can't be read, and then only within
+    // the shared limit.
     if (process.env.OPENSTATES_API_KEY && store.on()) { const meta = {}; await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => {
-      const r = await memo("saved-st-" + st, 5 * 60e3, () => store.read(`states/${st}.json`));
-      if (!r) { out.quiet = `The ${STATE_NAMES[st] === "District of Columbia" ? "D.C. Council" : STATE_NAMES[st] + " legislature"} list hasn't been downloaded yet. Lists are downloaded on a schedule, so check back in a few hours.`; out.shortLife = true; return []; }
+      const r = await memo("saved-st-" + st, 5 * 60e3, () => store.read(`states/${st}.json`)).catch(() => null);
+      // Not downloaded yet (for example, right after the store is connected): fetch it now, taking turns from the same
+      // shared limit as everything else, and remember it in this copy for 6 hours.
+      if (!r) { const live = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o, (u, h) => get(u, h, LIMITS, "items")); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; });
+        meta.at = asOf("st-" + st) ? new Date(asOf("st-" + st)).toISOString() : null; meta.stale = isStale("st-" + st);
+        if (live.quiet) out.quiet = live.quiet; if (live.partial) out.partial = live.partial; out.shortLife = true; return live.items; }
       const d = r.data, age = Date.now() - Date.parse(d.at);
       // A list more than 36 hours old isn't shown: bills on it may have been signed or vetoed since.
       if (!(age <= 36 * 3600e3)) { out.quiet = "This list is out of date, so it isn't shown. It's being downloaded again; check back in a few hours."; out.shortLife = true; return []; }
