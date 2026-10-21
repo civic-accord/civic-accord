@@ -20,15 +20,17 @@ function shareBar(el){
 shareBar($("share"));
 let GEO=null, OFFICES=[];
 const STANDARDS=["Only verified voters take part: one voter, one voice.","Votes are counted by simple code anyone can read and re-run. Each person gets a private receipt that shows their vote is included, designed so it can't reveal how they voted.","AI may summarize and draft, but never counts votes or decides anything.","Every summary links to the votes behind it, and disagreements are shown, not hidden.","Costs are shown with how they were estimated.","The office is asked to answer publicly, with its reasons."];
-function letter(o,name,town){
+function letter(o,name,town,why){
   return `Dear ${o.salutation},
 
 I'm a constituent${GEO&&o.districtText?` in ${o.districtText}`:""}. I'm writing to ask your office to offer residents a public way to talk through issues together and send you proposals. Anyone should be able to check the results, and your office would answer in public.
-
+${why?"\n"+why+"\n":""}
 An early example, using sample data, is at civicaccord.org. It isn't ready for real use yet, but it shows what's possible. It is nonpartisan, and anyone can read its code. Your office could adopt a tool like it, or any tool that meets these standards:
 ${STANDARDS.map(x=>"- "+x).join("\n")}
 
-Would your office be willing to pilot a tool like this, or support making one available to residents?
+Would your office be willing to try a tool like this for hearing from constituents? I'm not asking you to support any bill, law, or spending. This is only about how your office hears from residents.
+
+I started from a suggested message at civicaccord.org and made it my own.
 
 Thank you for your time.
 
@@ -61,6 +63,9 @@ async function find(){
   $("s3").hidden=false;
   $("s3").innerHTML=`<div><div class="eyebrow">Step 3</div><h2>Your message</h2></div>
    <p>Edit anything you like. It's your message.</p>
+   <label for="why" class="meta"><b>In your own words (recommended):</b> why would this help you or your community? One or two sentences.</label>
+   <textarea id="why" rows="3" maxlength="600" placeholder="For example, a decision that affected your neighborhood, or a time you wished you could weigh in."></textarea>
+   <p class="meta">Offices get many identical messages and often count them as one. A sentence in your own words makes yours count. The message also says it started from a suggestion here, so it's honest about where it came from.</p>
    <div class="two"><div class="addr2"><label for="nm" class="meta">Your name</label><input id="nm" autocomplete="name"></div><div class="addr2"><label for="tw" class="meta">Your town (optional)</label><input id="tw" autocomplete="address-level2"></div></div>
    <label for="lt" class="meta">Message</label><textarea class="letter" id="lt" rows="16"></textarea>
    <h3>Send it to each office</h3>
@@ -72,10 +77,10 @@ async function find(){
      ${o.phone?`<a href="tel:${esc(o.phone.replace(/[^0-9+]/g,""))}">Call ${esc(o.phone)}</a>`:""}
      <span class="toast" id="cm-${i}" aria-live="polite"></span></div></div>`).join("")}
    <p class="meta">Civic Accord never sends anything for you and keeps no copy of your message. Offices may reply to you directly.</p>`;
-    $("lt").value=letter({salutation:"[Office]",districtText:null},"","");
+    $("lt").value=letter({salutation:"[Office]",districtText:null},"","","");
   let edited=false;$("lt").oninput=()=>edited=true;
-  const regen=()=>{if(!edited)$("lt").value=letter({salutation:"[Office]",districtText:null},$("nm").value.trim(),$("tw").value.trim())};
-  $("nm").oninput=regen;$("tw").oninput=regen;
+  const regen=()=>{if(!edited)$("lt").value=letter({salutation:"[Office]",districtText:null},$("nm").value.trim(),$("tw").value.trim(),$("why").value.trim())};
+  $("nm").oninput=regen;$("tw").oninput=regen;$("why").oninput=regen;
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const o=OFFICES[+b.dataset.copy];
     const txt=$("lt").value.replace("Dear [Office],",`Dear ${o.salutation},`).replace("I'm a constituent.",o.districtText?`I'm a constituent in ${o.districtText}.`:"I'm a constituent.");
     const m=$("cm-"+b.dataset.copy);
