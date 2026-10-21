@@ -26,6 +26,14 @@
   .btn,button,select,input[type=text],input[type=search]{min-height:44px}
 }
 </style>
+<style>
+.quickpick{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.quickpick h2{font-size:1.2rem;margin:0}
+.qchips{display:flex;flex-wrap:wrap;gap:8px}
+.qchips a{font-size:.95rem;border:1px solid var(--koa);color:var(--koa);background:var(--surface);border-radius:999px;padding:9px 16px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;font-weight:700}
+.qchips a:hover{background:var(--koa-soft)}
+.qchips a:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+</style>
 </head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
@@ -187,6 +195,11 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <h1>A new relationship with your government</h1>
     <p class="lede">Imagine talking an issue through with your neighbors. You see where you actually agree and what each choice would cost. Then you send it to your representatives, who are asked to answer you in public. Civic Accord is a free, open example of how that could work, using tools that already exist.</p>
     <div class="cta"><a class="btn" href="open.html">See what's open for public input now</a><a class="btn ghost" href="ask.html">Ask your representatives for this</a><a class="btn ghost" href="app.html">Try the example</a><a class="btn ghost" href="governments.html">Find everyone who represents you</a></div>
+    <div class="quickpick" id="quickpick" hidden>
+      <h2 id="qph">What do you care about?</h2>
+      <p class="meta">Tap one to see what's open on it right now. You can add more topics on the next page.</p>
+      <div class="qchips" role="group" aria-labelledby="qph"></div>
+    </div>
     <p class="note"><b>What's live and what's a sample.</b> The lookup, Open Now, and writing to your representatives use live, official information. The deliberation tools use sample votes to show how they would work. Before real deliberations, Civic Accord needs a neutral host, legal review in each state, and independent security audits.</p>
   </header>
 
@@ -305,6 +318,14 @@ function shareBar(el){
   el.querySelector("#sh-copy").onclick=()=>{const m=el.querySelector("#sh-msg");try{navigator.clipboard.writeText(SHARE_URL).then(()=>m.textContent="Link copied.",()=>m.textContent=SHARE_URL)}catch(e){m.textContent=SHARE_URL}};
 }
 shareBar(document.getElementById("share"));</script>
+<script src="lib/topics.js"></script>
+<script>
+(function(){const T=window.CA_TOPICS;if(!T)return;const box=document.getElementById("quickpick");
+  const pick=["health","education","housing","economy","environment","agriculture","safety","tech","veterans","families"];
+  box.querySelector(".qchips").innerHTML=T.list.filter(t=>pick.includes(t.id)).map(t=>`<a href="open.html" data-q="${t.id}">${t.label}</a>`).join("")+`<a href="open.html">Something else</a>`;
+  box.querySelectorAll("[data-q]").forEach(a=>a.addEventListener("click",()=>{try{localStorage.setItem("civicaccord-topics",JSON.stringify({picked:[a.dataset.q],skipped:false}))}catch(e){}}));
+  box.hidden=false})();
+</script>
 <nav class="appnav" aria-label="App menu"><a href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
 <script>
 let deferredInstall=null;const ib=document.getElementById("installbtn");
