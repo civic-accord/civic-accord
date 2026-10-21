@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
       if (!r) { out.quiet = `The ${STATE_NAMES[st] === "District of Columbia" ? "D.C. Council" : STATE_NAMES[st] + " legislature"} list hasn't been downloaded yet. Lists are downloaded on a schedule, so check back in a few hours.`; out.shortLife = true; return []; }
       const d = r.data, age = Date.now() - Date.parse(d.at);
       // A list more than 36 hours old isn't shown: bills on it may have been signed or vetoed since.
-      if (!(age <= 36 * 3600e3)) throw new Error("saved list too old");
+      if (!(age <= 36 * 3600e3)) { out.quiet = "This list is out of date, so it isn't shown. It's being downloaded again; check back in a few hours."; out.shortLife = true; return []; }
       meta.at = d.at;
       // Lists in session are refreshed every few hours; others about daily. Older than that means downloads are behind.
       const staleIn = (d.items.length ? 12 : 30) * 3600e3 - age;

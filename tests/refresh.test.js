@@ -39,9 +39,9 @@ test("lists due for download: never downloaded first, then oldest; in session ev
     HI: { at: now - 10 * h, inSession: false },
     ID: { at: now - 21 * h, inSession: false },
     PA: { at: now - 5 * h, inSession: true, errAt: now - 10 * 60e3 },
-    NE: { at: now - 4 * h, inSession: false, nextStart: "2026-10-22" }
+    NE: { at: now - 7 * h, inSession: false, nextStart: "2026-10-22" }
   };
-  assert.deepStrictEqual(due(index, now, ["CA", "NY", "HI", "ID", "PA", "TX", "NE"]), ["TX", "ID", "CA", "NE"]);
+  assert.deepStrictEqual(due(index, now, ["CA", "NY", "HI", "ID", "PA", "TX", "NE"]), ["TX", "ID", "NE", "CA"]);
 });
 
 test("pace: few legislatures in session get 3 pages every 3 hours; many get fewer pages, and every list still refreshes", () => {
@@ -53,6 +53,11 @@ test("pace: few legislatures in session get 3 pages every 3 hours; many get fewe
   assert.strictEqual(p.pages, 1);
   // Calls a day stay within the share: one session check per state plus in-session lists at this pace.
   assert.ok(52 + 46 * p.pages * (24 * 3600e3 / p.every) <= share + 1, JSON.stringify(p));
+  // Legislatures about to open are checked more often, and that comes out of the same share.
+  const now = Date.parse("2027-01-10T12:00:00Z"), opening = {};
+  codes.forEach((c, i) => opening[c] = i < 10 ? { inSession: true } : { inSession: false, nextStart: "2027-01-11" });
+  const q = pace(opening, codes, share, now);
+  assert.ok(52 + 42 * 3 + 10 * q.pages * (24 * 3600e3 / q.every) <= share + 1, JSON.stringify(q));
 });
 
 test("caps: downloads, listed bills, and unlisted addresses each have their own share, and together stay under the daily limit", () => {
