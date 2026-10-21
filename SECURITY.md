@@ -80,3 +80,24 @@ Goal: nothing can appear as an office's public response unless that office reall
 12. **No secrets by email or phone.** Civic Accord never asks an office for a password or code by email or phone; the office onboarding guide says so.
 
 To be reviewed in the independent security review, with each chamber's rules on official communications, and in each jurisdiction's legal review.
+
+## Moderation and pack review design (planned)
+
+Goal: keep deliberations usable and safe without letting anyone, including the host or the convener, tilt them. Rules are about conduct, never viewpoint.
+
+**Statements**
+1. Published rules (how.html#rules): no private information about people, threats or incitement, attacks on protected characteristics, advertising, fundraising or electioneering, impersonation of officials, off-topic content, or duplicates (merged with a note). Any position on the issue is allowed.
+2. Pre-moderation by trained human moderators, target within 24 hours. Moderators see statement text only, never the author's credential or identity (consistent with the vote record design: statements are published without author links, in batches).
+3. Public removal log per deliberation: rule cited, date, and the text unless it contains private information or a slur. Appeals go to a different moderator; outcomes are logged.
+4. A per-voter cap on statements per deliberation (number set per pack, with a default) to prevent flooding, including AI-generated flooding by verified voters.
+5. AI may flag possible duplicates or rule problems for a moderator. It never removes, edits, approves, or rewrites a statement.
+6. An independent reviewer audits a random sample of moderation decisions per deliberation for consistency and viewpoint neutrality, and publishes the results.
+
+**Pack review (anti-capture)**
+1. Two reviewers per pack, drawn at random from a host-run pool recruited through partners with differing viewpoints (no party labels are collected or shown).
+2. Conflict disclosure: reviewers and pack authors disclose personal or financial stakes in the issue; reviewers with a stake recuse. Disclosures are published with the pack (planned pack fields `disclosures` and `review`, see packs/SPEC.md).
+3. Checklist: every fact sourced; current law correct and cited; costs labeled with method; seed statements cover the main positions fairly, including each side's strongest case; jurisdiction rules cited.
+4. The review is published (reviewer roles, checklist results, requested changes, disclosures).
+5. A 7-day public objection period before opening; every objection gets a public answer.
+6. The convener has no special role in reviews and steps aside on issues where they have a stake (for example, housing and agriculture).
+

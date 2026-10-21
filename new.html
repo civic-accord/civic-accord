@@ -169,7 +169,7 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
     <div class="eyebrow">Civic Accord · pack builder</div>
     <h1>Start a Deliberation</h1>
     <p class="lede">Set up a deliberation on any issue, for any government. You fill in the facts, the statements people vote on, and what each option would cost. The tool checks the rules as you go, and you can preview it before it goes for review.</p>
-    <p class="note"><b>How it goes live.</b> Before real use, a second person will review every pack before residents see it. Your draft is saved only in this browser until you send it for review.</p>
+    <p class="note"><b>How it goes live.</b> Before real use, two reviewers drawn at random from a balanced pool will check every pack, the review is published, and anyone can object for 7 days before it opens (<a href="how.html#rules" style="color:inherit">how reviews work</a>). Your draft is saved only in this browser until you send it for review.</p>
     <div class="actions"><button class="btn ghost" id="example" type="button">Start from an example pack</button><button class="btn ghost" id="clear" type="button">Clear and start over</button><a href="app.html" class="btn ghost" style="text-decoration:none">← Back to the deliberation</a></div>
   </header>
 
@@ -349,7 +349,7 @@ function checks(){
   if(B.costs.length) add(B.costs.every(k=>k.stmt&&+k.cost>0&&(k.basis||"").trim().length>=20)?"ok":"warn","Every cost is linked, priced, and explained");
   else add("warn","No costs yet. Add them for any statement that would cost money");
   B.revs.forEach((r,i)=>{if(!r.stmt||!r.name.trim()||!r.note.trim()||(r.type==="fixed"&&!(+r.amount>0))) add("no",`Revenue ${i+1}: needs a statement, name, note${r.type==="fixed"?", and amount":""}`)});
-  add("warn","A second person must review the pack before it goes live");
+  add("warn","Two reviewers must check the pack, and it must be open to public objection for 7 days, before it goes live");
   return c;
 }
 function renderChecks(){const c=checks();$("checks").innerHTML=c.map(([s,t])=>`<div class="ck ${s}"><span class="i">${s==="ok"?"✓":s==="no"?"✗":"!"}</span><span>${esc(t)}</span></div>`).join("");

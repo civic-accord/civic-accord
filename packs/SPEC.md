@@ -73,6 +73,20 @@ The conversation is with an office (a seat), not a person. Each seat carries the
 
 The tool pauses office-initiated deliberation requests during that window. Residents can still deliberate, and offices can still respond.
 
+#### disclosures (planned)
+
+A list of `{ "who", "stake" }`: the pack author's and reviewers' personal or financial stakes in the issue, in plain words, or `"none"`. Published with the pack.
+
+#### review (planned)
+
+| Field | What it holds |
+|---|---|
+| `reviewers` | Two reviewers' roles (not names), drawn at random from the host's pool |
+| `checklist` | Each check (facts sourced, law correct, costs labeled, statements fair) with its result |
+| `changes` | What the reviewers asked to change, and what changed |
+| `objections` | The 7-day public objection period: dates, link, and each objection with its answer |
+| `status` | `needed`, `in review`, `objection period`, or `done` |
+
 #### legalReview
 
 Legal review happens in two layers. The **core** layer covers law that is the same everywhere (federal law, privacy, the host's obligations) and is reviewed once by the host's counsel. The **jurisdiction** layer covers each government's own rules and is reviewed by someone with local expertise, such as a law school clinic or bar pro bono program in that state.
