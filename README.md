@@ -65,6 +65,10 @@ The two-way conversation is between residents and an **office** (a seat), not an
 
 Early example, not yet run by a host. Live today: My representatives (address lookup through the U.S. Census Bureau), Issues (official federal, state, and some local sources), issue pages built from official text, Following and your own records of what you sent (kept in your browser), and messages you send yourself. Deliberations, votes, verification, and office responses are samples. Civic Accord never receives your address, messages, or views; like any website, the hosting service briefly logs requests. Your browser contacts outside services as described in How it works (civicaccord.org/how.html#privacy).
 
+## Governance
+
+Who holds the keys, what can't change without a process, and how the project moves to a neutral host: [GOVERNANCE.md](GOVERNANCE.md). Every governance decision is recorded in [GOVERNANCE-LOG.md](GOVERNANCE-LOG.md).
+
 ## License
 
 - **Code:** [GNU Affero General Public License 3.0](LICENSE). Anyone can read, use, and change it. If someone runs a changed copy as a public website, they must share their changed code too, so anyone can check what it does.
