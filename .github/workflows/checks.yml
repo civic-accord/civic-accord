@@ -1,0 +1,22 @@
+# Automatic checks on every change. Anyone can read what they check.
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Security policy allows the address-lookup frame's script
+        run: node scripts/check-csp.js
+      - name: Every script file is valid JavaScript
+        run: for f in js/*.js lib/*.js api/*.js sw.js scripts/*.js; do node --check "$f"; done
+      - name: No inline scripts in pages (except the lookup frame)
+        run: |
+          if grep -l '<script>' *.html | grep -v '^geo-frame.html$'; then echo "Inline script found"; exit 1; fi
+      - name: Data files are valid JSON
+        run: for f in vercel.json manifest.webmanifest packs/*.json registry/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" || exit 1; done
