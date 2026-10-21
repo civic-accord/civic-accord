@@ -331,7 +331,7 @@ function renderDetail(){
     <h3>What happened next</h3>
     <p class="meta">Report each step so residents can follow their proposal. When the office votes, explain the vote, especially where it differs from the district's common ground.</p>
     <ol class="timeline">
-      <li><b>Package received</b><span class="meta">From ${pt?pt.open.count:92} verified constituents and ${pn} panelists</span></li>
+      <li><b>Package received</b><span class="meta">From ${pt?pt.open.count:0} verified voters and ${pn} panelists</span></li>
       ${r?`<li><b>${esc(r.label)}</b><span class="meta">${esc(r.date)} · ${esc(r.reason)}</span></li>`:`<li class="wait"><b>No response yet</b><span class="meta">Shown publicly after 30 days</span></li>`}
       ${(DB.updates[rk(d.id)]||[]).map(u=>`<li><b>${esc(u.stage)}${u.bill?" · "+esc(u.bill):""}</b><span class="meta">${esc(u.date)} · ${esc(u.note)} · approved by ${esc(u.approver)}</span></li>`).join("")}
     </ol>

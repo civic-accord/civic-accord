@@ -82,25 +82,37 @@ async function stateBills(key, st, out) {
   // 2. Bills from the current session that are still moving.
   // A bill is finished only when its latest action says the bill itself ended. Words like "failed" or "tabled" alone
   // aren't enough: "Amendment failed" or "Motion tabled" happen on bills that are still moving.
-  const DONE = [
+  const BILL_END = [
     /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
     /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
-    /^(bill )?(failed|died|dead|withdrawn)\b/i, /^indefinitely postponed/i, /^(resolution )?adopted\b/i,
-    /\b(bill|measure) (failed|died|withdrawn|indefinitely postponed)\b/i, /\bdied in committee\b/i
+    /^indefinitely postponed/i, /\bdied in committee\b/i
   ];
-  const done = t => DONE.some(re => re.test(String(t || "").trim()));
+  // "Failed", "died", and "withdrawn" end a bill only when they're about the bill itself, not an amendment, a motion,
+  // or a step like "Withdrawn from committee", which moves a bill forward.
+  const ABOUT_PART = /amendment|motion|from committee|from the committee|report|reconsider/i;
+  const done = b => {
+    const t = String(b.latest_action_description || "").trim();
+    if (BILL_END.some(re => re.test(t))) return true;
+    if (/^(bill )?(failed|died|dead|withdrawn)\b/i.test(t) && !ABOUT_PART.test(t)) return true;
+    // "Adopted" ends a resolution, but on a bill it usually means a committee report or amendment was adopted.
+    const isResolution = (b.classification || []).some(c => /resolution/i.test(c));
+    if (isResolution && /^(resolution )?adopted\b/i.test(t) && !ABOUT_PART.test(t)) return true;
+    return false;
+  };
   const PAGES = 3; // Up to 60 most recently active bills. The free tier allows 10 requests a minute; results are cached 6 hours.
   let results = [], total = null;
   for (let page = 1; page <= PAGES; page++) {
     const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20", page: String(page) });
-    const j = await getJSON(`https://v3.openstates.org/bills?${q}`, H);
+    let j;
+    // If a later page is refused (for example, the source is busy), keep what we already have instead of failing.
+    try { j = await getJSON(`https://v3.openstates.org/bills?${q}`, H); } catch (e) { if (page === 1) throw e; break; }
     results.push(...(j.results || []));
     const pg = j.pagination || {};
     if (total === null && typeof pg.total_items === "number") total = pg.total_items;
     if (!pg.max_page || page >= pg.max_page) break;
   }
   const checked = results.length;
-  results = results.filter(b => !done(b.latest_action_description));
+  results = results.filter(b => !done(b));
   if (total !== null && total > checked) out.partial = `Showing bills from the ${checked} most recently active of ${total.toLocaleString("en-US")} in this session, leaving out ones that are finished. See every bill on the ${name} legislature's website.`;
   if (!results.length) out.quiet = `No bills are moving in the ${name} legislature right now. New bills appear here as soon as they're filed.`;
   return results.map(b => ({

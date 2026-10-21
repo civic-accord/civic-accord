@@ -13,7 +13,7 @@ Civic Accord is built for every U.S. jurisdiction: any address finds its federal
 ## How it works
 
 1. **Learn.** Everyone reads the same short, sourced briefing.
-2. **Weigh in.** Verified residents vote agree, disagree, or pass on short statements, and add their own.
+2. **Weigh in.** Verified voters vote agree, disagree, or pass on short statements, and add their own.
 3. **Common ground.** The tool groups people by how they vote and shows what every group supports and where they split.
 4. **Weigh costs.** Each option shows an estimated cost and what it accomplishes. Residents choose what to fund and how to pay.
 5. **Draft.** The chosen package becomes a plain-language proposal and starting bill text. Anything without common ground is flagged.
@@ -57,7 +57,7 @@ The two-way conversation is between residents and an **office** (a seat), not an
 - Public, append-only, tamper-evident vote record; anyone can recount.
 - Every AI summary links to the votes behind it.
 - Disagreements travel with the proposal.
-- One verified resident, one voice.
+- One verified voter, one voice.
 - Independent security audits.
 
 ## Status

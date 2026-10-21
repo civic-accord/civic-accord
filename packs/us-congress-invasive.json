@@ -452,7 +452,7 @@
    "panel": {
     "label": "Citizen panel",
     "count": 36,
-    "how": "Chosen by lottery from verified residents, balanced to match the district by age and area, and paid a stipend for their time."
+    "how": "Chosen by lottery from verified voters, balanced to match the district by age and area, and paid a stipend for their time."
    },
    "makeup": {
     "dimensions": [
@@ -460,7 +460,7 @@
       "name": "Age",
       "rows": [
        [
-        "16–34",
+        "18–34",
         17,
         28,
         27

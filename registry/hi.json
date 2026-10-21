@@ -187,7 +187,7 @@
  "eligibility": {
   "participants": "Only active registered voters in the district can vote or add statements. Everyone else, including people who are preregistered, can read everything, use Civic Accord Learn, comment through official channels, and write to their representatives.",
   "voterStatus": {
-   "method": "Match your name and the address you confirmed against the official voter list, so each voter record can be claimed by only one verified resident.",
+   "method": "Match your name and the address you confirmed against the official voter list, so each voter record can be claimed by only one verified voter.",
    "statuses": [
     "Registered voter",
     "Not registered"
