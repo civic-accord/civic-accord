@@ -76,7 +76,8 @@ async function stateBills(key, st, out) {
   const BILL_END = [
     /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
     /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
-    /^indefinitely postponed/i, /\bdied in committee\b/i
+    /^indefinitely postponed/i, /\bdied in committee\b/i,
+    /^signed chap/i, /^approval memo/i, /^veto memo/i  // New York: governor signed (chapter) or vetoed
   ];
   // "Failed", "died", and "withdrawn" end a bill only when they're about the bill itself, not an amendment, a motion,
   // or a step like "Withdrawn from committee", which moves a bill forward.

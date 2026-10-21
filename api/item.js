@@ -26,7 +26,8 @@ function partsFrom(text) {
   const blocks = String(text).replace(/\r/g, "").replace(/<li[^>]*>/gi, LI).split(/<\/p>|<br\s*\/?>|<\/li>|<\/h\d>|<\/ul>|<\/ol>|\n\s*\n/i)
     .map(b => { const li = b.includes(LI); return { li, t: decode(b.replace(/\u0001/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }; })
     .filter(b => b.t);
-  const seen = new Set(), parts = []; let lead = null, dropped = 0;
+  const seen = new Set(), parts = []; let lead = null, dropped = 0, pendingBg = [];
+  const addBg = (p, t) => { p.background = p.background ? p.background + "\n\n" + t : t; };
   const isHeading = t => /[A-Z]/.test(t) && t === t.toUpperCase();
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i], next = blocks[i + 1];
@@ -35,10 +36,17 @@ function partsFrom(text) {
     if (!b.li && next && next.li) { lead = b.t; continue; }
     if (isHeading(b.t) || b.t.length < 25 || seen.has(b.t)) { dropped++; continue; }
     seen.add(b.t);
-    // "As background, ..." explains the part before it; it's shown with that part, not voted on separately.
-    if (/^as background\b/i.test(b.t) && parts.length) { parts[parts.length - 1].background = b.t; continue; }
-    parts.push(b.li && lead ? { text: b.t, lead } : { text: b.t });
+    // "As background, ..." explains the part before it; "Existing law ..." (as in California's digest) explains the part after it.
+    // Both are shown with that part, not voted on separately.
+    if (/^as background\b/i.test(b.t) && parts.length) { addBg(parts[parts.length - 1], b.t); continue; }
+    if (/^(under )?(existing|current) law\b|^the [a-z ]*constitution (requires|provides)|^statutory provisions\b/i.test(b.t)) { pendingBg.push(b.t); continue; }
+    const part = b.li && lead ? { text: b.t, lead } : { text: b.t };
+    if (pendingBg.length) { pendingBg.forEach(t => addBg(part, t)); pendingBg = []; }
+    parts.push(part);
   }
+  if (pendingBg.length && parts.length) pendingBg.forEach(t => addBg(parts[parts.length - 1], t));
+  // If everything looked like background, nothing is hidden: show it all as parts.
+  else if (pendingBg.length) pendingBg.forEach(t => parts.push({ text: t }));
   return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS, dropped };
 }
 // Official links sometimes still use http://; upgrade them, then accept only https.
@@ -93,7 +101,7 @@ async function stateItem(id, key) {
   return {
     kind: `Bill in the ${name} legislature`, level: "state", jurisdiction: { name: `${name} Legislature`, state: name, stateCode }, title,
     status: b.latest_action_description ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
-    introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: (b.subject || [])[0] || null,
+    introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: null,
     sponsors: (b.sponsorships || []).filter(s => s.primary).map(s => ({ name: s.name, role: "Sponsor" })),
     summary: latest ? { by: `The summary posted by the ${name} legislature (collected by Open States)`, version: null, date: null } : null,
     parts, partsMore: more, partsDropped: dropped,
