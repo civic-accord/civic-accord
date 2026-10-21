@@ -59,7 +59,7 @@
    "branch": "Executive",
    "seat": "Governor and lieutenant governor, elected statewide; department heads appointed",
    "civic": "later",
-   "how": "State departments, such as the Department of Agriculture and Biosecurity, hold public hearings on proposed rules. A later version could submit common ground there."
+   "how": "State departments, such as the Department of Agriculture and Biosecurity, hold public hearings on proposed rules, and anyone can testify."
   },
   {
    "id": "st-oha",
@@ -85,7 +85,7 @@
    "branch": "Judicial",
    "seat": "Judges appointed by the governor from a judicial selection commission list",
    "civic": "never",
-   "how": "Courts decide cases. Civic Accord never sends anything to a court."
+   "how": "Courts decide cases. They don't take public comment or proposals."
   }
  ],
  "counties": {
