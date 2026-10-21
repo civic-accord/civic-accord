@@ -5,6 +5,15 @@
 const FR = "https://www.federalregister.gov/api/v1/documents.json";
 const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
+// Per-instance memory cache, so extra query strings can't force repeated calls to the sources.
+const MEMO = new Map();
+async function memo(key, ttlMs, fn) {
+  const hit = MEMO.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.value;
+  const value = await fn();
+  MEMO.set(key, { at: Date.now(), value });
+  return value;
+}
 async function getJSON(url, headers) {
   const r = await fetch(url, { headers: { "User-Agent": "CivicAccord/1.0 (+https://civicaccord.org)", ...(headers || {}) } });
   if (!r.ok) { let why = ""; try { why = (await r.text()).replace(/[A-Za-z0-9]{24,}/g, "[hidden]").slice(0, 160); } catch (e) {} throw new Error(`${r.status} from ${new URL(url).host}${why ? ": " + why : ""}`); }
@@ -76,11 +85,11 @@ module.exports = async (req, res) => {
   const st = String((req.query && req.query.state) || "").toUpperCase().slice(0, 2);
   const out = { fetchedAt: new Date().toISOString(), items: [], sources: [], notConnected: [], errors: [] };
   const run = async (label, url, fn) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length }); } catch (e) { out.errors.push(`${label}: ${e.message}`); } };
-  await run("Federal Register: proposed rules open for public comment", "https://www.federalregister.gov/developers/documentation/api/v1", federalRules);
-  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: recently active bills", "https://api.congress.gov/", () => congressBills(process.env.CONGRESS_API_KEY));
+  await run("Federal Register: proposed rules open for public comment", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules));
+  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: recently active bills", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)));
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", () => stateBills(process.env.OPENSTATES_API_KEY, st, out));
+    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet }; }); if (r.quiet) out.quiet = r.quiet; return r.items; });
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st] || st} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   res.setHeader("Content-Type", "application/json; charset=utf-8");

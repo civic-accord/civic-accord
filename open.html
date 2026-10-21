@@ -333,7 +333,9 @@ function render(){
     $("sn").oninput=keep;$("stw").oninput=keep;$("cm").oninput=()=>{COMMENT[it.id]=$("cm").value};
     const reps=recipients(it);
     document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal);
-      window.__openMail(`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`);
+      let url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
+      if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}
+      window.__openMail(url);
       $("rm-"+a.dataset.mail).textContent="Opening your email app…"});
     document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);const txt=`Subject: ${m.subject}\n\n${m.body}`;
       const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
