@@ -1,4 +1,5 @@
 const $=id=>document.getElementById(id);
+const cssId=id=>String(id).replace(/[^A-Za-z0-9_-]/g,"_");
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const safe=u=>/^https:\/\//.test(u||"")?u:null;
 const STATES=["","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
@@ -35,34 +36,16 @@ function renderMe(){
     catch(e){$("memsg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau. Try again in a moment."}};
   $("findme").onclick=go;$("addr").onkeydown=e=>{if(e.key==="Enter")go()};
 }
-const last=n=>String(n||"").trim().split(/\s+/).filter(x=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(x)).slice(-1)[0]||"";
-function recipients(it){
-  const out=[];
-  if(it.level==="federal"){
-    if(FED&&FED.rep)out.push({name:FED.rep.name,title:`U.S. Representative${DIST&&DIST.cd?`, ${DIST.state} ${DIST.cd==="at-large"?"at large":"district "+DIST.cd}`:""}`,sal:`Representative ${last(FED.rep.name)}`,url:FED.rep.contact||FED.rep.url,phone:FED.rep.phone});
-    (FED&&FED.sen||[]).forEach(p=>out.push({name:p.name,title:`U.S. Senator for ${DIST.stateName||DIST.state}`,sal:`Senator ${last(p.name)}`,url:p.contact||p.url,phone:p.phone}));
-  }else if(STATELEG){
-    STATELEG.legislators.forEach(p=>out.push({name:p.name,title:`${p.title}, district ${p.district}`,sal:`${p.title} ${last(p.name)}`,email:p.email,url:p.url,phone:p.phone}));
-  }
-  return out;
-}
-function message(it,sal){
-  const v=REACT[it.id], c=COMMENT[it.id]||"";
-  const stance=v==="Support"?"I support it, and I'd like you to support it too.":v==="Oppose"?"I oppose it, and I'd like you to oppose it too.":"I haven't decided yet. I'd like to know where you stand, and why.";
-  const d=DIST?` in ${DIST.stateName||DIST.state}${it.level==="federal"&&DIST.cd?`'s ${DIST.cd==="at-large"?"at-large":"district "+DIST.cd}`:it.level==="state"&&DIST.sldl?`, state house district ${DIST.sldl}`:""}`:"";
-  const subject=`${v==="Support"?"Please support":v==="Oppose"?"Please oppose":"Question about"}: ${it.title}`.slice(0,180);
-  const body=`Dear ${sal},
-
-I'm a constituent${d}. I'm writing about ${it.title}.
-
-${stance}${c.trim()?"\n\n"+c.trim():""}
-
-Official text: ${it.read||""}
-
-Thank you,
-${SIGNER.name||"[Your name]"}${SIGNER.town?"\n"+SIGNER.town:""}`;
-  return {subject,body};
-}
+// Recipients and the suggested message are shared with the issue page (lib/tell.js).
+const recipients=it=>CA_TELL.recipients(it,DIST,FED,STATELEG);
+const message=(it,sal)=>CA_TELL.message(it,sal,{stance:REACT[it.id],comment:COMMENT[it.id]||"",signer:SIGNER,dist:DIST});
+// What this person opened to send, per item, so "Yes, I sent it" can offer to keep a record of it. Only in memory
+// until they choose to save it.
+const PENDING={};let RECORDING=null;
+function pend(it,r,channel,m){const list=PENDING[it.id]=PENDING[it.id]||[];const x={officeId:r.officeId,name:r.name,title:r.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};
+  const i=list.findIndex(y=>y.officeId===r.officeId);if(i>=0)list[i]=x;else list.push(x)}
+function manualOffice(it){return it.kind==="Proposed rule"?{officeId:CA_OFFICES.agency(it.who||"agency"),name:it.who||"The agency",title:it.who||"The agency",channel:"official-comment",text:""}
+  :it.level==="local"?{officeId:it.localId?CA_OFFICES.local(it.localId):null,name:it.who,title:it.who,channel:"meeting-comment",text:""}:null}
 function composeBox(it){
   const v=REACT[it.id];
   const reps=DIST?recipients(it):[];
@@ -161,7 +144,7 @@ function nextHTML(it){
   if(now===2){
     const local=it.level==="local"&&!!safe(it.act), rule=(it.kind==="Proposed rule"||local)&&!!safe(it.act);
     return `<div class="next"><p>${local?`This is a public meeting of ${esc(it.who)}. Speaking up at or before the meeting is how it hears from residents. The meeting page and agenda say how to comment and by when.`:rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
-      ${p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
+      ${RECORDING===it.id?CA_TELL.recordPanel("rec-"+cssId(it.id),PENDING[it.id],manualOffice(it)):p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
       ${reacts}
       ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel||"Comment officially")}</a>${local?"":`<button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button>`}</div>`:""}
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
@@ -215,7 +198,10 @@ function render(){
   document.querySelectorAll("[data-read]").forEach(a=>a.addEventListener("click",()=>{const id=a.dataset.read;if(!(PROG[id]||{}).read){mark(id,"read");setTimeout(keep,50)}}));
   document.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>{mark(b.dataset.skip,"read");keep()});
   document.querySelectorAll("[data-spoke]").forEach(a=>a.addEventListener("click",()=>{mark(a.dataset.spoke,"started");setTimeout(keep,50)}));
-  document.querySelectorAll("[data-sent]").forEach(b=>b.onclick=()=>{mark(b.dataset.sent,"spoke");OPENID=null;keep()});
+  document.querySelectorAll("[data-sent]").forEach(b=>b.onclick=()=>{const id=b.dataset.sent;const it=DATA.items.find(x=>x.id===id);
+    if(!it||(!(PENDING[id]||[]).length&&!manualOffice(it))){mark(id,"spoke");OPENID=null;keep();return}
+    RECORDING=id;OPENID=null;keep();const f=document.querySelector(`#rec-${cssId(id)} textarea, #rec-${cssId(id)} button`);if(f)f.focus()});
+  if(RECORDING){const it=DATA.items.find(x=>x.id===RECORDING);if(it)CA_TELL.bindPanel("rec-"+cssId(it.id),{id:it.id,title:it.title,version:null},PENDING[it.id],manualOffice(it),()=>{mark(it.id,"spoke");delete PENDING[it.id];RECORDING=null;keep()})}
   document.querySelectorAll("[data-sk2]").forEach(b=>b.onclick=()=>{mark(b.dataset.sk2,"spoke");OPENID=null;keep()});
   document.querySelectorAll("[data-talk]").forEach(a=>a.addEventListener("click",()=>mark(a.dataset.talk,"talk")));
   document.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{OPENID=OPENID===b.dataset.tell?null:b.dataset.tell;keep()});
@@ -229,10 +215,10 @@ function render(){
     document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal);
       let url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
       if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}
-      window.__openMail(url);mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);
+      pend(it,r,"email",m);window.__openMail(url);mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);
       $("rm-"+a.dataset.mail).textContent="Opening your email app…"});
-    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
-    document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);const txt=`Subject: ${m.subject}\n\n${m.body}`;
+    document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const r=reps[+a.dataset.form];if(r)pend(it,r,"contact-form",message(it,r.sal));mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
+    document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);pend(it,r,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`;
       const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
   }
 }

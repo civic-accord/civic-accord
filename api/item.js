@@ -7,6 +7,8 @@ const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("
 const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
 const getJSON = (url, headers, use) => get(url, headers, LIMITS, use || "items");
 const store = require("./_store");
+const { stateEnded, congressEnded } = require("./_final");
+const MAX_ACTIONS = 20;
 // With a saved-copy store connected, a state bill that's in a downloaded list draws from the main share of the shared
 // Open States limit. Any other state bill address draws from a small separate share, so a bot trying random addresses
 // can't use up the day's calls for everyone else.
@@ -92,12 +94,26 @@ async function congressItem(m, key) {
     const list = (s.summaries || []).slice().sort((a, b) => String(b.updateDate || b.actionDate).localeCompare(String(a.updateDate || a.actionDate)));
     summary = list[0] || null;
   } catch (e) { /* no summary yet */ }
+  // The bill's official actions, newest first (one more call, remembered with the rest of this answer).
+  let actions = [];
+  try {
+    const a = await getJSON(`${base}/actions?${k}&limit=50`);
+    actions = (a.actions || []).map(x => ({ date: x.actionDate ? String(x.actionDate).slice(0, 10) : null, text: String(x.text || "").trim() }))
+      .filter(x => x.text).sort((x, y) => String(y.date).localeCompare(String(x.date)));
+    const seen = new Set(); actions = actions.filter(x => { const key = x.date + "|" + x.text; if (seen.has(key)) return false; seen.add(key); return true; }).slice(0, MAX_ACTIONS);
+  } catch (e) { actions = []; }
+  const latest = detail.latestAction || null, ltext = latest ? String(latest.text || "") : "";
+  const T = String(type).toUpperCase();
+  // Finished: law, vetoed, failed, a one-chamber resolution agreed to, or a concurrent resolution agreed to by the second chamber.
+  const ended = congressEnded(ltext) || (/^(HRES|SRES)$/.test(T) && /agreed to/i.test(ltext)) ||
+    (/^(HCONRES|SCONRES)$/.test(T) && /agreed to/i.test(ltext) && (T === "HCONRES" ? /Senate/i.test(ltext) : /House/i.test(ltext)) && !/message on/i.test(ltext));
   const page = `https://www.congress.gov/bill/${ordinal(congress)}-congress/${BILL_PATH[type]}/${number}`;
   const { parts, more, dropped, headings, repeats, shownOf } = partsFrom(summary && summary.text);
   const title = `${String(type).toUpperCase()} ${number}: ${detail.title || ""}`.trim();
   return {
     kind: "Bill in Congress", level: "federal", jurisdiction: { name: "U.S. Congress" }, title,
-    status: detail.latestAction ? { date: detail.latestAction.actionDate || null, text: detail.latestAction.text || "" } : null,
+    status: latest ? { date: latest.actionDate || null, text: ltext } : null,
+    final: ended ? { date: latest.actionDate || null, text: ltext } : null, actions, actionsBy: "Congress.gov",
     introduced: detail.introducedDate || null, topic: detail.policyArea && detail.policyArea.name || null,
     sponsors: (detail.sponsors || []).map(p => ({ name: noParty(p.fullName), role: "Sponsor" })),
     summary: summary ? { by: "Congressional Research Service (nonpartisan, part of the Library of Congress)", version: summary.actionDesc || null, date: summary.actionDate || null } : null,
@@ -114,7 +130,7 @@ async function congressItem(m, key) {
 
 async function stateItem(id, key, use) {
   const ocd = id.slice(3);
-  const q = ["abstracts", "sponsorships", "documents", "versions", "sources"].map(x => "include=" + x).join("&");
+  const q = ["abstracts", "sponsorships", "documents", "versions", "sources", "actions"].map(x => "include=" + x).join("&");
   const b = await getJSON(`https://v3.openstates.org/bills/${ocd}?${q}`, { "X-API-KEY": key }, use);
   // Use only the most recent summary the legislature posted, so earlier versions don't repeat. A "summary" that only repeats the title isn't one.
   const abstracts = (b.abstracts || []).map(a => a.abstract).filter(a => a && a.trim() && a.trim() !== String(b.title || "").trim());
@@ -127,9 +143,17 @@ async function stateItem(id, key, use) {
   const docs = (b.documents || []).filter(d => /fiscal note|fiscal impact|fiscal estimate|cost estimate/i.test(d.note || ""));
   const latestVersion = (b.versions || []).slice(-1)[0];
   const sourceUrl = httpsOnly(((b.sources || [])[0] || {}).url);
+  // Official actions, newest first. Open States lists them oldest first.
+  const acts = (b.actions || []).map(a => ({ date: a.date ? String(a.date).slice(0, 10) : null, text: String(a.description || "").trim(),
+    by: a.organization && a.organization.name ? String(a.organization.name) : null, labels: Array.isArray(a.classification) ? a.classification : [] })).filter(a => a.text);
+  const lastAct = acts.length ? acts[acts.length - 1] : null;
+  const isResolution = (b.classification || []).some(c => /resolution/i.test(c));
+  const ended = stateEnded(b.latest_action_description, isResolution, lastAct && lastAct.text === String(b.latest_action_description || "").trim() ? lastAct.labels : null);
   return {
     kind: `Bill in the ${body}`, level: "state", jurisdiction: { name: Body, state: name, stateCode }, title,
     status: b.latest_action_description ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
+    final: ended ? { date: String(b.latest_action_date || "").slice(0, 10) || null, text: b.latest_action_description } : null,
+    actions: acts.slice().reverse().slice(0, MAX_ACTIONS).map(({ date, text, by }) => ({ date, text, by })), actionsBy: "Open States",
     introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: null,
     sponsors: (b.sponsorships || []).filter(s => s.primary).map(s => ({ name: s.name, role: "Sponsor" })),
     summary: latest ? { by: `The summary posted by the ${body} (collected by Open States)`, version: null, date: null } : null,
@@ -153,6 +177,7 @@ async function ruleItem(id) {
   return {
     kind: "Proposed rule", level: "federal", jurisdiction: { name: (d.agencies || []).map(a => a.name).filter(Boolean).join(", ") || "Federal agency" }, title: d.title || num,
     status: d.comments_close_on ? { date: d.comments_close_on, text: "Official comments close on this date." } : null,
+    closes: d.comments_close_on || null, actions: d.publication_date ? [{ date: d.publication_date, text: `Published in the Federal Register${d.action ? " (" + d.action + ")" : ""}` }] : [], actionsBy: "Federal Register",
     introduced: d.publication_date || null, topic: null, sponsors: [],
     summary: d.abstract ? { by: "The agency's official summary in the Federal Register", version: d.action || null, date: d.publication_date || null } : null,
     parts, partsMore: more, partsDropped: dropped, partsHeadings: headings, partsRepeats: repeats, partsTotal: shownOf,
@@ -185,7 +210,7 @@ async function localItem(m) {
     kind: "Local meeting", level: "local",
     jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null, townId: feed.townId || null }, title: `${body}: meeting`,
     status: e.EventAgendaStatusName ? { date: null, text: `Agenda ${String(e.EventAgendaStatusName).toLowerCase()}` } : null,
-    meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [],
+    meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [], actions: [], actionsBy: `${feed.name} agendas`, office: { id: `local/${feed.id}`, name: feed.name },
     summary: { by: `The meeting agenda posted by the ${feed.name}`, version: null, date: null }, partsFrom: "the official agenda",
     parts: parts.slice(0, MAX_PARTS), partsMore: parts.length > MAX_PARTS, partsDropped: 0,
     partsNote: parts.length ? null : "This meeting's agenda has no items with legislation attached yet. Read the agenda for what's being discussed.",

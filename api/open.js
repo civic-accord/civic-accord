@@ -6,6 +6,7 @@ const FR = "https://www.federalregister.gov/api/v1/documents.json";
 
 const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get } = require("./_shared");
 const { STATE_NAMES, stateBills } = require("./_states");
+const { CONGRESS_ENDED } = require("./_final");
 const store = require("./_store");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
@@ -67,7 +68,7 @@ const ordinal = n => { n = Number(n); const t = n % 100, o = n % 10; return n + 
 async function congressBills(key) {
   const j = await getJSON(`https://api.congress.gov/v3/bill?format=json&sort=updateDate+desc&limit=100&api_key=${encodeURIComponent(key)}`);
   // Leave out bills that are finished: law, vetoed, failed, or a one-chamber resolution already agreed to.
-  const ENDED = /became (public|private) law|signed by (the )?president|vetoed by (the )?president|pocket vetoed|failed of passage|failed to pass/i;
+  const ENDED = CONGRESS_ENDED;
   const AGREED = /agreed to/i, SIMPLE = /^(HRES|SRES)$/i, CONCURRENT = /^(HCONRES|SCONRES)$/i;
   // A concurrent resolution is finished once the second chamber agrees to it. Its latest action then names that chamber
   // (for example, "Received in the Senate, considered, and agreed to" for a House concurrent resolution).

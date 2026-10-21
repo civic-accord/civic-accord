@@ -1,6 +1,7 @@
 // State bills from Open States, shared by Open Now (api/open.js) and the scheduled download (api/refresh.js).
 // Files starting with "_" are not public routes.
 const { memo } = require("./_shared");
+const { stateEnded } = require("./_final");
 const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
 // getJSON is passed in, so each caller applies its own limit.
@@ -30,24 +31,7 @@ async function stateBills(key, st, out, getJSON, loadSessions) {
   // 2. Bills from the current session that are still moving.
   // A bill is finished only when its latest action says the bill itself ended. Words like "failed" or "tabled" alone
   // aren't enough: "Amendment failed" or "Motion tabled" happen on bills that are still moving.
-  const BILL_END = [
-    /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
-    /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
-    /^indefinitely postponed/i, /\bdied in committee\b/i,
-    /^signed chap/i, /^approval memo/i, /^veto memo/i  // New York: governor signed (chapter) or vetoed
-  ];
-  // "Failed", "died", and "withdrawn" end a bill only when they're about the bill itself, not an amendment, a motion,
-  // or a step like "Withdrawn from committee", which moves a bill forward.
-  const ABOUT_PART = /amendment|motion|from committee|from the committee|report|reconsider/i;
-  const done = b => {
-    const t = String(b.latest_action_description || "").trim();
-    if (BILL_END.some(re => re.test(t))) return true;
-    if (/^(bill )?(failed|died|dead|withdrawn)\b/i.test(t) && !ABOUT_PART.test(t)) return true;
-    // "Adopted" ends a resolution, but on a bill it usually means a committee report or amendment was adopted.
-    const isResolution = (b.classification || []).some(c => /resolution/i.test(c));
-    if (isResolution && /^(resolution )?adopted\b/i.test(t) && !ABOUT_PART.test(t)) return true;
-    return false;
-  };
+  const done = b => stateEnded(b.latest_action_description, (b.classification || []).some(c => /resolution/i.test(c)));
   const PAGES = out.pages || 3; // Up to 60 most recently active bills (the scheduled download may ask for fewer when many legislatures are in session). The free tier allows 10 requests a minute; results are cached 6 hours.
   let results = [], total = null;
   for (let page = 1; page <= PAGES; page++) {
