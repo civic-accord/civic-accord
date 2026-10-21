@@ -126,9 +126,9 @@ function inMyJurisdiction(p){const d=VER&&VER.districts;if(!d||!p)return false;
   return false}
 let CANVOTE=false; function refreshCanVote(){CANVOTE=PRACTICE||(ISVOTER&&inMyJurisdiction(P))}
 function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
-  if(VER){c.className="chip ok";c.innerHTML=`${ISVOTER?"✓ Verified voter (sample)":"Not a verified voter"} <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
+  if(VER){c.className="chip ok";c.innerHTML=`${ISVOTER?"Sample: treated as a voter":"Sample: treated as not a voter"} <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(start over)</a>`;
     const u=document.getElementById("unver");if(u)u.onclick=e=>{e.preventDefault();try{localStorage.removeItem("civicaccord-verified")}catch(x){}location.reload()}}
-  else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify you're a registered voter</a>`}}
+  else{c.className="chip";c.innerHTML=`Sample: not checked · <a href="verify.html" style="color:var(--koa)">Try the sample voter check</a>`}}
 function verifyGate(what){
   if(ISVOTER&&!inMyJurisdiction(P)) return `<div class="submitbox" id="gate"><h3>This deliberation is for voters the ${esc(P.name)} represents</h3><p>You're verified as a voter in ${esc((VER.districts&&(VER.districts.stateName||VER.districts.state))||"another place")}. You can read everything here, but only voters this government represents can vote or add statements.</p><p class="meta">Look for deliberations for your own governments at the top of the page.</p></div>`;
   if(VER&&VER.voterStatus!=="registered") return `<div class="submitbox" id="gate"><h3>Only verified voters can ${what}</h3><p>Votes and statements here come only from registered voters in the district, each confirmed as a real, active voter. You can still read everything, see what's open for public input, and write to your representatives.</p><p class="meta">Not registered yet? <a href="https://vote.gov/" target="_blank" rel="noopener" style="color:var(--koa)">Register at Vote.gov</a>, then verify again.</p></div>`;
@@ -139,7 +139,7 @@ function renderHeader(){verChip();
   document.getElementById("chip-session").textContent=P.session;
   document.getElementById("footnote").textContent=P.footnote;
   const jb=document.getElementById("juris");jb.innerHTML="";
-  document.getElementById("juris-label").textContent=VD?"Your governments · verified districts":"Open deliberations";
+  document.getElementById("juris-label").textContent=VD?"Your governments · from the sample check":"Open deliberations";
   document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">My representatives →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
   const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
   jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
