@@ -61,7 +61,7 @@ function composeBox(it){
         ${!r.email&&safe(r.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
         ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9+]/g,""))}">Call ${esc(r.phone)}</a>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">${errs.length?esc(errs.join(" ")):"We couldn't find contact details for these offices yet."} Your legislature's website lists them.</p>`}
-    <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them, copy the message and paste it into their contact form. Civic Accord never sees what you send.</p>
+    <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them, copy the message and paste it into their contact form. Your message isn't sent to Civic Accord. It stays on this page until you copy it or open it in your email app or an office's form, which sends it from you. Civic Accord saves your name and town in this browser for next time, and a copy of the message only if you choose to keep a record.</p>
   </div>`;
 }
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";

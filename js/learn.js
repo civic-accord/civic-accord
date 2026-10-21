@@ -8,7 +8,7 @@ let D=(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){r
 try{NOTES=JSON.parse(localStorage.getItem("civicaccord-learn-notes")||"{}")}catch(e){}
 const QS=["What problem is this trying to solve?","Who would it affect, and how?","What would it cost, and who would pay?","Who decides, and when?","What would you want changed?"];
 // Where to look in the official text for each question.
-const HINTS=["Look at the first lines of the summary, or the purpose or findings section.","Look for words like \"requires,\" \"applies to,\" \"eligible,\" or \"prohibits.\"","Look for a cost estimate or fiscal note, or words like \"appropriates\" or \"fee.\" Many proposals don't have one yet.","Look at the status, the deadline for comments, or the meeting date, and who votes or decides.","This one is your own view. There's no wrong answer."];
+const HINTS=["Look at the first lines of the summary, or the purpose or findings section.","Look for words like \"requires,\" \"applies to,\" \"eligible,\" or \"prohibits.\"","Look for a cost estimate or fiscal note, or words like \"appropriates\" or \"fee.\" Many proposals don't have one yet.","Look at the status, the deadline for comments, or the meeting date, and who votes or decides.","This one is your view. You can support the proposal, suggest a change, disagree, or say you need more information."];
 async function showReps(){
   if(!D){$("reps").innerHTML="";return}
   let sd=null;try{sd=await (await fetch("registry/states.json")).json()}catch(e){}
@@ -30,13 +30,13 @@ function itemCard(it){
   return `<article class="item"><span class="eyebrow">${esc(it.kind)} · ${esc(it.source)}</span><h3>${esc(it.title)}</h3>
     ${(()=>{const ms=TOP.match(it),mine=ms.filter(m=>LT.includes(m.id)),sh=mine.length?mine:ms;return sh.length?`<span class="why">${mine.length?"Your topic":"Topic"}: ${sh.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`:""})()}
     <span class="meta">${esc(it.who)}${it.closes?`. Comments close ${esc(new Date(it.closes+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))}.`:""}</span>
-    <div class="acts">${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text</a>`:""}
+    <div class="acts">${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text <span class="meta">(new tab${/\.pdf($|\?)/i.test(it.read)?", PDF":""})</span></a>`:""}
       <button type="button" data-g="${esc(it.id)}">${open?"Hide the questions":"Read it with 5 questions"}</button>
       ${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}</div>
-    ${open?`<div class="guide"><p class="meta">Open the official text in another tab, then answer these as you read. They're the questions a reporter would ask. Your notes stay on this device.${/^(fr-|us-|os-|lg-)/.test(it.id)?` Stuck? <a href="item.html?id=${encodeURIComponent(it.id)}#q5-h" style="color:var(--koa)">See what the official record says for each question</a>.`:""}</p>
+    ${open?`<div class="guide"><p class="meta">Use these questions as you read the official text. Write what you find, or note what's missing or unclear. You can skip any question. Notes are saved in this browser.${/^(fr-|us-|os-|lg-)/.test(it.id)?` <a href="item.html?id=${encodeURIComponent(it.id)}#q5-h" style="color:var(--koa)">Show available official information</a>.`:""}</p>
       ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b><br><span style="font-weight:400">${esc(HINTS[i])}</span></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
       <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} A message in your own words is usually more useful than a copied one.</p>
-      <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${it.commentForm===false?"See how to comment (in the notice)":"Open the official comment page"}</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
+      <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${it.commentForm===false?"See how to comment (in the notice)":"Open the official comment page"}</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div><div id="cppick"></div></div>`:""}
   </article>`;
 }
 function renderItems(){
@@ -44,7 +44,17 @@ function renderItems(){
   document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const g=b.dataset.g;OPENG=OPENG===g?null:g;renderItems();
     const nb=[...document.querySelectorAll("[data-g]")].find(x=>x.dataset.g===g);if(nb)nb.focus({preventScroll:true})});
   document.querySelectorAll("[data-n]").forEach(t=>t.oninput=()=>{(NOTES[OPENG]=NOTES[OPENG]||{})[t.dataset.n]=t.value;try{localStorage.setItem("civicaccord-learn-notes",JSON.stringify(NOTES))}catch(e){}});
-  const cp=$("copynotes");if(cp)cp.onclick=()=>{const n=NOTES[OPENG]||{};const txt=QS.map((q,i)=>n[i]?`${q}\n${n[i]}`:"").filter(Boolean).join("\n\n");try{navigator.clipboard.writeText(txt).then(()=>$("cpmsg").textContent="Copied.")}catch(e){$("cpmsg").textContent="Select your notes to copy them."}};
+  // Copying shows the answered questions first, so unfinished ones can be left out. It never submits anything.
+  const cp=$("copynotes");if(cp)cp.onclick=()=>{const n=NOTES[OPENG]||{},have=QS.map((q,i)=>i).filter(i=>(n[i]||"").trim());const box=$("cppick");
+    if(!have.length){$("cpmsg").textContent="You haven't written any notes yet.";box.innerHTML="";return}
+    box.innerHTML=`<fieldset class="cppick"><legend class="meta">Choose what to copy. Copying doesn't submit anything. Comments sent through official channels may become public.</legend>
+      ${have.map(i=>`<label class="meta"><input type="checkbox" data-cpi="${i}" checked> ${esc(QS[i])}</label>`).join("")}
+      <button type="button" id="cpgo">Copy selected notes</button></fieldset>`;
+    $("cpgo").onclick=async()=>{const pick=[...box.querySelectorAll("[data-cpi]")].filter(x=>x.checked).map(x=>+x.dataset.cpi);
+      const txt=pick.map(i=>`${QS[i]}\n${n[i].trim()}`).join("\n\n");if(!txt){$("cpmsg").textContent="Nothing selected.";return}
+      let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
+      if(ok){$("cpmsg").textContent="Copied. Nothing was submitted.";box.innerHTML=""}
+      else{$("cpmsg").textContent="Couldn't copy automatically. Select the text below and copy it.";box.innerHTML=`<textarea readonly rows="8" aria-label="Your notes" style="width:100%">${esc(txt)}</textarea>`;const ta=box.querySelector("textarea");ta.focus();ta.select()}}};
 }
 
 // Mix state bills, soonest comment deadlines, and bills in Congress, so there's a little of each.

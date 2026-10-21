@@ -29,11 +29,18 @@ function choose(key,label){const v=MINE.parts[key]&&MINE.parts[key].v;
 let IT=null, FETCHED=null, FED=null, STATELEG=null, TELL=false, PENDING=[], RECORDING=false, COMMENT="", SINCE=null;
 
 // Who can act on it, in plain words. The office record for each seat is planned (offices haven't joined yet).
-function whoCanAct(it){const J=it.jurisdiction||{};
-  if(it.kind==="Bill in Congress")return DIST&&["DC","PR","GU","VI","AS","MP"].includes(DIST.state)?"The U.S. Congress. Your delegate in the House can vote in committee but not on final passage, and D.C. and the territories have no senators.":"The U.S. Congress. Your member of the U.S. House and your two U.S. senators vote on it.";
+function whoCanAct(it){const J=it.jurisdiction||{}, st=DIST&&DIST.state;
+  if(it.kind==="Bill in Congress"){
+    if(!st)return "The U.S. Congress. The House and the Senate can each consider it.";
+    if(TERR.includes(st)){const who=st==="PR"?"resident commissioner":"delegate";
+      return `The U.S. Congress. The House and the Senate can each consider it. Your ${who} in the House can work on it in committee but can't vote on its final passage, and ${st==="DC"?"D.C.":"your territory"} has no U.S. senators.`}
+    return "The U.S. Congress. The House and the Senate can each consider it, including your member of the U.S. House and your two U.S. senators."}
   if(it.kind==="Proposed rule")return `${J.name||"The federal agency"}. The agency decides, and must consider the official comments.`;
-  if(it.level==="local")return `${J.name}. Its members decide at public meetings.`;
-  return `The ${J.name||"state legislature"}. Your state legislators vote on it.`}
+  if(it.level==="local")return `${J.name}. Its members can decide at a public meeting.`;
+  const code=J.stateCode||"";
+  if(code==="NE")return "The Nebraska Legislature, which has one chamber. Its senators can consider it.";
+  if(code==="DC")return "The D.C. Council. Its councilmembers can consider it.";
+  return `The ${J.name||"state legislature"}. Its chambers can consider it${st&&st===code?", including your state legislators":""}.`}
 function ownOf(it){const J=it.jurisdiction||{};
   if(it.level==="local")return !!(DIST&&((J.countyId&&DIST.countyId===J.countyId)||(J.placeId&&DIST.placeId===J.placeId)||(J.townId&&DIST.townId===J.townId)));
   return it.level!=="state"||!!(DIST&&DIST.state&&DIST.state===J.stateCode)}
@@ -59,30 +66,62 @@ function sinceBox(s){
   if(s.c.result==="not-refreshed")return `<p class="meta" id="since">The source hasn't been refreshed since you last looked (${esc(when(s.base.seenAt))}), so there's nothing new to compare yet.</p>`;
   return ""}
 
-// Five questions a careful reader asks, each answered only with what the official record itself says, word for word,
-// with its source. Nothing here is written or reworded by people or AI; where the record doesn't answer, it says so.
-function fiveQs(it,stage){
-  const J=it.jurisdiction||{}, local=it.level==="local", rule=it.kind==="Proposed rule";
-  const by=it.summary&&it.summary.by?it.summary.by:(it.source&&it.source.label)||"the official source";
-  const first=(it.parts||[])[0];
-  const q1=first?`<blockquote class="q5quote">${first.lead?esc(first.lead)+" ":""}${esc(first.text)}</blockquote><span class="meta">From ${esc(by.replace(/^The /,"the "))}${it.parts.length>1?`. The other ${it.parts.length-1} part${it.parts.length===2?"":"s"} are under "What it is."`:"."}</span>`
-    :`<span class="meta">The official record has no summary for this ${rule?"notice":local?"meeting":"bill"} yet. Its title: </span>${esc(it.title)}`;
-  const q2=[it.topic?`Policy area, from ${esc(it.source&&it.source.label||"the source")}: ${esc(it.topic)}.`:"",
-    rule&&J.name?`Proposed by: ${esc(J.name)}.`:""].filter(Boolean).join(" ");
+// "Read the official record": what the official sources say, kept apart from what they don't say and from the reader's
+// own judgment. Quoted passages are copied word for word from the linked source, with their lead-in and background so
+// qualifications aren't lost. Civic Accord adds only headings, instructions, and status labels. Nothing is summarized
+// or reworded by people or AI, and a missing field is reported as missing, never filled with a substitute.
+const TERR=["DC","PR","GU","VI","AS","MP"];
+function excerpt(it){
+  const ps=it.parts||[];if(!ps.length)return null;
+  // A meeting's agenda: its first few items as a list. A summary: the first part, plus the parts that share its
+  // lead-in (one list), up to three, so a list isn't cut mid-thought.
+  const local=it.level==="local";const first=ps[0];let n=1;
+  if(local)n=Math.min(ps.length,5);else if(first.lead)while(n<ps.length&&n<3&&ps[n].lead===first.lead)n++;
+  const items=ps.slice(0,n);
+  const body=local?`<ul class="q5list">${items.map(p=>`<li>${esc(p.text)}</li>`).join("")}</ul>`
+    :first.lead?`<p class="q5lead">${esc(first.lead)}</p><ul class="q5list">${items.map(p=>`<li>${esc(p.text)}</li>`).join("")}</ul>`:`<p>${esc(first.text)}</p>`;
+  const bg=items.map(p=>p.background).filter(Boolean);
+  return {html:`<blockquote class="q5quote">${body}</blockquote>${bg.length?`<details><summary class="meta">Background from the same summary</summary>${bg.join("\n\n").split("\n\n").map(t=>`<p class="meta">${esc(t)}</p>`).join("")}</details>`:""}`,shown:n,total:ps.length};
+}
+function recordBlock(it,stage){
+  const J=it.jurisdiction||{}, local=it.level==="local", rule=it.kind==="Proposed rule", L=it.links||{};
+  const by=(it.summary&&it.summary.by?it.summary.by:(it.source&&it.source.label)||"the official source").replace(/^The /,"the ");
+  const full=safe(L.text)||safe(L.official);
+  const fullLink=full?` <a href="${esc(full)}" target="_blank" rel="noopener" style="color:var(--koa)">Open the full official ${local?"agenda":"text"}</a> <span class="meta">(opens in a new tab${/\.pdf($|\?)/i.test(full)?"; a PDF":""})</span>.`:"";
+  const ex=excerpt(it);
+  const unit=local?"agenda item":"part";
+  const exNote=ex?ex.shown===ex.total?`<span class="meta">Quoted in full from ${esc(by)}.</span>`:`<span class="meta">Excerpt from ${esc(by)}: ${ex.shown===1?unit+" 1":`${unit}s 1 to ${ex.shown}`} of ${ex.total}.${ex.total>ex.shown?` <a href="#h1" style="color:var(--koa)">All parts are below</a>, in order.`:""}</span>`:"";
+  const foot=`<p class="meta">Quoted passages are copied from the linked official sources. Civic Accord adds headings, instructions, and status labels. These are separate from the quoted text.</p>`;
+  const nextStep=`<dt>Your next step</dt><dd>You can support it as written, suggest a change, oppose it, or ask for more information. <a href="#h2" style="color:var(--koa)">Take part below</a>${rule&&safe(L.comment)?`, or <a href="${esc(L.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">comment officially</a>`:""}.</dd>`;
+  if(local){
+    const when=it.meets?`${fmt(it.meets)}${it.meetsTime?" at "+esc(it.meetsTime):""}`:"";
+    return `<section class="panel q5" aria-labelledby="q5-h"><div class="eyebrow">From the official record ${LIVE}</div><h2 id="q5-h">About this meeting</h2>
+      <p class="meta">What the official agenda says, and how to take part.</p>
+      <dl class="kv">
+        <dt>Who meets</dt><dd>${esc(J.name||"The local government")}</dd>
+        <dt>When</dt><dd>${when||"No meeting date is listed in the information available here."}${it.status&&it.status.text?` <span class="meta">${esc(it.status.text)}.</span>`:""}</dd>
+        <dt>On the agenda</dt><dd>${ex?`${ex.html}${exNote}`:`<span class="meta">${esc(it.partsNote||"No agenda items are listed in the information available here.")}</span>`}${fullLink}</dd>
+        <dt>How to take part</dt><dd>${safe(L.comment)?`<a href="${esc(L.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(L.commentLabel||"Meeting page and agenda")}</a>. <span class="meta">The meeting page and agenda say how to comment, in person or in writing.</span>`:"The official agenda says how to take part."}</dd>
+      </dl>${foot}</section>`;
+  }
+  // For a proposed rule, the latest recorded step is its publication, not the comment deadline (that's the next date).
+  const act0=rule&&it.actions&&it.actions[0];
+  const latest=act0?`${act0.date?fmt(act0.date)+": ":""}${esc(act0.text)}`:it.status&&it.status.text?`${it.status.date?fmt(it.status.date)+": ":""}${esc(it.status.text)}`:"No recorded step is listed in the information available here.";
+  const nextDate=it.closes?`Official comments close ${fmt(it.closes)}.`:"No next decision date is listed in the information available here.";
   const costs=(it.costs||[]).filter(c=>safe(c.url));
-  const q3=costs.length?costs.map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}`).join("<br>")
-    :`${rule||local?"Not shown here.":"Not yet estimated."} <span class="meta">${esc(it.costNote||"Only official estimates are shown.")}</span>`;
-  const when=it.closes?`Official comments close ${fmt(it.closes)}.`:it.meets?`It meets ${fmt(it.meets)}${it.meetsTime?" at "+esc(it.meetsTime):""}.`:"";
-  const q4=`${esc(whoCanAct(it))} <span class="meta">Now: ${esc(stage.label)}${stage.date?`, ${fmt(stage.date)}`:""}.${when?" "+when:""}</span>`;
-  return `<section class="panel q5" aria-labelledby="q5-h"><div class="eyebrow">At a glance · from the official record ${LIVE}</div><h2 id="q5-h">Five questions, answered from the official record</h2>
+  return `<section class="panel q5" aria-labelledby="q5-h"><div class="eyebrow">From the official record ${LIVE}</div><h2 id="q5-h">Read the official record</h2>
+    <p class="meta">These sources can help you understand the issue. Some questions may not be answered in the information available here.</p>
     <dl class="kv">
-      <dt>What problem is it trying to solve?</dt><dd>${q1}</dd>
-      <dt>Who would it affect?</dt><dd>${q2?q2+" ":""}<span class="meta">The official record doesn't list who would be affected. Look in the official text for words like "requires," "applies to," or "eligible."</span></dd>
-      <dt>What would it cost, and who would pay?</dt><dd>${q3}</dd>
-      <dt>Who decides, and when?</dt><dd>${q4}</dd>
-      <dt>What would you want changed?</dt><dd>That's yours to say. <a href="#h2" style="color:var(--koa)">Take part below</a>${rule&&it.links&&safe(it.links.comment)?`, or <a href="${esc(it.links.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">comment officially</a>`:""}.</dd>
-    </dl>
-    <p class="meta">Official text is copied word for word, with its source. The only other words are Civic Accord's plain labels for status and who decides. Nothing is summarized or reworded by people or AI, and where the record doesn't answer a question, this says so.</p></section>`;
+      <dt>What the official summary says</dt><dd>${ex?`${ex.html}${exNote}`:`No official summary is available here. Its official title: ${esc(it.title)}.`}${fullLink}</dd>
+      ${it.topic&&it.kind==="Bill in Congress"?`<dt>Subject</dt><dd>${esc(it.topic)} <span class="meta">(policy area assigned by the Congressional Research Service)</span></dd>`:""}
+      ${rule&&J.name?`<dt>Proposing agency</dt><dd>${esc(J.name)}</dd>`:""}
+      <dt>Who could be affected</dt><dd>This page does not identify who would be affected. The official text may provide more detail.</dd>
+      <dt>Cost information</dt><dd>${costs.length?costs.map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}`).join("<br>")+` <span class="meta">An estimate may not say who would pay. Check the estimate and the official text.</span>`:`No official cost estimate is available here. <span class="meta">${esc(it.costNote||"")}</span>`}</dd>
+      <dt>Who's responsible</dt><dd>${esc(whoCanAct(it))}</dd>
+      <dt>Latest recorded step</dt><dd>${latest} <span class="meta">(${esc(stage.label)})</span></dd>
+      <dt>Next known date</dt><dd>${nextDate}</dd>
+      ${nextStep}
+    </dl>${foot}</section>`;
 }
 
 function render(it){
@@ -103,7 +142,7 @@ function render(it){
   const canTell=(it.level==="federal"&&(it.kind==="Bill in Congress"||it.kind==="Proposed rule"))||it.level==="state";
   const r=REACT[ID];
   $("main").innerHTML=`${topBlock(it,stage,next,following)}
-  ${fiveQs(it,stage)}
+  ${recordBlock(it,stage)}
 
   <section class="panel" aria-labelledby="h1"><div class="eyebrow">1 · Understand ${LIVE}</div><h2 id="h1">What it is</h2>
     <dl class="kv">
@@ -113,7 +152,7 @@ function render(it){
       ${it.sponsors&&it.sponsors.length?`<dt>Sponsor${it.sponsors.length>1?"s":""}</dt><dd>${it.sponsors.map(s=>esc(s.name)).join(", ")}</dd>`:""}
       ${it.topic?`<dt>Topic</dt><dd>${esc(it.topic)}</dd>`:""}
       <dt>Summary by</dt><dd>${versionLabel(it)}</dd>
-      <dt>Cost</dt><dd>${it.costs.filter(c=>safe(c.url)).length?it.costs.filter(c=>safe(c.url)).map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}${c.description?`<br><span class="meta">${esc(c.description)}</span>`:""}`).join("<br>"):it.kind==="Proposed rule"||local?"Not shown here. Read the full notice or agenda packet for any cost analysis.":"Not yet estimated. No official cost estimate is available yet."}<br><span class="meta">${esc(it.costNote)}</span></dd>
+      <dt>Cost</dt><dd>${it.costs.filter(c=>safe(c.url)).length?it.costs.filter(c=>safe(c.url)).map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}${c.description?`<br><span class="meta">${esc(c.description)}</span>`:""}`).join("<br>"):"No official cost estimate is available here."+(it.kind==="Proposed rule"?" Read the full notice for any cost analysis.":local?" Read the agenda packet for any staff report.":"")}<br><span class="meta">${esc(it.costNote)}</span></dd>
     </dl>
     <div class="links">
       ${safe(L.text)?`<a class="primary" href="${esc(L.text)}" target="_blank" rel="noopener">Read the official text</a>`:""}
@@ -187,7 +226,7 @@ function tellHTML(it,own,r){
         ${p.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(p.sal)}</a>`:""}
         ${!p.email&&safe(p.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(p.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">We couldn't find contact details for these offices yet.</p>`}
-      <p class="meta">Email opens in your own email app, so it comes from you. Civic Accord never sees what you send.</p>
+      <p class="meta">Email opens in your own email app, so it comes from you. Your message isn't sent to Civic Accord. It stays on this page until you copy it or open it in your email app or an office's form, which sends it from you. Civic Accord saves your name and town in this browser for next time, and a copy of the message only if you choose to keep a record.</p>
       ${PENDING.length&&!RECORDING?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="btn" id="didsend">Yes, keep a record</button></div>`:""}
     </div>`:`<div class="go"><button type="button" class="btn" id="opentell">Write to your representatives</button></div>`}`}
 
