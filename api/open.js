@@ -66,9 +66,13 @@ async function congressBills(key) {
   const j = await getJSON(`https://api.congress.gov/v3/bill?format=json&sort=updateDate+desc&limit=100&api_key=${encodeURIComponent(key)}`);
   // Leave out bills that are finished: law, vetoed, failed, or a one-chamber resolution already agreed to.
   const ENDED = /became (public|private) law|signed by (the )?president|vetoed by (the )?president|pocket vetoed|failed of passage|failed to pass/i;
-  const AGREED = /agreed to/i, SIMPLE = /^(HRES|SRES)$/i;
+  const AGREED = /agreed to/i, SIMPLE = /^(HRES|SRES)$/i, CONCURRENT = /^(HCONRES|SCONRES)$/i;
+  // A concurrent resolution is finished once the second chamber agrees to it. Its latest action then names that chamber
+  // (for example, "Received in the Senate, considered, and agreed to" for a House concurrent resolution).
+  const secondChamberAgreed = b => { const t = (b.latestAction && b.latestAction.text) || "", type = String(b.type).toUpperCase();
+    return CONCURRENT.test(type) && AGREED.test(t) && (type === "HCONRES" ? /Senate/i.test(t) : /House/i.test(t)) && !/message on/i.test(t); };
   return (j.bills || []).filter(b => { const t = (b.latestAction && b.latestAction.text) || "";
-    return !(ENDED.test(t) || (SIMPLE.test(String(b.type)) && AGREED.test(t))); }).map(b => ({
+    return !(ENDED.test(t) || (SIMPLE.test(String(b.type)) && AGREED.test(t)) || secondChamberAgreed(b)); }).map(b => ({
     id: `us-${b.type}${b.number}-${b.congress}`.toLowerCase(), level: "federal", kind: "Bill in Congress",
     title: `${b.type} ${b.number}: ${b.title}`, who: b.originChamber ? `${b.originChamber}` : "Congress",
     summary: b.latestAction ? `Latest action (${b.latestAction.actionDate}): ${b.latestAction.text}` : "",
@@ -153,6 +157,9 @@ module.exports = async (req, res) => {
     if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; });
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st]} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
+  // Keep the feed light on phones: summaries are cut at a word near 700 characters. The full summary is on each item's
+  // own page (talk it through) and the official page.
+  out.items = out.items.map(i => i.summary && i.summary.length > 700 ? { ...i, summary: i.summary.slice(0, 700).replace(/\s+\S*$/, "") + "…", summaryCut: true } : i);
   // Show when the oldest list here was really fetched, in case a saved copy is being used while a source is down.
   for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
     await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)));

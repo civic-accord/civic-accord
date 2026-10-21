@@ -176,7 +176,7 @@ function card(it,first){
     <h3>${esc(it.title)}</h3>
     ${whyLine(it)}
     <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
-    ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm.slice(200).length>1200?sm.slice(0,1400)+"…":sm)}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
+    ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm)}${it.summaryCut?` <a href="item.html?id=${encodeURIComponent(it.id)}" style="color:var(--koa)">Full summary</a>`:""}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}
     <div class="also">${safe(it.read)&&stepOf(it)>0?`<a data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Official text</a>`:""}${safe(it.act)&&it.actLabel&&it.kind!=="Proposed rule"?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}<a href="item.html?id=${encodeURIComponent(it.id)}">Talk it through</a><span class="meta">From ${esc(it.source)}</span></div>
