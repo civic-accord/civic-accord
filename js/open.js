@@ -155,8 +155,8 @@ function nextHTML(it){
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
       ${OPENID===it.id?composeBox(it):""}
       ${rule||p.started?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
-  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Talk it through: weigh in on each part of it, copied word for word from the official summary, and see any official cost estimate. Your votes there are practice for now, saved only on this device. <a href="${esc(build)}" style="color:var(--koa)">Or build your own deliberation</a>.</p>
-    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Talk it through</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
+  if(now===3)return `<div class="next"><p>Nice work. Want to go further? Weigh in on each part of it, copied word for word from the official summary, and see any official cost estimate. Your votes there are practice for now, saved only on this device. <a href="${esc(build)}" style="color:var(--koa)">Or build your own deliberation</a>.</p>
+    <div class="go"><a class="primary" data-talk="${esc(it.id)}" href="${esc(start)}">Weigh in on each part</a>${OPENID===it.id?"":`<button type="button" data-tell="${esc(it.id)}">Write another message</button>`}</div>${OPENID===it.id?composeBox(it):""}</div>`;
   return `<div class="next"><p>You've done everything you can here today. In the live version, verified voters' views would be counted in a public record anyone can check. That part is planned. <a href="verify.html" style="color:var(--koa)">See how verification will work</a>.</p>${OPENID===it.id?composeBox(it):`<div class="go"><button type="button" data-tell="${esc(it.id)}">Write another message</button></div>`}</div>`;
 }
 function card(it,first){
