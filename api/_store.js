@@ -5,7 +5,8 @@
 // a source. Together they could go over a source's free limit. Now:
 //  - State bill lists are downloaded on a schedule (api/refresh.js) and saved here. Visits read the saved copy.
 //  - Every call to Open States, from any copy, first takes a turn from one shared count, kept here.
-// If no store is connected (BLOB_READ_WRITE_TOKEN isn't set), on() is false and the functions work as before,
+// If no store is connected (neither BLOB_STORE_ID, set when a store is connected to the project, nor
+// BLOB_READ_WRITE_TOKEN is set), on() is false and the functions work as before,
 // with a separate limit in each copy.
 // Files are private and read without any cache, so every copy sees the latest count. They hold only public information.
 
@@ -16,7 +17,9 @@ const WAIT_MS = 5000;
 
 let sdk = null;
 const lib = () => sdk || (sdk = require("@vercel/blob"));
-const on = () => !!process.env.BLOB_READ_WRITE_TOKEN;
+// A connected store signs in with the project's short-lived Vercel identity token plus BLOB_STORE_ID (no saved
+// password); an older read-write token also works.
+const on = () => !!(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 
 // Read a saved JSON file. Returns { data, etag, at } or null if it doesn't exist yet.
 async function read(path) {
