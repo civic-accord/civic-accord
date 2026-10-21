@@ -77,6 +77,29 @@ function render(it){
   // Proposed rules too: the official comment comes first (above), and members of Congress can also be told.
   const canTell=(it.level==="federal"&&(it.kind==="Bill in Congress"||it.kind==="Proposed rule"))||it.level==="state";
   const r=REACT[ID];
+  // Practice voting shows when there is enough to weigh in on part by part: three or more parts, a whole-text item
+  // (no official summary), or earlier practice votes or statements in this browser.
+  const showPractice=!it.parts.length||it.parts.length>=3||chosen>0||MINE.added.length>0||orphans.length>0||!!LEGACY;
+  const practiceHTML=showPractice?`
+    <h3>Practice: weigh in on each part ${PRACTICE}</h3>
+    <p>${it.parts.length?`Each part below is copied word for word from ${esc(from)}, in order. Do you agree with what it says or would do?`:esc(it.partsNote)}</p>
+    ${it.parts.length?`<p class="meta">${local?"Only agenda items with legislation attached are listed. Read the agenda for everything else.":`${it.partsHeadings?`${it.partsHeadings} heading${it.partsHeadings===1?"":"s"} left out. `:""}${it.partsMore?`Showing the first ${it.parts.length} of ${it.partsTotal||"many"} parts. `:""}Read the official text for all of it.`}</p>
+    <p class="meta">Some parts describe several things at once, or describe how things work today. If a part mixes things you'd answer differently, choose Pass and add your own statement below. Practice answers on a mixed part aren't a precise view of each piece.</p>`:""}
+    ${LEGACY?`<p class="submitbox">You voted on this page before we changed how practice votes are saved. Those ${LEGACY} vote${LEGACY===1?"":"s"} couldn't be safely matched to the current text, so they were cleared. Please vote again.</p>`:""}
+    ${orphans.length?`<div class="submitbox" id="review"><b>The official summary changed since your last visit.</b> ${orphans.length} of your earlier practice votes ${orphans.length===1?"was":"were"} on text that's no longer here, so ${orphans.length===1?"it isn't":"they aren't"} applied to the new text. Your votes on parts that didn't change are kept.
+      <details><summary class="meta">See the earlier text and your votes</summary><ul class="plain">${orphans.map(k=>`<li><span class="meta">${esc(VOTE[MINE.parts[k].v]||"")}:</span> ${esc(MINE.parts[k].text||"")}</li>`).join("")}</ul></details>
+      <button type="button" class="btn ghost" id="clearold">I've reviewed these. Clear them</button></div>`:""}
+    ${own?"":`<p class="submitbox">${local?(DIST&&!DIST.countyId&&!DIST.placeId?`Your saved districts are from before local meetings were added. <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">Enter your address again on My representatives</a> so we know your local governments.`:DIST?`This meeting is for ${esc(J.name)}, so it's here to read. Practice voting is for your own county, city, town, or township. Anyone can read the agenda or testify.`:`To weigh in on a local meeting, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know your local governments. It stays on this device.`):DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know it's your state. It stays on this device.`}</p>`}
+    <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?(local?"Agenda item ":"Part ")+(i+1)+(p.ref?" · "+esc(p.ref):""):"The whole "+what}</span>${p.lead?`<span class="meta">${esc(p.lead)}</span>`:""}<blockquote>${esc(p.text)}</blockquote>${p.background?`<details><summary class="meta">Background from the same summary</summary>${String(p.background).split("\n\n").map(t=>`<p class="meta">${esc(t)}</p>`).join("")}</details>`:""}${own?choose(keys[i],it.parts.length?(local?"Agenda item ":"Part ")+(i+1):"The whole "+what):""}</li>`).join("")}</ol>
+    ${it.partsMore?`<p class="meta">The summary has more parts than fit here. Read the rest in the official text.</p>`:""}
+    <p class="meta" id="saved">${chosen?`Practice votes saved in this browser: ${chosen} of ${keys.length}. Not counted. Not sent to anyone.`:"Practice votes are saved in this browser as you go. They aren't counted or sent to anyone."}</p>
+    ${own?`<h3>Add your own statement ${PRACTICE}</h3>
+    <form id="addf"><label for="addt" class="meta">One clear idea about this ${what}, in your own words (practice; stays in this browser)</label>
+      <textarea id="addt" rows="2" maxlength="200"></textarea>
+      <p class="meta">In the live version, a moderator checks new statements against <a href="how.html#rules" style="color:var(--koa)">published rules</a> before others see them.</p>
+      <button class="btn" type="submit">Add statement</button> <span class="toast" id="addmsg" aria-live="polite"></span></form>
+    ${MINE.added.length?`<ul class="plain">${MINE.added.map((t,i)=>`<li>${esc(t)} <button type="button" class="btn ghost" data-rm="${i}">Remove</button></li>`).join("")}</ul>`:""}`:""}
+`:`<p class="meta">${PRACTICE} The official summary is ${it.parts.length===1?"one short part":"two short parts"}, so there's nothing to weigh in on piece by piece here. Your official comment and your message to representatives, above, are the way to be heard on this one.</p>`;
   $("main").innerHTML=`${topBlock(it,stage,next,following)}
 
   <section class="panel" aria-labelledby="h1"><div class="eyebrow">1 · Understand ${LIVE}</div><h2 id="h1">What it is</h2>
@@ -103,30 +126,14 @@ function render(it){
     ${(it.kind==="Proposed rule"||local)&&!RECORDING?`<button type="button" class="linkbtn" id="rec-manual">I sent a comment. Keep a record of it</button>`:""}
     ${RECORDING?CA_TELL.recordPanel("rec",PENDING,manualOffice(it)):""}
 
-    <h3>Practice: weigh in on each part ${PRACTICE}</h3>
-    <p>${it.parts.length?`Each part below is copied word for word from ${esc(from)}, in order. Do you agree with what it says or would do?`:esc(it.partsNote)}</p>
-    ${it.parts.length?`<p class="meta">${local?"Only agenda items with legislation attached are listed. Read the agenda for everything else.":`${it.partsHeadings?`${it.partsHeadings} heading${it.partsHeadings===1?"":"s"} left out. `:""}${it.partsMore?`Showing the first ${it.parts.length} of ${it.partsTotal||"many"} parts. `:""}Read the official text for all of it.`}</p>
-    <p class="meta">Some parts describe several things at once, or describe how things work today. If a part mixes things you'd answer differently, choose Pass and add your own statement below. Practice answers on a mixed part aren't a precise view of each piece.</p>`:""}
-    ${LEGACY?`<p class="submitbox">You voted on this page before we changed how practice votes are saved. Those ${LEGACY} vote${LEGACY===1?"":"s"} couldn't be safely matched to the current text, so they were cleared. Please vote again.</p>`:""}
-    ${orphans.length?`<div class="submitbox" id="review"><b>The official summary changed since your last visit.</b> ${orphans.length} of your earlier practice votes ${orphans.length===1?"was":"were"} on text that's no longer here, so ${orphans.length===1?"it isn't":"they aren't"} applied to the new text. Your votes on parts that didn't change are kept.
-      <details><summary class="meta">See the earlier text and your votes</summary><ul class="plain">${orphans.map(k=>`<li><span class="meta">${esc(VOTE[MINE.parts[k].v]||"")}:</span> ${esc(MINE.parts[k].text||"")}</li>`).join("")}</ul></details>
-      <button type="button" class="btn ghost" id="clearold">I've reviewed these. Clear them</button></div>`:""}
-    ${own?"":`<p class="submitbox">${local?(DIST&&!DIST.countyId&&!DIST.placeId?`Your saved districts are from before local meetings were added. <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">Enter your address again on My representatives</a> so we know your local governments.`:DIST?`This meeting is for ${esc(J.name)}, so it's here to read. Practice voting is for your own county, city, town, or township. Anyone can read the agenda or testify.`:`To weigh in on a local meeting, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know your local governments. It stays on this device.`):DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know it's your state. It stays on this device.`}</p>`}
-    <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?(local?"Agenda item ":"Part ")+(i+1)+(p.ref?" · "+esc(p.ref):""):"The whole "+what}</span>${p.lead?`<span class="meta">${esc(p.lead)}</span>`:""}<blockquote>${esc(p.text)}</blockquote>${p.background?`<details><summary class="meta">Background from the same summary</summary>${String(p.background).split("\n\n").map(t=>`<p class="meta">${esc(t)}</p>`).join("")}</details>`:""}${own?choose(keys[i],it.parts.length?(local?"Agenda item ":"Part ")+(i+1):"The whole "+what):""}</li>`).join("")}</ol>
-    ${it.partsMore?`<p class="meta">The summary has more parts than fit here. Read the rest in the official text.</p>`:""}
-    <p class="meta" id="saved">${chosen?`Practice votes saved in this browser: ${chosen} of ${keys.length}. Not counted. Not sent to anyone.`:"Practice votes are saved in this browser as you go. They aren't counted or sent to anyone."}</p>
-    ${own?`<h3>Add your own statement ${PRACTICE}</h3>
-    <form id="addf"><label for="addt" class="meta">One clear idea about this ${what}, in your own words (practice; stays in this browser)</label>
-      <textarea id="addt" rows="2" maxlength="200"></textarea>
-      <p class="meta">In the live version, a moderator checks new statements against <a href="how.html#rules" style="color:var(--koa)">published rules</a> before others see them.</p>
-      <button class="btn" type="submit">Add statement</button> <span class="toast" id="addmsg" aria-live="polite"></span></form>
-    ${MINE.added.length?`<ul class="plain">${MINE.added.map((t,i)=>`<li>${esc(t)} <button type="button" class="btn ghost" data-rm="${i}">Remove</button></li>`).join("")}</ul>`:""}`:""}
+    ${practiceHTML}
   </section>
 
   <section class="panel" aria-labelledby="h3"><div class="eyebrow">3 · Results ${PLANNED}</div><h2 id="h3">Where people agree</h2>
-    <p>No votes are counted yet, so there are no results. When verified voting starts, each part would be labeled common ground, divides groups, or still forming, using the <a href="how.html#ground" style="color:var(--koa)">published rules</a>. Results will describe the verified voters who took part, with their share of registered voters. They won't describe the whole district.</p>
     ${chosen?`<p class="meta">Your practice, in this browser only: you agreed with ${agreed} of the ${keys.length} ${it.parts.length?"parts":"choices"} you could vote on.</p>`:""}
-    <p class="meta"><a href="item.html?id=sample-civic-channel" style="color:var(--koa)">See a sample issue with results, delivery, and an office response</a> (everything there is marked Sample).</p>
+    <details><summary class="meta" style="cursor:pointer;min-height:44px;display:flex;align-items:center">No votes are counted yet. What this will show, and a sample</summary>
+      <p>When verified voting starts, each part would be labeled common ground, divides groups, or still forming, using the <a href="how.html#ground" style="color:var(--koa)">published rules</a>. Results will describe the verified voters who took part, with their share of registered voters. They won't describe the whole district.</p>
+      <p class="meta"><a href="item.html?id=sample-civic-channel" style="color:var(--koa)">See a sample issue with results, delivery, and an office response</a> (everything there is marked Sample).</p></details>
   </section>
 
   <section class="panel" aria-labelledby="h4"><div class="eyebrow">4 · Delivery ${YOURS} ${PLANNED}</div><h2 id="h4">What you sent</h2>
@@ -135,8 +142,9 @@ function render(it){
         ${s.message?`<details><summary class="meta">What you sent</summary><p class="msg">${esc(s.message)}</p></details>`:""}
         <div class="acts"><button type="button" class="btn ghost" data-copyrec="${esc(s.id)}">Copy as text</button><button type="button" class="btn ghost" data-delrec="${esc(s.id)}">Delete this record</button><span class="toast" id="cr-${esc(s.id)}" role="status" aria-live="polite"></span></div></li>`).join("")}</ul>
       <p class="meta">These records are reported by you. Civic Accord didn't deliver them and can't confirm they were received. They're kept only in this browser: they don't sync to your other devices, and clearing this browser's data deletes them. <a href="following.html#records" style="color:var(--koa)">Export a copy</a>.</p>`
-      :`<p>No records yet. After you write to an office or comment officially, you can keep a record here of exactly what you sent. It stays in this browser.</p>`}
-    <p class="meta">${PLANNED} Once verified voting exists, the ${it.kind==="Proposed rule"?"agency":local?esc(J.name):"office that represents you"} would receive a package with the exact request, which parts have common ground and which divide people, and how many verified voters took part, with the date it was delivered.</p>
+      :`<p class="meta">No records yet. After you write to an office or comment officially, you can keep a record here of exactly what you sent. It stays in this browser.</p>`}
+    <details><summary class="meta" style="cursor:pointer;min-height:44px;display:flex;align-items:center">${PLANNED} What the office would receive once verified voting exists</summary>
+      <p class="meta">The ${it.kind==="Proposed rule"?"agency":local?esc(J.name):"office that represents you"} would receive a package with the exact request, which parts have common ground and which divide people, and how many verified voters took part, with the date it was delivered.</p></details>
   </section>
 
   <section class="panel" aria-labelledby="h5"><div class="eyebrow">5 · Follow-through ${LIVE}</div><h2 id="follow-through" tabindex="-1">What happened next</h2>
