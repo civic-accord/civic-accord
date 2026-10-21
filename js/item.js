@@ -14,6 +14,7 @@ const DIST=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verifi
 const VKEY="civicaccord-item-votes", REKEY="civicaccord-reactions", SKEY="civicaccord-signer";
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d}catch(e){return d}};
 let ALL=load(VKEY,{}), REACT=load(REKEY,{}), SIGNER=load(SKEY,{name:"",town:""});
+let SIGNER_EDIT=false; // true while the name and town fields are open for editing
 // Practice votes are saved by each part's own words (lib/partkey.js), with the text they were cast on,
 // so a vote never moves onto different text if the official summary changes.
 let MINE=ALL[ID]||{parts:{},added:[]};
@@ -155,12 +156,12 @@ function tellHTML(it,own,r){
   return `<div class="go" role="group" aria-label="Where you stand (kept in this browser)">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>
     ${TELL?`<div class="compose">
       <label for="cm" class="meta">Add your own words (optional)</label><textarea id="cm" rows="3" maxlength="1200" placeholder="Why it matters to you, in a sentence or two.">${esc(COMMENT)}</textarea>
-      <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
+      ${SIGNER.name&&!SIGNER_EDIT?`<p class="meta">Signed as <b>${esc(SIGNER.name)}</b>${SIGNER.town?`, ${esc(SIGNER.town)}`:""} (remembered on this device). <a href="#" id="sedit" style="color:var(--koa)">Change</a></p>`:`<div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>`}
       ${loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((p,i)=>`<div class="rep"><b>${esc(p.title)}</b><span class="meta">${esc(p.name)}</span><div class="acts">
         ${p.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(p.sal)}</a>`:""}
-        ${!p.email&&safe(p.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(p.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
+        ${!p.email&&safe(p.url)?`<a class="btn" href="${esc(p.url)}" target="_blank" rel="noopener" data-form="${i}" style="text-decoration:none">Open contact form</a><button type="button" class="linkbtn" data-copy="${i}">Show the message</button>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">We couldn't find contact details for these offices yet.</p>`}
-      <p class="meta">Email opens in your own email app, so it comes from you. Civic Accord never sees what you send.</p>
+      <p class="meta">Email opens in your own email app, so it comes from you. For a contact form, the message is copied as the form opens; paste it there. Civic Accord never sees what you send.</p>
       ${PENDING.length&&!RECORDING?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="btn" id="didsend">Yes, keep a record</button></div>`:""}
     </div>`:`<div class="go"><button type="button" class="btn" id="opentell">Write to your representatives</button></div>`}`}
 
@@ -184,18 +185,22 @@ function bind(it,keys,parts,version,orphans){
   document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{REACT[ID]=REACT[ID]===b.dataset.r?undefined:b.dataset.r;try{localStorage.setItem(REKEY,JSON.stringify(REACT))}catch(e){}rerender()});
   const ot=$("opentell");if(ot)ot.onclick=()=>{TELL=true;loadReps(it);rerender("cm")};
   const sn=$("sn"),stw=$("stw"),cm=$("cm");
-  const keepS=()=>{SIGNER={name:sn.value.trim(),town:stw.value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}};
+  const keepS=()=>{if(!sn||!stw)return;SIGNER={name:sn.value.trim(),town:stw.value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}};
   if(sn){sn.oninput=keepS;stw.oninput=keepS}if(cm)cm.oninput=()=>{COMMENT=cm.value};
+  const se=$("sedit");if(se)se.onclick=e=>{e.preventDefault();SIGNER_EDIT=true;rerender("sn")};
   const reps=TELL&&DIST?CA_TELL.recipients(it,DIST,FED,STATELEG):[];
   const msg=p=>CA_TELL.message(it,p.sal,{stance:REACT[ID],comment:COMMENT,signer:SIGNER,dist:DIST});
   const pend=(p,channel,m)=>{const x={officeId:p.officeId,name:p.name,title:p.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};const i=PENDING.findIndex(y=>y.officeId===p.officeId&&y.name===p.name);if(i>=0)PENDING[i]=x;else PENDING.push(x)};
   document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=async e=>{e.preventDefault();keepS();const p=reps[+a.dataset.mail],m=msg(p),el=$("rm-"+a.dataset.mail);
     const {url,shown}=await CA_TELL.mailUrl(p.email,m,el);
     pend(p,"email",m);window.__openMail?window.__openMail(url):(location.href=url);if(!shown){setTimeout(()=>rerender("didsend"),1200);el.textContent="Opening your email app…"}});
-  document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const p=reps[+a.dataset.form];pend(p,"contact-form",msg(p));setTimeout(()=>rerender(),1200)}));
+  document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const i=+a.dataset.form,p=reps[i];keepS();const m=msg(p);pend(p,"contact-form",m);
+    const txt=`Subject: ${m.subject}\n\n${m.body}`,t=$("rm-"+i),noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: replace that after pasting.":"";
+    CA_TELL.copy(txt).then(ok=>{if(ok){if(t)t.textContent="Message copied. Paste it into the form that just opened."+noName}else CA_TELL.showText(t,txt,"Couldn't copy automatically. Select the message below, copy it, and paste it into the form."+noName)});
+    setTimeout(()=>{rerender();const t2=$("rm-"+i);if(t2&&t&&t.textContent)t2.textContent=t.textContent},1200)}));
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keepS();const i=+b.dataset.copy,p=reps[i],m=msg(p);pend(p,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`,t=$("rm-"+i);
     const noName=/\[Your name\]/.test(txt)?" It ends with [Your name]: add your name above first, or replace it after pasting.":"";
-    CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; now open the contact form and paste it.":"Couldn't copy automatically. Select the message below and copy it.")+noName))});
+    CA_TELL.copy(txt).then(ok=>CA_TELL.showText(t,txt,(ok?"Copied. This is the message; paste it into the contact form.":"Select the message below and copy it, then paste it into the contact form.")+noName))});
   const ds=$("didsend");if(ds)ds.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   const rm=$("rec-manual");if(rm)rm.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   if(RECORDING)CA_TELL.bindPanel("rec",{id:ID,title:it.title,version},PENDING,manualOffice(it),n=>{RECORDING=false;if(n)PENDING=[];rerender("h4")});
