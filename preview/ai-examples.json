@@ -1,0 +1,170 @@
+{
+ "note": "Static examples for the convener's review. Written in advance by an AI system (Claude) and checked by code (quotes) and by a person before publishing to the preview. No AI service is called by this page.",
+ "items": {
+  "fr-2026-21512": {
+   "document": "Federal Register document 2026-21512, proposed rule, published October 21, 2026",
+   "source": "the agency's official summary in the Federal Register",
+   "passage": "The NCUA Board (Board) solicits public comment on a proposal to streamline the methods a federally insured credit union (FICU) may use to provide its members with notice of share insurance coverage. The current regulation is overly prescriptive, mandating that a FICU make available hard copies of certain prescribed materials. While a FICU would still be required to provide notice to members, the proposed rule would defer to the FICU on the method used for such notification. Among other methods, a FICU may elect to provide members with a link to updated online resources that will be maintained on the NCUA website. The Board believes the proposed rule will provide greater flexibility, reduce compliance costs for both NCUA and FICUs, and ensure that members are provided with up-to-date information regarding share insurance coverage.",
+   "scope": "This passage only. The full notice was not given to the tool for these examples.",
+   "actions": [
+    {
+     "id": "explain",
+     "label": "Explain this passage in plain language",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "The National Credit Union Administration's board is asking the public to comment on a proposal.",
+       "quotes": [
+        "solicits public comment on a proposal"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "Federally insured credit unions must tell their members about share insurance coverage. The current rule requires them to have certain printed materials available.",
+       "quotes": [
+        "notice of share insurance coverage",
+        "mandating that a FICU make available hard copies of certain prescribed materials"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "Under the proposal, credit unions would still have to notify members, but each credit union would choose how.",
+       "quotes": [
+        "a FICU would still be required to provide notice to members",
+        "would defer to the FICU on the method used for such notification"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "One allowed method would be a link to information the NCUA keeps up to date on its website.",
+       "quotes": [
+        "a link to updated online resources that will be maintained on the NCUA website"
+       ]
+      },
+      {
+       "kind": "reading",
+       "text": "Because the choice of method would be the credit union's, a credit union could still choose printed materials. The passage doesn't say printed materials would be banned.",
+       "quotes": [
+        "would defer to the FICU on the method used"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "The board says it expects the change to add flexibility, lower compliance costs, and keep information current. This is the agency's stated expectation, not an established result.",
+       "quotes": [
+        "The Board believes the proposed rule will provide greater flexibility"
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "The passage doesn't list the other methods that would be allowed, or say whether any standards would apply to the method a credit union chooses.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "term",
+     "label": "What does this term mean here?",
+     "terms": [
+      {
+       "term": "FICU",
+       "claims": [
+        {
+         "kind": "says",
+         "text": "FICU stands for \"federally insured credit union,\" as the passage itself defines it.",
+         "quotes": [
+          "federally insured credit union (FICU)"
+         ]
+        }
+       ]
+      },
+      {
+       "term": "share insurance coverage",
+       "claims": [
+        {
+         "kind": "unknown",
+         "text": "This passage uses \"share insurance coverage\" but doesn't define it. The full notice may explain it; it wasn't given to the tool for these examples.",
+         "quotes": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "costs",
+     "label": "Where does this document discuss costs?",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "This passage mentions costs once: the board expects the proposal to \"reduce compliance costs\" for the NCUA and credit unions.",
+       "quotes": [
+        "reduce compliance costs for both NCUA and FICUs"
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "The passage gives no amounts and no cost estimate. Only this passage was available, so the rest of the notice, which may include a cost analysis, wasn't checked.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "affected",
+     "label": "Does this document identify who would be affected?",
+     "claims": [
+      {
+       "kind": "says",
+       "text": "The passage names federally insured credit unions, which would choose how to notify members.",
+       "quotes": [
+        "the proposed rule would defer to the FICU on the method used"
+       ]
+      },
+      {
+       "kind": "says",
+       "text": "It names credit union members, who receive the notice.",
+       "quotes": [
+        "provide notice to members"
+       ]
+      },
+      {
+       "kind": "unknown",
+       "text": "The passage doesn't say how many credit unions or members are affected. Only this passage was available, so the full notice wasn't checked.",
+       "quotes": []
+      }
+     ]
+    },
+    {
+     "id": "missing",
+     "label": "What information is missing from the material here?",
+     "claims": [
+      {
+       "kind": "unknown",
+       "text": "Cost amounts or an official cost estimate.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "A list of the other notification methods that would be allowed.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "When the change would take effect if adopted.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "How members who don't use the internet would be reached, if online links are used. The passage doesn't address this.",
+       "quotes": []
+      },
+      {
+       "kind": "unknown",
+       "text": "These may be in the full notice, which wasn't given to the tool. \"Not in this passage\" doesn't mean the notice leaves them out.",
+       "quotes": []
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
