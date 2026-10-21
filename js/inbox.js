@@ -29,7 +29,7 @@ const packsFor=key=>Object.keys(PK).filter(k=>(PK[k].jurisdiction.offices||[]).s
 const officeJ=()=>{const k=packsFor(office)[0];return k?PK[k].jurisdiction:null};
 const office$=()=>OFFICES.find(o=>o.key===office);
 const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?" · approved by "+r.approver:""}`;
-const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.floor(g[0]*100/n):0};
 function analyze(d){
   // Same rule as the deliberation page (consensusLabel).
   const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null,n=s.a.concat(s.b).reduce((x,y)=>x+y,0);const kind=consensusLabel([s.a,s.b]);return {...s,pa,pb,pp,kind,n}});

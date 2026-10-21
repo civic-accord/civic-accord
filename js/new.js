@@ -122,7 +122,11 @@ document.addEventListener("input",e=>{const t=e.target;
   else if(t.id==="i-name") B.name=t.value; else if(t.id==="i-title") B.title=t.value;
   save();renderChecks();});
 document.addEventListener("change",e=>{const t=e.target; if(t.id&&t.id.startsWith("g-")&&GMAP[t.id]){B.custom=Object.assign(empty().custom,B.custom);B.custom[GMAP[t.id]]=t.value;save();renderChecks();return} if(t.id==="gov"){B.gov=t.value;save();renderAll()} else if(t.dataset.k==="yr"){B[t.dataset.l][+t.dataset.i].yr=!!t.value;save()} else if(t.dataset.k==="type"||t.dataset.k==="stmt"){B[t.dataset.l][+t.dataset.i][t.dataset.k]=t.value;save();if(t.dataset.k==="type")renderLists();renderChecks()}});
-document.addEventListener("click",e=>{const t=e.target; if(t.dataset.rm){B[t.dataset.rm].splice(+t.dataset.i,1);save();renderLists();renderChecks()}});
+document.addEventListener("click",e=>{const t=e.target; if(t.dataset.rm){const i=+t.dataset.i;B[t.dataset.rm].splice(i,1);
+  // Costs and revenues point to statements by number (1, 2, …). When a statement is removed, later numbers shift down
+  // and links to the removed one are cleared, so a cost never ends up pricing a different idea.
+  if(t.dataset.rm==="stmts")["costs","revs"].forEach(k=>(B[k]||[]).forEach(c=>{const n=+c.stmt;if(!n)return;c.stmt=n===i+1?"":n>i+1?String(n-1):c.stmt}));
+  save();renderLists();renderChecks()}});
 $("addfact").onclick=()=>{B.facts.push({label:"",text:"",url:""});save();renderLists();renderChecks()};
 $("addstmt").onclick=()=>{if(B.stmts.length>=15)return;B.stmts.push("");save();renderLists();renderChecks()};
 $("addcost").onclick=()=>{B.costs.push({stmt:"",name:"",unit:"",cost:"",def:"1",max:"",yr:true,basis:"",url:"",impact:"",bill:""});save();renderLists();renderChecks()};

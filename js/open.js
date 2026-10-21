@@ -112,8 +112,11 @@ function gcount(list){const k=new Set();list.forEach(it=>k.add(it.kind==="Propos
 function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;const nm=gcount(mine),na=gcount(all);
   const wk=mine.filter(i=>CA_DATES.closesSoon(i.closes)).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
-  $("headline").textContent=TP.picked.length?`${mine.length} item${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} you can weigh in on right now.`:`${all.length} items you can weigh in on right now.`;
-  $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
+  // Your own local meetings are included in "your topics" even when no topic word matches, so say so.
+  const localOnly=TP.picked.length?mine.filter(it=>!topicsOf(it).some(m=>TP.picked.includes(m.id))).length:0;
+  $("headline").textContent=TP.picked.length?`${mine.length} item${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"}${localOnly?`, including ${localOnly} local meeting${localOnly===1?"":"s"},`:""} you can weigh in on right now.`:`${all.length} items you can weigh in on right now.`;
+  $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";
+  if(DATA.quiet)$("subline").textContent+=" "+DATA.quiet;}
 // Your own county or city's meetings always show in "your topics", since meeting titles rarely name a topic.
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id))||(it.level==="local"&&canRespond(it)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
@@ -177,7 +180,7 @@ function render(){
   const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
   const wk=items.filter(i=>CA_DATES.closesSoon(i.closes));
   $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
-  const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:`<p class="meta">Nothing matches. Try another word.</p>`;
+  const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:(q?`<p class="meta">Nothing matches. Try another word.</p>`:`<p class="meta">Nothing is open for public input here right now${lvl||kd?" with these filters":""}.${DATA&&DATA.quiet?" "+esc(DATA.quiet):""} See "Where this comes from" at the bottom of the page for each source.</p>`);
   // Many near-identical rules (for example, dozens of "Airworthiness Directives") are folded into one group.
   const groups=[],gi={};
   items.forEach(it=>{const k=it.kind==="Proposed rule"&&it.title.includes(";")?it.who+"|"+it.title.split(";")[0].trim():it.id;
@@ -212,11 +215,10 @@ function render(){
     const keep=()=>{SIGNER={name:$("sn").value.trim(),town:$("stw").value.trim()};try{localStorage.setItem(SKEY,JSON.stringify(SIGNER))}catch(e){}};
     $("sn").oninput=keep;$("stw").oninput=keep;$("cm").oninput=()=>{COMMENT[it.id]=$("cm").value};
     const reps=recipients(it);
-    document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal);
-      let url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
-      if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}
-      pend(it,r,"email",m);window.__openMail(url);mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);
-      $("rm-"+a.dataset.mail).textContent="Opening your email app…"});
+    document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=async e=>{e.preventDefault();keep();const r=reps[+a.dataset.mail];const m=message(it,r.sal),el=$("rm-"+a.dataset.mail);
+      const {url,shown}=await CA_TELL.mailUrl(r.email,m,el);
+      pend(it,r,"email",m);window.__openMail(url);mark(it.id,"started");
+      if(!shown){setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200);el.textContent="Opening your email app…"}});
     document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const r=reps[+a.dataset.form];if(r)pend(it,r,"contact-form",message(it,r.sal));mark(it.id,"started");setTimeout(()=>{const y=window.scrollY;render();window.scrollTo({top:y})},1200)}));
     document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.copy,r=reps[i],m=message(it,r.sal);pend(it,r,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`;
       const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
@@ -233,6 +235,9 @@ async function load(){
   try{d=await (await fetch("/api/open"+(st?"?state="+st:""),LOADCTL?{signal:LOADCTL.signal}:undefined)).json()}catch(e){if(seq===LOADSEQ)$("count").textContent="Couldn't load the feed. Check your connection and try again.";return}
   if(seq!==LOADSEQ||$("st").value!==st)return;
   setWhere();
+  // A reply without a list (for example, a platform error page) is treated as a failed load, never as "nothing open".
+  if(!d||!Array.isArray(d.items)){$("count").textContent="Couldn't load the feed. Try again in a few minutes.";return}
+  d.sources=d.sources||[];d.errors=d.errors||[];d.notConnected=d.notConnected||[];
   DATA=d;RAW=(DATA.items||[]).slice();refreshLive();
   const when=t=>t?new Date(t).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"}):"";
   $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items${s.at?` · fetched ${esc(when(s.at))}`:""}${s.stale?` <b>· Couldn't refresh just now, so this is the last good list.</b>`:""}</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");

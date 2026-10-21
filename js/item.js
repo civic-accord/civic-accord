@@ -186,13 +186,12 @@ function bind(it,keys,parts,version,orphans){
   const reps=TELL&&DIST?CA_TELL.recipients(it,DIST,FED,STATELEG):[];
   const msg=p=>CA_TELL.message(it,p.sal,{stance:REACT[ID],comment:COMMENT,signer:SIGNER,dist:DIST});
   const pend=(p,channel,m)=>{const x={officeId:p.officeId,name:p.name,title:p.title,channel,text:`Subject: ${m.subject}\n\n${m.body}`};const i=PENDING.findIndex(y=>y.officeId===p.officeId&&y.name===p.name);if(i>=0)PENDING[i]=x;else PENDING.push(x)};
-  document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=e=>{e.preventDefault();keepS();const p=reps[+a.dataset.mail],m=msg(p);
-    let url=`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
-    if(url.length>1900){try{navigator.clipboard.writeText(m.body)}catch(x){}url=`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent("(Your message was copied. Paste it here.)")}`}
-    pend(p,"email",m);window.__openMail?window.__openMail(url):(location.href=url);setTimeout(()=>rerender("didsend"),1200);$("rm-"+a.dataset.mail).textContent="Opening your email app…"});
+  document.querySelectorAll("[data-mail]").forEach(a=>a.onclick=async e=>{e.preventDefault();keepS();const p=reps[+a.dataset.mail],m=msg(p),el=$("rm-"+a.dataset.mail);
+    const {url,shown}=await CA_TELL.mailUrl(p.email,m,el);
+    pend(p,"email",m);window.__openMail?window.__openMail(url):(location.href=url);if(!shown){setTimeout(()=>rerender("didsend"),1200);el.textContent="Opening your email app…"}});
   document.querySelectorAll("[data-form]").forEach(a=>a.addEventListener("click",()=>{const p=reps[+a.dataset.form];pend(p,"contact-form",msg(p));setTimeout(()=>rerender(),1200)}));
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{keepS();const i=+b.dataset.copy,p=reps[i],m=msg(p);pend(p,"contact-form",m);const txt=`Subject: ${m.subject}\n\n${m.body}`,t=$("rm-"+i);
-    try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>t.textContent="Couldn't copy. Select the message text and copy it.")}catch(e){t.textContent="Couldn't copy. Select the message text and copy it."}});
+    CA_TELL.copy(txt).then(ok=>ok?t.textContent="Copied. Now open the contact form and paste it.":CA_TELL.showText(t,txt,"Couldn't copy automatically. Select the message below and copy it."))});
   const ds=$("didsend");if(ds)ds.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   const rm=$("rec-manual");if(rm)rm.onclick=()=>{RECORDING=true;rerender();const f=document.querySelector("#rec textarea");if(f)f.focus()};
   if(RECORDING)CA_TELL.bindPanel("rec",{id:ID,title:it.title,version},PENDING,manualOffice(it),n=>{RECORDING=false;if(n)PENDING=[];rerender("h4")});

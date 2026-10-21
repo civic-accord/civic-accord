@@ -67,11 +67,13 @@ function myGroup(){let sa=0,sb=0;
 function tally(s){
   const a=[...s.a], b=[...s.b], v=st.mine[s.id];
   if(v!==undefined&&st.submitted&&(PRACTICE||myStatus()==="registered")){ (myGroup()==="b"?b:a)[v]++; }
-  const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+  // Shown percentages round down, so a share never looks like it reached a threshold it didn't.
+  const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.floor(g[0]*100/n):0};
   const pa=pct(a), pb=pct(b);
   const kind=consensusLabel([a,b]);
   const pp=s.panel?pct(s.panel):null, pn=s.panel?s.panel[0]+s.panel[1]+s.panel[2]:0;
-  const pkind=pp===null?null:pp>=70?"agrees":pp>=40?"divided":"disagrees";
+  // Panel labels compare exact counts, like the consensus rule: 70% or more agrees, 40–69% divided, under 40% disagrees.
+  const pkind=pp===null?null:s.panel[0]*100>=70*pn?"agrees":s.panel[0]*100>=40*pn?"divided":"disagrees";
   return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2],pp,pn,pkind};
 }
 function panelNote(s){if(s.pp===null)return "";
@@ -168,7 +170,7 @@ function submitBox(){
   const c=voteCounts(), t=agreedTotals(), n=all().length;
   if(st.submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
     <h3>✓ Your sample votes are saved</h3>
-    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're saved only in this browser.</p>
+    <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're kept on this page only, until you leave or reload it.</p>
     <p class="meta">Your receipt</p><span class="receipt">${esc(st.receipt)}</span>
     <p class="meta">In the live tool, this receipt would show your sealed votes are in the public record. It's designed so it can't show anyone how you voted, so it can't be used to buy or pressure your vote. You can change your votes until the deliberation closes; only your last votes count.</p>
     <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
