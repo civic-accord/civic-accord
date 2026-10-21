@@ -65,7 +65,7 @@ function fiveQs(it,stage){
   const J=it.jurisdiction||{}, local=it.level==="local", rule=it.kind==="Proposed rule";
   const by=it.summary&&it.summary.by?it.summary.by:(it.source&&it.source.label)||"the official source";
   const first=(it.parts||[])[0];
-  const q1=first?`<blockquote class="q5quote">${first.lead?esc(first.lead)+" ":""}${esc(first.text)}</blockquote><span class="meta">From ${esc(by)}${it.parts.length>1?`. The other ${it.parts.length-1} part${it.parts.length===2?"":"s"} are under "What it is."`:"."}</span>`
+  const q1=first?`<blockquote class="q5quote">${first.lead?esc(first.lead)+" ":""}${esc(first.text)}</blockquote><span class="meta">From ${esc(by.replace(/^The /,"the "))}${it.parts.length>1?`. The other ${it.parts.length-1} part${it.parts.length===2?"":"s"} are under "What it is."`:"."}</span>`
     :`<span class="meta">The official record has no summary for this ${rule?"notice":local?"meeting":"bill"} yet. Its title: </span>${esc(it.title)}`;
   const q2=[it.topic?`Policy area, from ${esc(it.source&&it.source.label||"the source")}: ${esc(it.topic)}.`:"",
     rule&&J.name?`Proposed by: ${esc(J.name)}.`:""].filter(Boolean).join(" ");
