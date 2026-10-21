@@ -5,7 +5,7 @@
   "key": "hi-state",
   "name": "Hawaiʻi State Legislature",
   "level": "state",
-  "district": "Maui · State House District (example)",
+  "district": "A State House district (example)",
   "session": "2027 session opens Jan 20",
   "drafting": "In the live version, AI would help organize and draft. People decide. The Legislative Reference Bureau drafts the final bill text for any legislator who introduces it.",
   "residents": 1432820,
@@ -50,7 +50,7 @@
    {
     "key": "state-house",
     "title": "State House seat",
-    "where": "Maui district (example)",
+    "where": "A State House district (example)",
     "holder": "Current officeholder (example)",
     "term": "Two-year term",
     "onBallot": true,
@@ -82,7 +82,7 @@
    {
     "key": "state-senate",
     "title": "State Senate seat",
-    "where": "Maui district (example)",
+    "where": "A State Senate district (example)",
     "holder": "Current officeholder (example)",
     "term": "Four-year term",
     "onBallot": false,
@@ -522,19 +522,19 @@
       "name": "Area",
       "rows": [
        [
-        "Upcountry",
+        "Rural areas",
         44,
         31,
         31
        ],
        [
-        "Central",
+        "Towns",
         30,
         39,
         38
        ],
        [
-        "East and West",
+        "Coastal areas",
         26,
         30,
         31
