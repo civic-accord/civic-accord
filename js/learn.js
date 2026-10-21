@@ -45,8 +45,9 @@ function renderItems(){
 }
 
 // Mix state bills, soonest comment deadlines, and bills in Congress, so there's a little of each.
-function mix(list){const today=new Date().toISOString().slice(0,10);
-  const st=list.filter(x=>x.level==="state"), ru=list.filter(x=>x.closes&&x.closes>=today).sort((a,b)=>a.closes.localeCompare(b.closes)), co=list.filter(x=>x.source==="Congress.gov");
+// Closed items are left out, using the same deadline check as Open Now (lib/dates.js).
+function mix(all){const list=all.filter(x=>!CA_DATES.isClosed(x.closes)&&!CA_DATES.isClosed(x.meets));
+  const st=list.filter(x=>x.level==="state"), ru=list.filter(x=>x.closes).sort((a,b)=>a.closes.localeCompare(b.closes)), co=list.filter(x=>x.source==="Congress.gov");
   const out=[],seen=new Set(),q=[st,ru,co];let i=0;while(q.some(a=>a.length)){const a=q[i++%3];const x=a.shift();if(x&&!seen.has(x.id)){seen.add(x.id);out.push(x)}}return out}
 function pick(){
   const q=$("lq").value.trim().toLowerCase();

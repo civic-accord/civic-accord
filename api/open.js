@@ -168,7 +168,8 @@ module.exports = async (req, res) => {
   }
   const times = ["fr", "congress", st && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).filter(Boolean);
   if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
-  const shortLife = out.shortLife; delete out.shortLife;
+  // A list kept only because a refresh failed is cached briefly, so the next visit tries again soon.
+  const shortLife = out.shortLife || out.sources.some(x => x.stale); delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=3600");
   res.setHeader("Access-Control-Allow-Origin", "*");

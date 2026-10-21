@@ -88,7 +88,8 @@ function render(it){
   document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=b.dataset.v;if(MINE.parts[k]&&MINE.parts[k].v===v)delete MINE.parts[k];else MINE.parts[k]={v,text:TXT[k]||""};save();
     b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(!!MINE.parts[k]&&MINE.parts[k].v===x.dataset.v)));
     const n=keys.filter(k=>MINE.parts[k]).length;$("saved").textContent=`Practice votes saved on this device: ${n} of ${keys.length}.`});
-  const co=$("clearold");if(co)co.onclick=()=>{orphans.forEach(k=>delete MINE.parts[k]);MINE.version=version;save();render(it)};
+  const co=$("clearold");if(co)co.onclick=()=>{orphans.forEach(k=>delete MINE.parts[k]);MINE.version=version;save();render(it);
+    const h=$("h2");if(h){h.setAttribute("tabindex","-1");h.focus()}const sv=$("saved");if(sv){sv.setAttribute("role","status");sv.textContent="Earlier votes cleared. "+sv.textContent}};
   const af=$("addf");if(af)af.onsubmit=e=>{e.preventDefault();const t=$("addt").value.trim();if(t.length<10){$("addmsg").textContent="Write at least a short sentence.";return}
     MINE.added.push(t);save();render(it);$("addt").focus();$("addmsg").textContent="Added on this device."};
   document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{MINE.added.splice(+b.dataset.rm,1);save();render(it);const t=$("addt");if(t)t.focus();$("addmsg").textContent="Removed."});

@@ -23,29 +23,34 @@ function decode(s) {
 // Each part keeps its official lead-in (for example "This bill:") when it's an item in a list, so it reads in context.
 // Headings and very short lines (under 25 characters) and exact repeats are left out; the page says so.
 // What gets left out, and why (the page says how many):
-//  - headings and titles: lines in all capitals, or short lines that aren't sentences (no ending punctuation),
-//    for example "TITLE I--AGRICULTURE" or "Invasive Species Act". Length alone never removes a line:
-//    "Repeals the tax." stays.
+//  - headings: lines in all capitals ("TITLE I--AGRICULTURE"), or blocks marked up as headings or set entirely in bold
+//    ("<p><strong>Invasive Species Act</strong></p>"). Length or missing punctuation never removes a line:
+//    "Repeals the tax." and "Appropriates funds for invasive species control" both stay.
 //  - exact repeats.
-// Plain-text summaries that use bullets ("• Repeals the tax.") are read as lists, like HTML lists.
+// Plain-text summaries that use bullets ("• Repeals the tax.") or numbers ("1. ...") are read as lists, like HTML lists.
+// If every line would be left out, nothing is left out.
 function partsFrom(text) {
   if (!text) return { parts: [], more: false, dropped: 0, headings: 0, repeats: 0 };
   const LI = "\u0001";
-  const src = String(text).replace(/\r/g, "")
-    .replace(/\n[ \t]*[•·▪◦‣*-][ \t]+/g, "\n\n" + LI)                     // plain-text bullets become list items
+  const HD = "\u0002";
+  const src = ("\n" + String(text)).replace(/\r/g, "")
+    .replace(/\n[ \t]*(?:[•·▪◦‣*]|-(?=[ \t])|\d{1,2}[.)](?=[ \t]))[ \t]+/g, "\n\n" + LI)   // plain-text bullets and numbers become list items
+    .replace(/<h\d[^>]*>/gi, HD)                                                           // marked-up headings
+    .replace(/<p[^>]*>\s*<(strong|b)>([\s\S]*?)<\/\1>\s*(?=<\/p>)/gi, (m, t, inner) => HD + inner)   // a paragraph that is all bold
     .replace(/<li[^>]*>/gi, LI);
   const blocks = src.split(/<\/p>|<br\s*\/?>|<\/li>|<\/h\d>|<\/ul>|<\/ol>|<ul[^>]*>|<ol[^>]*>|\n\s*\n/i)
-    .map(b => { const li = b.includes(LI); return { li, t: decode(b.replace(/\u0001/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }; })
+    .map(b => { const li = b.includes(LI), hd = b.includes(HD); return { li, hd, t: decode(b.replace(/[\u0001\u0002]/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }; })
     .filter(b => b.t);
-  const seen = new Set(), parts = []; let lead = null, headings = 0, repeats = 0, pendingBg = [];
+  const seen = new Set(), parts = [], dropped = []; let lead = null, headings = 0, repeats = 0, pendingBg = [];
   const addBg = (p, t) => { p.background = p.background ? p.background + "\n\n" + t : t; };
-  const isHeading = (t, li) => (/[A-Z]/.test(t) && t === t.toUpperCase()) || (!li && t.length < 80 && !/[.;:!?)\]"”]$/.test(t));
+  const allCaps = t => /[A-Z]/.test(t) && t === t.toUpperCase();
+  const isHeading = b => !b.li && (b.hd || allCaps(b.t)) && !/^(this|the) (bill|act|section|title|resolution|rule)\b/i.test(b.t);
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i], next = blocks[i + 1];
     if (!b.li) lead = null;
     // A line that introduces a list ("This bill:", "A state with a payment error rate that is") travels with each list item.
-    if (!b.li && next && next.li && !(/[A-Z]/.test(b.t) && b.t === b.t.toUpperCase())) { lead = b.t; continue; }
-    if (isHeading(b.t, b.li)) { headings++; continue; }
+    if (!b.li && next && next.li && !isHeading(b)) { lead = b.t; continue; }
+    if (isHeading(b)) { headings++; dropped.push(b.t); continue; }
     if (seen.has((lead || "") + "|" + b.t)) { repeats++; continue; }
     seen.add((lead || "") + "|" + b.t);
     // "As background, ..." explains the part before it; "Existing law ..." (as in California's digest) explains the part after it.
@@ -59,6 +64,7 @@ function partsFrom(text) {
   if (pendingBg.length && parts.length) pendingBg.forEach(t => addBg(parts[parts.length - 1], t));
   // If everything looked like background, nothing is hidden: show it all as parts.
   else if (pendingBg.length) pendingBg.forEach(t => parts.push({ text: t }));
+  if (!parts.length && dropped.length) { dropped.forEach(t => parts.push({ text: t })); headings = 0; }
   return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS, shownOf: parts.length, dropped: headings + repeats, headings, repeats };
 }
 // Official links sometimes still use http://; upgrade them, then accept only https.

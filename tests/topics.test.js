@@ -10,7 +10,9 @@ const CASES = [
   [{ title: "Airworthiness Directives; The Boeing Company Airplanes", who: "Federal Aviation Administration", summary: "" }, ["transport"], ["environment", "world"]],
   [{ title: "Safety Zone; Hudson River", who: "Coast Guard", summary: "" }, ["transport"], ["water"]],
   [{ title: "Program rule", who: "Agency", summary: "This rule changes how schools report. Schools must file each year." }, ["education"], []],
-  [{ title: "Program rule", who: "Agency", summary: "This rule mentions housing once." }, [], ["housing"]],
+  [{ title: "Program rule", who: "Agency", summary: "This rule changes rules for landlords." }, ["housing"], []],
+  [{ title: "Readiness rule", who: "Agency", summary: "The Secretary of Defense would set readiness standards." }, ["veterans"], []],
+  [{ title: "Claims rule", who: "Agency", summary: "This is a defense against fraudulent claims." }, [], ["veterans"]],
 ];
 CASES.forEach(([it, yes, no], i) => test(`case ${i + 1}: ${it.title}`, () => {
   const got = ids(it);

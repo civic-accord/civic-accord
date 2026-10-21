@@ -45,3 +45,21 @@ test("long summaries disclose the display limit", () => {
   assert.strictEqual(r.more, true);
   assert.strictEqual(r.shownOf, 40);
 });
+test("state summaries without a final period are kept", () => {
+  assert.deepStrictEqual(texts(partsFrom("Appropriates funds for invasive species control")), ["Appropriates funds for invasive species control"]);
+  assert.deepStrictEqual(texts(partsFrom("Relates to the sale of raw milk")), ["Relates to the sale of raw milk"]);
+});
+test("California-style and short lines inside paragraphs are kept", () => {
+  assert.deepStrictEqual(texts(partsFrom("<p>This bill would require the department to report by 2028</p>")), ["This bill would require the department to report by 2028"]);
+  assert.deepStrictEqual(texts(partsFrom("<p>Requires reporting</p>")), ["Requires reporting"]);
+});
+test("a bullet on the very first line, and numbered lines, are list items", () => {
+  assert.deepStrictEqual(texts(partsFrom("• Repeals the tax.\n• Funds the program.")), ["Repeals the tax.", "Funds the program."]);
+  assert.deepStrictEqual(texts(partsFrom("1. Repeals the tax.\n2. Funds the program.")), ["Repeals the tax.", "Funds the program."]);
+});
+test("hyphenated words aren't mistaken for bullets", () => {
+  assert.deepStrictEqual(texts(partsFrom("A well-known risk-based approach is used.")), ["A well-known risk-based approach is used."]);
+});
+test("if everything looks like a heading, nothing is left out", () => {
+  assert.deepStrictEqual(texts(partsFrom("<p><strong>Relating to agriculture</strong></p>")), ["Relating to agriculture"]);
+});

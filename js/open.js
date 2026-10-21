@@ -139,7 +139,7 @@ function canRespond(it){if(it.level==="federal")return true;
   if(it.level==="local")return !!(DIST&&((it.countyId&&DIST.countyId===it.countyId)||(it.placeId&&DIST.placeId===it.placeId)||(it.townId&&DIST.townId===it.townId)));
   return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
 function whyLine(it){const ms=topicsOf(it);if(!ms.length)return "";const mine=ms.filter(m=>TP.picked.includes(m.id)),show=mine.length?mine:ms;
-  return `<span class="why">${mine.length?"Your topic":"Topic"}: ${show.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`}
+  return `<span class="why">${mine.length?"Your topic":"Topic"}: ${show.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")} <a href="https://github.com/civic-accord/civic-accord/issues/new?title=${encodeURIComponent("Wrong topic: "+it.title.slice(0,80))}&body=${encodeURIComponent("Item: "+it.id+"\nShown as: "+show.map(m=>m.label).join(", ")+"\nShould be: ")}" target="_blank" rel="noopener" style="font-weight:400;color:var(--koa)">Wrong topic?</a></span>`}
 function stepOf(it){const p=PROG[it.id]||{};return !p.read?0:!REACT[it.id]?1:!p.spoke?2:!p.talk?3:4}
 const KIND=it=>it.kind==="Proposed rule"?"Federal rule":it.kind==="Bill in Congress"?"Bill in Congress":it.level==="state"?"State bill":it.level==="local"?"Local meeting":it.kind;
 function pathHTML(it){const p=PROG[it.id]||{},now=stepOf(it),ro=!canRespond(it);
@@ -268,6 +268,9 @@ $("q").oninput=()=>{shown=10;render()};$("lvl").onchange=()=>{shown=10;render()}
 renderTopics();
 load();
 // Coming back to an open tab, or leaving it open past midnight, re-checks every deadline.
-function recheck(){if(!DATA)return;refreshLive();renderTopics();render();updateHeadline()}
+// Redraw only if a deadline actually passed, so someone in the middle of writing a message isn't interrupted.
+let LASTDAY=CA_DATES.today();
+function recheck(){if(!DATA)return;const before=DATA.items.length,day=CA_DATES.today();refreshLive();
+  if(DATA.items.length===before&&day===LASTDAY)return;LASTDAY=day;renderTopics();render();updateHeadline()}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)recheck()});
 setInterval(recheck,30*60*1000);
