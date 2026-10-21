@@ -20,3 +20,5 @@ jobs:
           if grep -l '<script>' *.html | grep -v '^geo-frame.html$'; then echo "Inline script found"; exit 1; fi
       - name: Data files are valid JSON
         run: for f in vercel.json manifest.webmanifest packs/*.json registry/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" || exit 1; done
+      - name: Regression tests (deadlines, summary parsing, saved votes, consensus rule, topics, local governments)
+        run: node --test tests/*.test.js

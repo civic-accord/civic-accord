@@ -62,4 +62,4 @@ The two-way conversation is between residents and an **office** (a seat), not an
 
 ## Status
 
-Early prototype. Everything shown uses invented example data. Nothing is collected or sent anywhere.
+Early example, not yet run by a host. Live today: the address lookup (U.S. Census Bureau), Open Now (official federal, state, and some local sources), talk-it-through pages built from official text, and messages you send yourself. Deliberations, votes, verification, and office responses are samples. Civic Accord's servers collect no personal data; your browser contacts outside services as described in How it works (civicaccord.org/how.html#privacy).

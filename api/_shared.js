@@ -49,6 +49,8 @@ function memo(key, ttlMs, fn, failMs = SHORT) {
 }
 // When the answer for a key was actually fetched from its source (null if never).
 function asOf(key) { const h = MEMO.get(key); return h && h.good ? h.good.at : null; }
+// Whether the last attempt to refresh this key failed and an older answer is being shown instead.
+function isStale(key) { const h = MEMO.get(key); return !!(h && h.good && h.failAt && h.failAt > h.good.at); }
 
 // 0. These functions only read. Anything other than GET or HEAD is refused, so it can't skip the saved copy at the edge.
 function onlyRead(req, res) {
@@ -93,4 +95,4 @@ async function getJSON(url, headers, limits) {
   return r.json();
 }
 
-module.exports = { canonical, memo, asOf, onlyRead, fetchWithTimeout, publicError, getJSON };
+module.exports = { canonical, memo, asOf, isStale, onlyRead, fetchWithTimeout, publicError, getJSON };

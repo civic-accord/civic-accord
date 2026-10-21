@@ -82,7 +82,11 @@ function composeBox(it){
   </div>`;
 }
 const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
-const daysLeft=d=>{if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/864e5)};
+// Deadlines are checked against today's date every time the list is drawn (lib/dates.js), so a saved or cached list
+// never shows a closed item as open.
+const daysLeft=d=>CA_DATES.daysLeft(d);
+let RAW=[];
+function refreshLive(){if(!DATA)return;DATA.items=RAW.filter(it=>!CA_DATES.isClosed(it.closes)&&!CA_DATES.isClosed(it.meets));DATA.closedNow=RAW.length-DATA.items.length}
 
 // Topics: a quick pick of what you care about. Saved only on this device. Matching uses published word lists (lib/topics.js), not AI.
 const TKEY="civicaccord-topics", TMAX=5, TOP=window.CA_TOPICS||{list:[],match:()=>[]};
@@ -123,9 +127,9 @@ function updateTally(){const v=Object.values(PROG),rd=v.filter(x=>x.read).length
   t.textContent=`Your steps so far, kept only on this device: you've ${list}.`}
 function gcount(list){const k=new Set();list.forEach(it=>k.add(it.kind==="Proposed rule"&&it.title.includes(";")?it.who+"|"+it.title.split(";")[0].trim():it.id));return k.size}
 function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;const nm=gcount(mine),na=gcount(all);
-  const wk=mine.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7}).length;
+  const wk=mine.filter(i=>CA_DATES.closesSoon(i.closes)).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
-  $("headline").textContent=TP.picked.length?`${nm} thing${nm===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} you can weigh in on right now.`:`${na} things you can weigh in on right now.`;
+  $("headline").textContent=TP.picked.length?`${mine.length} item${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} you can weigh in on right now.`:`${all.length} items you can weigh in on right now.`;
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
 // Your own county or city's meetings always show in "your topics", since meeting titles rarely name a topic.
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id))||(it.level==="local"&&canRespond(it)))}
@@ -172,10 +176,10 @@ function card(it,first){
   const sm=it.summary||"";
   return `<article class="item lvl-${esc(it.level)}" id="it-${esc(it.id)}">
     <div class="top"><span class="kindtag">${esc(KIND(it))}</span>${first?`<span class="start">Start here</span>`:""}
-      ${it.closes&&dl!==null?`<span class="clock ${dl<=7?"soon":""}">${dl<=0?"Closes today":dl===1?"1 day left":dl+" days left"}</span>`:""}</div>
+      ${it.closes&&dl!==null?`<span class="clock ${CA_DATES.closesSoon(it.closes)?"soon":""}">${CA_DATES.label(it.closes)}</span>`:""}</div>
     <h3>${esc(it.title)}</h3>
     ${whyLine(it)}
-    <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
+    <span class="who">${esc(it.who)}${it.opened?`, opened ${fmt(it.opened)}`:""}${it.closes?`. Comments close ${fmt(it.closes)}${dl===0?" (check the notice for the exact time)":""}.`:""}${it.meets?`. Meets ${fmt(it.meets)}.`:""}</span>
     ${sm?(sm.length>220?`<details class="sum"><summary>${esc(sm.slice(0,200).replace(/\s+\S*$/,""))}… <span style="color:var(--koa)">More</span></summary>${esc(sm)}${it.summaryCut?` <a href="item.html?id=${encodeURIComponent(it.id)}" style="color:var(--koa)">Full summary</a>`:""}</details>`:`<p class="sum">${esc(sm)}</p>`):""}
     ${pathHTML(it)}
     ${nextHTML(it)}
@@ -188,8 +192,7 @@ function render(){
   const items=base.filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
     .sort((a,b)=>(a.closes||a.meets||"9999").localeCompare(b.closes||b.meets||"9999"));
   const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
-  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}`;
-  const wk=items.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7});
+  const wk=items.filter(i=>CA_DATES.closesSoon(i.closes));
   $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
   const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:`<p class="meta">Nothing matches. Try another word.</p>`;
   // Many near-identical rules (for example, dozens of "Airworthiness Directives") are folded into one group.
@@ -197,6 +200,8 @@ function render(){
   items.forEach(it=>{const k=it.kind==="Proposed rule"&&it.title.includes(";")?it.who+"|"+it.title.split(";")[0].trim():it.id;
     if(gi[k]===undefined){gi[k]=groups.length;groups.push({k,name:it.title.split(";")[0].trim(),list:[it]})}else groups[gi[k]].list.push(it)});
   GROUPS=groups;
+  // One unit everywhere: items. When similar items are folded together, say so.
+  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}${groups.length<items.length?`, shown in ${groups.length} groups of similar items`:""}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}${DATA.closedNow?` ${DATA.closedNow} item${DATA.closedNow===1?" has":"s have"} closed since this list was fetched, so ${DATA.closedNow===1?"it's":"they're"} hidden.`:""}`;
   $("list").innerHTML=groups.slice(0,shown).map((g,gi)=>{const rest=g.list.length-1,f=gi===0&&!q&&VIEW!=="all";
     if(!rest)return card(g.list[0],f);
     const open=OPENG.has(g.k);
@@ -231,11 +236,20 @@ function render(){
       const t=$("rm-"+i);try{navigator.clipboard.writeText(txt).then(()=>t.textContent="Copied. Now open the contact form and paste it.",()=>{$("cm").value=txt;t.textContent="Select the text above and copy it."})}catch(e){$("cm").value=txt;t.textContent="Select the text above and copy it."}});
   }
 }
+// Only the latest state choice is ever shown: earlier requests are cancelled, and a late answer is ignored.
+let LOADSEQ=0, LOADCTL=null;
 async function load(){
-  const st=$("st").value;
+  const st=$("st").value, seq=++LOADSEQ;
+  if(LOADCTL)try{LOADCTL.abort()}catch(e){}
+  LOADCTL=typeof AbortController!=="undefined"?new AbortController():null;
   $("count").textContent="Loading what's open…";
-  try{DATA=await (await fetch("/api/open"+(st?"?state="+st:""))).json()}catch(e){$("count").textContent="Couldn't load the feed. Check your connection and try again.";return}
-  $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");
+  let d=null;
+  try{d=await (await fetch("/api/open"+(st?"?state="+st:""),LOADCTL?{signal:LOADCTL.signal}:undefined)).json()}catch(e){if(seq===LOADSEQ)$("count").textContent="Couldn't load the feed. Check your connection and try again.";return}
+  if(seq!==LOADSEQ||$("st").value!==st)return;
+  setWhere();
+  DATA=d;RAW=(DATA.items||[]).slice();refreshLive();
+  const when=t=>t?new Date(t).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"}):"";
+  $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items${s.at?` · fetched ${esc(when(s.at))}`:""}${s.stale?` <b>· Couldn't refresh just now, so this is the last good list.</b>`:""}</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");
   if(DATA.quiet) $("sources").innerHTML+=`<li class="meta">${esc(DATA.quiet)}</li>`;
   if(DATA.partial) $("sources").innerHTML+=`<li class="meta">${esc(DATA.partial)}</li>`;
   $("notconn").innerHTML=DATA.notConnected.length?`<h3>Not connected yet</h3><ul class="plain">${DATA.notConnected.map(n=>`<li>${esc(n.label)}. ${esc(n.how)} (<a href="${esc(safe(n.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">get one</a>), added by the site's host.</li>`).join("")}</ul>`:"";
@@ -247,7 +261,13 @@ async function load(){
 renderMe();loadReps();
 $("st").innerHTML=STATES.map(s=>`<option value="${s}">${s?s:"Choose your state"}</option>`).join("");
 const vs=DIST&&DIST.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
-$("where").innerHTML=vs?`Showing federal items and items for your state. Your reactions and steps stay on this device.`:`Showing federal items. Choose your state to add your state legislature's bills. Your reactions and steps stay on this device.`;
+function setWhere(){const st=$("st").value, nm=st?($("st").selectedOptions[0]||{}).textContent:"";
+  $("where").innerHTML=st?`Showing federal items and items for ${esc(nm)}${DIST&&DIST.state===st?" (your state)":""}. Your reactions and steps stay on this device.`:`Showing federal items. Choose your state to add your state legislature's bills and connected local meetings. Your reactions and steps stay on this device.`}
+setWhere();
 $("q").oninput=()=>{shown=10;render()};$("lvl").onchange=()=>{shown=10;render()};$("kind").onchange=()=>{shown=10;render()};$("st").onchange=load;$("more").onclick=()=>{const n=shown;shown+=10;render();const c=$("list").children[n];if(c){c.setAttribute("tabindex","-1");c.focus({preventScroll:true})}};
 renderTopics();
 load();
+// Coming back to an open tab, or leaving it open past midnight, re-checks every deadline.
+function recheck(){if(!DATA)return;refreshLive();renderTopics();render();updateHeadline()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)recheck()});
+setInterval(recheck,30*60*1000);

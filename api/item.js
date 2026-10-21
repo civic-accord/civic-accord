@@ -22,22 +22,32 @@ function decode(s) {
 }
 // Each part keeps its official lead-in (for example "This bill:") when it's an item in a list, so it reads in context.
 // Headings and very short lines (under 25 characters) and exact repeats are left out; the page says so.
+// What gets left out, and why (the page says how many):
+//  - headings and titles: lines in all capitals, or short lines that aren't sentences (no ending punctuation),
+//    for example "TITLE I--AGRICULTURE" or "Invasive Species Act". Length alone never removes a line:
+//    "Repeals the tax." stays.
+//  - exact repeats.
+// Plain-text summaries that use bullets ("• Repeals the tax.") are read as lists, like HTML lists.
 function partsFrom(text) {
-  if (!text) return { parts: [], more: false, dropped: 0 };
+  if (!text) return { parts: [], more: false, dropped: 0, headings: 0, repeats: 0 };
   const LI = "\u0001";
-  const blocks = String(text).replace(/\r/g, "").replace(/<li[^>]*>/gi, LI).split(/<\/p>|<br\s*\/?>|<\/li>|<\/h\d>|<\/ul>|<\/ol>|\n\s*\n/i)
+  const src = String(text).replace(/\r/g, "")
+    .replace(/\n[ \t]*[•·▪◦‣*-][ \t]+/g, "\n\n" + LI)                     // plain-text bullets become list items
+    .replace(/<li[^>]*>/gi, LI);
+  const blocks = src.split(/<\/p>|<br\s*\/?>|<\/li>|<\/h\d>|<\/ul>|<\/ol>|<ul[^>]*>|<ol[^>]*>|\n\s*\n/i)
     .map(b => { const li = b.includes(LI); return { li, t: decode(b.replace(/\u0001/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }; })
     .filter(b => b.t);
-  const seen = new Set(), parts = []; let lead = null, dropped = 0, pendingBg = [];
+  const seen = new Set(), parts = []; let lead = null, headings = 0, repeats = 0, pendingBg = [];
   const addBg = (p, t) => { p.background = p.background ? p.background + "\n\n" + t : t; };
-  const isHeading = t => /[A-Z]/.test(t) && t === t.toUpperCase();
+  const isHeading = (t, li) => (/[A-Z]/.test(t) && t === t.toUpperCase()) || (!li && t.length < 80 && !/[.;:!?)\]"”]$/.test(t));
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i], next = blocks[i + 1];
     if (!b.li) lead = null;
     // A line that introduces a list ("This bill:", "A state with a payment error rate that is") travels with each list item.
-    if (!b.li && next && next.li) { lead = b.t; continue; }
-    if (isHeading(b.t) || b.t.length < 25 || seen.has(b.t)) { dropped++; continue; }
-    seen.add(b.t);
+    if (!b.li && next && next.li && !(/[A-Z]/.test(b.t) && b.t === b.t.toUpperCase())) { lead = b.t; continue; }
+    if (isHeading(b.t, b.li)) { headings++; continue; }
+    if (seen.has((lead || "") + "|" + b.t)) { repeats++; continue; }
+    seen.add((lead || "") + "|" + b.t);
     // "As background, ..." explains the part before it; "Existing law ..." (as in California's digest) explains the part after it.
     // Both are shown with that part, not voted on separately.
     if (/^as background\b/i.test(b.t) && parts.length) { addBg(parts[parts.length - 1], b.t); continue; }
@@ -49,7 +59,7 @@ function partsFrom(text) {
   if (pendingBg.length && parts.length) pendingBg.forEach(t => addBg(parts[parts.length - 1], t));
   // If everything looked like background, nothing is hidden: show it all as parts.
   else if (pendingBg.length) pendingBg.forEach(t => parts.push({ text: t }));
-  return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS, dropped };
+  return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS, shownOf: parts.length, dropped: headings + repeats, headings, repeats };
 }
 // Official links sometimes still use http://; upgrade them, then accept only https.
 const httpsOnly = u => { const v = String(u || "").replace(/^http:\/\//i, "https://"); return /^https:\/\/[^\s"<>]+$/.test(v) ? v : null; };
@@ -67,7 +77,7 @@ async function congressItem(m, key) {
     summary = list[0] || null;
   } catch (e) { /* no summary yet */ }
   const page = `https://www.congress.gov/bill/${ordinal(congress)}-congress/${BILL_PATH[type]}/${number}`;
-  const { parts, more, dropped } = partsFrom(summary && summary.text);
+  const { parts, more, dropped, headings, repeats, shownOf } = partsFrom(summary && summary.text);
   const title = `${String(type).toUpperCase()} ${number}: ${detail.title || ""}`.trim();
   return {
     kind: "Bill in Congress", level: "federal", jurisdiction: { name: "U.S. Congress" }, title,
@@ -75,7 +85,7 @@ async function congressItem(m, key) {
     introduced: detail.introducedDate || null, topic: detail.policyArea && detail.policyArea.name || null,
     sponsors: (detail.sponsors || []).map(p => ({ name: noParty(p.fullName), role: "Sponsor" })),
     summary: summary ? { by: "Congressional Research Service (nonpartisan, part of the Library of Congress)", version: summary.actionDesc || null, date: summary.actionDate || null } : null,
-    parts, partsMore: more, partsDropped: dropped,
+    parts, partsMore: more, partsDropped: dropped, partsHeadings: headings, partsRepeats: repeats, partsTotal: shownOf,
     partsNote: parts.length ? null : "The Congressional Research Service hasn't published a summary of this bill yet. It usually does within a few weeks. Until then, you can weigh in on the bill as a whole.",
     whole: title,
     costs: (detail.cboCostEstimates || []).map(c => ({ title: decode(c.title || "CBO cost estimate"), date: c.pubDate ? String(c.pubDate).slice(0, 10) : null,
@@ -93,7 +103,7 @@ async function stateItem(id, key) {
   // Use only the most recent summary the legislature posted, so earlier versions don't repeat. A "summary" that only repeats the title isn't one.
   const abstracts = (b.abstracts || []).map(a => a.abstract).filter(a => a && a.trim() && a.trim() !== String(b.title || "").trim());
   const latest = abstracts.length ? abstracts[abstracts.length - 1] : "";
-  const { parts, more, dropped } = partsFrom(latest);
+  const { parts, more, dropped, headings, repeats, shownOf } = partsFrom(latest);
   const stateCode = ((String((b.jurisdiction || {}).id || "").match(/\/(?:state|district|territory):([a-z]{2})\//) || [])[1] || "").toUpperCase() || null;
   const name = (b.jurisdiction && b.jurisdiction.name) || "State";
   const body = name === "District of Columbia" ? "D.C. Council" : `${name} legislature`, Body = name === "District of Columbia" ? "D.C. Council" : `${name} Legislature`;
@@ -107,7 +117,7 @@ async function stateItem(id, key) {
     introduced: b.first_action_date ? String(b.first_action_date).slice(0, 10) : null, topic: null,
     sponsors: (b.sponsorships || []).filter(s => s.primary).map(s => ({ name: s.name, role: "Sponsor" })),
     summary: latest ? { by: `The summary posted by the ${body} (collected by Open States)`, version: null, date: null } : null,
-    parts, partsMore: more, partsDropped: dropped,
+    parts, partsMore: more, partsDropped: dropped, partsHeadings: headings, partsRepeats: repeats, partsTotal: shownOf,
     partsNote: parts.length ? null : `The ${body} hasn't published a summary of this bill that Open States carries. You can weigh in on the bill as a whole, and read the official text for the details.`,
     whole: title,
     costs: docs.map(d => ({ title: d.note || "Fiscal note", date: d.date ? String(d.date).slice(0, 10) : null, url: httpsOnly(((d.links || [])[0] || {}).url), description: null, by: body })).filter(c => c.url),
@@ -122,14 +132,14 @@ async function ruleItem(id) {
   const fields = ["title", "abstract", "action", "agencies", "comments_close_on", "comment_url", "regulations_dot_gov_url", "html_url", "publication_date", "type"];
   const q = fields.map(f => "fields[]=" + f).join("&");
   const d = await getJSON(`https://www.federalregister.gov/api/v1/documents/${encodeURIComponent(num)}.json?${q}`);
-  const { parts, more, dropped } = partsFrom(d.abstract);
+  const { parts, more, dropped, headings, repeats, shownOf } = partsFrom(d.abstract);
   const form = httpsOnly(d.comment_url) || httpsOnly(d.regulations_dot_gov_url);
   return {
     kind: "Proposed rule", level: "federal", jurisdiction: { name: (d.agencies || []).map(a => a.name).filter(Boolean).join(", ") || "Federal agency" }, title: d.title || num,
     status: d.comments_close_on ? { date: d.comments_close_on, text: "Official comments close on this date." } : null,
     introduced: d.publication_date || null, topic: null, sponsors: [],
     summary: d.abstract ? { by: "The agency's official summary in the Federal Register", version: d.action || null, date: d.publication_date || null } : null,
-    parts, partsMore: more, partsDropped: dropped,
+    parts, partsMore: more, partsDropped: dropped, partsHeadings: headings, partsRepeats: repeats, partsTotal: shownOf,
     partsNote: parts.length ? null : "This notice has no official summary. You can weigh in on the proposal as a whole.",
     whole: d.title || num,
     costs: [], costNote: "The Federal Register's data doesn't include cost figures. Some proposed rules include a cost analysis in the notice itself; read the full notice.",
@@ -170,7 +180,7 @@ async function localItem(m) {
   };
 }
 
-module.exports = async (req, res) => {
+const handler = async (req, res) => {
   if (onlyRead(req, res)) return;
   const raw = String((req.query && req.query.id) || "").trim();
   const id = CONGRESS_ID.test(raw.toLowerCase()) ? raw.toLowerCase() : raw;
@@ -202,3 +212,5 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", out.errors.length ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=86400");
   res.status(200).send(JSON.stringify(out));
 };
+module.exports = handler;
+module.exports.partsFrom = partsFrom;

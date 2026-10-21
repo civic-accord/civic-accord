@@ -7,10 +7,16 @@ const ID=new URLSearchParams(location.search).get("id")||"";
 const DIST=(()=>{try{const v=JSON.parse(localStorage.getItem("civicaccord-verified")||"null");if(v&&v.districts&&v.districts.state)return v.districts;return JSON.parse(localStorage.getItem("civicaccord-districts")||"null")}catch(e){return null}})();
 const VKEY="civicaccord-item-votes";
 let ALL=(()=>{try{return JSON.parse(localStorage.getItem(VKEY)||"{}")}catch(e){return {}}})();
+// Practice votes are saved by each part's own words (lib/partkey.js), with the text they were cast on,
+// so a vote never moves onto different text if the official summary changes.
 let MINE=ALL[ID]||{parts:{},added:[]};
+let LEGACY=0;
+if(MINE.parts&&Object.values(MINE.parts).some(v=>typeof v==="string")){LEGACY=Object.keys(MINE.parts).length;MINE.parts={}}
 const save=()=>{ALL[ID]=MINE;try{localStorage.setItem(VKEY,JSON.stringify(ALL))}catch(e){}};
+if(LEGACY)save();
 const CH=[["0","Agree"],["1","Disagree"],["2","Pass"]];
-function choose(key,label){const v=MINE.parts[key];
+const VOTE={"0":"Agree","1":"Disagree","2":"Pass"};
+function choose(key,label){const v=MINE.parts[key]&&MINE.parts[key].v;
   return `<div class="choose" role="group" aria-label="${esc(label)}: your view">${CH.map(([k,t])=>`<button type="button" data-k="${esc(key)}" data-v="${k}" aria-pressed="${v===k}">${t}</button>`).join("")}</div>`}
 function render(it){
   $("title").textContent=it.title;
@@ -20,8 +26,11 @@ function render(it){
   const J=it.jurisdiction||{}, local=it.level==="local";
   const own=local?!!(DIST&&((J.countyId&&DIST.countyId===J.countyId)||(J.placeId&&DIST.placeId===J.placeId)||(J.townId&&DIST.townId===J.townId))):it.level!=="state"||!!(DIST&&DIST.state&&DIST.state===J.stateCode);
   const what=it.kind==="Proposed rule"?"proposal":local?"meeting":"bill", from=it.partsFrom||"the official summary";
-  const keys=it.parts.length?parts.map((_,i)=>"p"+i):["whole"];
-  const chosen=keys.filter(k=>MINE.parts[k]!==undefined).length, agreed=keys.filter(k=>MINE.parts[k]==="0").length;
+  const keys=parts.map(p=>CA_PARTKEY.partKey(p)), version=CA_PARTKEY.versionKey(parts);
+  const changed=MINE.version&&MINE.version!==version;
+  const orphans=Object.keys(MINE.parts).filter(k=>!keys.includes(k));
+  const chosen=keys.filter(k=>MINE.parts[k]).length, agreed=keys.filter(k=>MINE.parts[k]&&MINE.parts[k].v==="0").length;
+  if(!MINE.version||(!orphans.length&&changed)){MINE.version=version;save()}
   const L=it.links||{};
   $("main").innerHTML=`
   <section class="panel" aria-labelledby="h1"><div class="eyebrow">Step 1</div><h2 id="h1">What it is</h2>
@@ -42,8 +51,13 @@ function render(it){
   </section>
 
   <section class="panel" aria-labelledby="h2"><div class="eyebrow">Step 2</div><h2 id="h2">Weigh in on each part</h2>
-    <p>${it.parts.length?`Each part below is copied word for word from ${esc(from)}, in order. Do you agree with it?`:esc(it.partsNote)}</p>
-    ${it.parts.length?`<p class="meta">${local?"Only agenda items with legislation attached are listed. Read the agenda for everything else.":"Headings and very short lines are left out. Read the official text for all of it."}</p>`:""}
+    <p>${it.parts.length?`Each part below is copied word for word from ${esc(from)}, in order. Do you agree with what it says or would do?`:esc(it.partsNote)}</p>
+    ${it.parts.length?`<p class="meta">${local?"Only agenda items with legislation attached are listed. Read the agenda for everything else.":`${it.partsHeadings?`${it.partsHeadings} heading${it.partsHeadings===1?"":"s"} left out. `:""}${it.partsMore?`Showing the first ${it.parts.length} of ${it.partsTotal||"many"} parts. `:""}Read the official text for all of it.`}</p>
+    <p class="meta">Some parts describe several things at once, or describe how things work today. If a part mixes things you'd answer differently, choose Pass and add your own statement below. Practice answers on a mixed part aren't a precise view of each piece.</p>`:""}
+    ${LEGACY?`<p class="submitbox">You voted on this page before we changed how practice votes are saved. Those ${LEGACY} vote${LEGACY===1?"":"s"} couldn't be safely matched to the current text, so they were cleared. Please vote again.</p>`:""}
+    ${orphans.length?`<div class="submitbox" id="review"><b>The official summary changed since your last visit.</b> ${orphans.length} of your earlier practice votes ${orphans.length===1?"was":"were"} on text that's no longer here, so ${orphans.length===1?"it isn't":"they aren't"} applied to the new text. Your votes on parts that didn't change are kept.
+      <details><summary class="meta">See the earlier text and your votes</summary><ul class="plain">${orphans.map(k=>`<li><span class="meta">${esc(VOTE[MINE.parts[k].v]||"")}:</span> ${esc(MINE.parts[k].text||"")}</li>`).join("")}</ul></details>
+      <button type="button" class="btn ghost" id="clearold">I've reviewed these. Clear them</button></div>`:""}
     ${own?"":`<p class="submitbox">${local?(DIST&&!DIST.countyId&&!DIST.placeId?`Your saved address is from before local meetings were added. <a href="open.html#me" style="color:var(--koa)">Enter your address again on Open Now</a> so we know your local governments.`:DIST?`This meeting is for ${esc(J.name)}, so it's here to read. Practice voting is for your own county, city, town, or township. Anyone can read the agenda or testify.`:`To weigh in on a local meeting, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a> so we know your local governments. It stays on this device.`):DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a> so we know it's your state. It stays on this device.`}</p>`}
     <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?(local?"Agenda item ":"Part ")+(i+1)+(p.ref?" · "+esc(p.ref):""):"The whole "+what}</span>${p.lead?`<span class="meta">${esc(p.lead)}</span>`:""}<blockquote>${esc(p.text)}</blockquote>${p.background?`<details><summary class="meta">Background from the same summary</summary>${String(p.background).split("\n\n").map(t=>`<p class="meta">${esc(t)}</p>`).join("")}</details>`:""}${own?choose(keys[i],it.parts.length?(local?"Agenda item ":"Part ")+(i+1):"The whole "+what):""}</li>`).join("")}</ol>
     ${it.partsMore?`<p class="meta">The summary has more parts than fit here. Read the rest in the official text.</p>`:""}
@@ -70,9 +84,11 @@ function render(it){
     <p>Once verified voting exists, the ${it.kind==="Proposed rule"?"agency":local?esc(J.name):"office that represents you"} would receive which parts have common ground and which divide people, the statements residents added, how many verified voters took part${local?"":", and any official cost estimate"}. Disagreements travel with it.</p>
     <p>You can speak up today: ${local&&safe(L.comment)?`<a href="${esc(L.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">see the meeting page and agenda for how to comment</a>.`:`${it.kind==="Proposed rule"&&safe(L.comment)?`<a href="${esc(L.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">comment officially</a>, or `:""}<a href="open.html" style="color:var(--koa)">write to your representatives from Open Now</a>.`}</p>
   </section>`;
-  document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=b.dataset.v;if(MINE.parts[k]===v)delete MINE.parts[k];else MINE.parts[k]=v;save();
-    b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(MINE.parts[k]===x.dataset.v)));
-    const n=keys.filter(k=>MINE.parts[k]!==undefined).length;$("saved").textContent=`Practice votes saved on this device: ${n} of ${keys.length}.`});
+  const TXT={};parts.forEach((p,i)=>TXT[keys[i]]=(p.lead?p.lead+" ":"")+p.text);
+  document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=b.dataset.v;if(MINE.parts[k]&&MINE.parts[k].v===v)delete MINE.parts[k];else MINE.parts[k]={v,text:TXT[k]||""};save();
+    b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(!!MINE.parts[k]&&MINE.parts[k].v===x.dataset.v)));
+    const n=keys.filter(k=>MINE.parts[k]).length;$("saved").textContent=`Practice votes saved on this device: ${n} of ${keys.length}.`});
+  const co=$("clearold");if(co)co.onclick=()=>{orphans.forEach(k=>delete MINE.parts[k]);MINE.version=version;save();render(it)};
   const af=$("addf");if(af)af.onsubmit=e=>{e.preventDefault();const t=$("addt").value.trim();if(t.length<10){$("addmsg").textContent="Write at least a short sentence.";return}
     MINE.added.push(t);save();render(it);$("addt").focus();$("addmsg").textContent="Added on this device."};
   document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{MINE.added.splice(+b.dataset.rm,1);save();render(it);const t=$("addt");if(t)t.focus();$("addmsg").textContent="Removed."});

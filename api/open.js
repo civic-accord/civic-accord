@@ -5,7 +5,7 @@
 const FR = "https://www.federalregister.gov/api/v1/documents.json";
 const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
-const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
+const { canonical, memo, asOf, isStale, onlyRead, publicError, getJSON: get } = require("./_shared");
 // Open States' free tier allows 10 requests a minute. Each server copy stays at 8 or fewer.
 const LIMITS = { "v3.openstates.org": 8 };
 const getJSON = (url, headers) => get(url, headers, LIMITS);
@@ -34,7 +34,8 @@ async function localMeetings(feed) {
 }
 
 async function federalRules() {
-  const today = new Date().toISOString().slice(0, 10);
+  // Federal comment deadlines are normally end of day Eastern time, so "today" is counted in Eastern time.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
   const fields = ["title","abstract","agencies","comments_close_on","html_url","comment_url","regulations_dot_gov_url","document_number","publication_date"];
   const items = [];
   for (let page = 1; page <= 5; page++) {
@@ -149,12 +150,13 @@ module.exports = async (req, res) => {
   if (!STATE_NAMES[st]) st = "";
   if (canonical(req, res, "/api/open", { state: st })) return;
   const out = { fetchedAt: new Date().toISOString(), items: [], sources: [], notConnected: [], errors: [] };
-  const run = async (label, short, url, fn) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length }); } catch (e) { out.errors.push(publicError(short, e)); } };
-  await run("Federal Register: proposed rules open for public comment", "Federal rules", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules));
-  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)));
+  // Each source reports when its list was really fetched, and whether a refresh just failed (so an older list is shown).
+  const run = async (label, short, url, fn, key) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length, at: key && asOf(key) ? new Date(asOf(key)).toISOString() : null, stale: !!(key && isStale(key)) }); } catch (e) { out.errors.push(publicError(short, e)); } };
+  await run("Federal Register: proposed rules open for public comment", "Federal rules", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules), "fr");
+  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "Bills in Congress", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)), "congress");
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; });
+    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st]} legislature`, "State bills", "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial, shortLife: !!o.cut }; }); if (r.shortLife) out.shortLife = true; if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; }, "st-" + st);
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st]} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   // Keep the feed light on phones: summaries are cut at a word near 700 characters. The full summary is on each item's
@@ -162,13 +164,13 @@ module.exports = async (req, res) => {
   out.items = out.items.map(i => i.summary && i.summary.length > 700 ? { ...i, summary: i.summary.slice(0, 700).replace(/\s+\S*$/, "") + "…", summaryCut: true } : i);
   // Show when the oldest list here was really fetched, in case a saved copy is being used while a source is down.
   for (const feed of LOCAL.filter(f => st && f.state === st && f.system === "legistar")) {
-    await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)));
+    await run(`${feed.name}: public meetings in the next 30 days`, "Local meetings", feed.calendar, () => memo("lg-" + feed.id, 3 * 3600e3, () => localMeetings(feed)), "lg-" + feed.id);
   }
   const times = ["fr", "congress", st && "st-" + st, ...LOCAL.filter(f => st && f.state === st).map(f => "lg-" + f.id)].filter(Boolean).map(asOf).filter(Boolean);
   if (times.length) out.fetchedAt = new Date(Math.min(...times)).toISOString();
   const shortLife = out.shortLife; delete out.shortLife;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=172800");
+  res.setHeader("Cache-Control", out.errors.length || shortLife ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=3600");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(200).send(JSON.stringify(out));
 };

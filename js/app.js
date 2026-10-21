@@ -57,21 +57,6 @@ function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
   return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
 const all=()=>[...P.S,...st.added];
 
-// The consensus rule, the same on every page. Each group is [agree, disagree, pass] for one statement.
-// A group decides a label only once it has at least 10 votes on that statement, so a handful of people can't
-// stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
-// or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
-const MIN_GROUP_VOTES=10;
-// Compared on exact counts (agree × 100 ≥ 70 × votes), so 69.5% never rounds up to 70%. A pass counts as not agreeing.
-function consensusLabel(groups){const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES);
-  if(counted.length<2) return "forming";
-  const atLeast=(g,p)=>g[0]*100>=p*(g[0]+g[1]+g[2]);
-  if(counted.every(g=>atLeast(g,70))) return "common";
-  if(counted.some(g=>atLeast(g,70))&&counted.some(g=>!atLeast(g,50))) return "split";
-  return "forming"}
-// Share of registered voters who took part, as plain text.
-function shareText(n,total){if(!total)return "";if(!n)return "0%";const v=n/total*100;return v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%"}
-const httpsOnly=u=>/^https:\/\//.test(String(u||""))?u:null;
 const myStatus=()=>VER&&VER.voterStatus||null;
 // Which group your votes sit closest to. The sample compares your votes with each group's votes on the
 // statements you voted on; the live version uses the open Pol.is grouping. Ties go to Group A.
@@ -156,11 +141,11 @@ function renderHeader(){verChip();
   document.getElementById("juris-note").innerHTML=VD?`Every government that represents you, and which have a deliberation open. <a href="governments.html" style="color:var(--koa)">See all of them →</a>`:`Works for any U.S. address. <a href="governments.html" style="color:var(--koa)">Find your governments →</a> or <a href="verify.html" style="color:var(--koa)">verify to take part</a>.`;
   const jl=[...JURIS];if(!VD)Object.values(PACKS).forEach(x=>{if(!jl.find(j=>j.key===x.key))jl.push({key:x.key,name:x.name,sub:x.district})});
   jl.forEach(j=>{const live=packsFor(j.key).length>0;if(live)j={...j,name:packsFor(j.key)[0].name};
-    const status=live?"● Deliberation open":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
+    const status=live?"● Sample deliberation":requested[j.key]?"✓ Requested":"No deliberation yet · tap to request";
     const b=el(`<button class="issue gov ${live?"":"nolive"}" aria-pressed="${j.key===P.key}">${esc(j.name)}<small>${esc(j.sub)}</small><small class="gstatus ${live?"live":""}">${status}</small></button>`);
     b.onclick=()=>{if(!live){requested[j.key]=true;renderHeader();return}if(j.key===P.key)return;selectPack(packsFor(j.key)[0].packKey)};jb.appendChild(b)});
   const ib=document.getElementById("issues");ib.innerHTML="";
-  packsFor(P.key).forEach(x=>{const b=el(`<button class="issue" aria-pressed="${x.packKey===cur}">${esc(x.issueName)}<small>${x.draft?"Draft preview":"Deliberation open"}</small></button>`);b.onclick=()=>{if(x.packKey!==cur)selectPack(x.packKey)};ib.appendChild(b)});
+  packsFor(P.key).forEach(x=>{const b=el(`<button class="issue" aria-pressed="${x.packKey===cur}">${esc(x.issueName)}<small>${x.draft?"Draft preview":"Sample deliberation"}</small></button>`);b.onclick=()=>{if(x.packKey!==cur)selectPack(x.packKey)};ib.appendChild(b)});
   ib.appendChild(el(`<a class="issue newissue" href="new.html">＋ Start a deliberation<small>On any issue, for any government</small></a>`));
   const n=document.getElementById("steps");n.innerHTML="";
   STEPS.forEach(([name,num],i)=>{const b=el(`<button class="step ${i<st.step?"done":""}" role="tab" id="tab-${i}" aria-selected="${i===st.step}"><b>Step ${num}</b><span>${name}</span></button>`);b.onclick=()=>{st.step=i;render()};n.appendChild(b)});
