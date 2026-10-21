@@ -157,7 +157,7 @@ async function localItem(m) {
   const page = httpsOnly(e.EventInSiteURL) || feed.calendar;
   return {
     kind: "Local meeting", level: "local",
-    jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null }, title: `${body}: meeting`,
+    jurisdiction: { name: feed.name, state: feed.state, countyId: feed.countyId || null, placeId: feed.placeId || null, townId: feed.townId || null }, title: `${body}: meeting`,
     status: e.EventAgendaStatusName ? { date: null, text: `Agenda ${String(e.EventAgendaStatusName).toLowerCase()}` } : null,
     meets: date || null, meetsTime: e.EventTime || null, introduced: null, topic: null, sponsors: [],
     summary: { by: `The meeting agenda posted by the ${feed.name}`, version: null, date: null }, partsFrom: "the official agenda",

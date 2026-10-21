@@ -28,7 +28,7 @@ async function localMeetings(feed) {
       who: feed.name, summary: [e.EventTime ? `Meets at ${e.EventTime}` : "", e.EventAgendaStatusName ? `Agenda: ${String(e.EventAgendaStatusName).toLowerCase()}` : ""].filter(Boolean).join(" · "),
       opened: null, closes: null, meets: date, read: https(e.EventAgendaFile) || https(e.EventInSiteURL) || feed.calendar,
       act: https(e.EventInSiteURL) || feed.calendar, actLabel: "Meeting page and agenda", source: `${feed.name} agendas`,
-      localId: feed.id, countyId: feed.countyId || null, placeId: feed.placeId || null, state: feed.state
+      localId: feed.id, countyId: feed.countyId || null, placeId: feed.placeId || null, townId: feed.townId || null, state: feed.state
     };
   });
 }

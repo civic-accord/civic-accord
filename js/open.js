@@ -132,7 +132,7 @@ function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
 function canRespond(it){if(it.level==="federal")return true;
   // Local meetings: only for residents of that county or city (from the address on this device).
-  if(it.level==="local")return !!(DIST&&((it.countyId&&DIST.countyId===it.countyId)||(it.placeId&&DIST.placeId===it.placeId)));
+  if(it.level==="local")return !!(DIST&&((it.countyId&&DIST.countyId===it.countyId)||(it.placeId&&DIST.placeId===it.placeId)||(it.townId&&DIST.townId===it.townId)));
   return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
 function whyLine(it){const ms=topicsOf(it);if(!ms.length)return "";const mine=ms.filter(m=>TP.picked.includes(m.id)),show=mine.length?mine:ms;
   return `<span class="why">${mine.length?"Your topic":"Topic"}: ${show.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`}
@@ -148,7 +148,7 @@ function nextHTML(it){
   const p=PROG[it.id]||{},now=stepOf(it),r=REACT[it.id];
   const start=`item.html?id=${encodeURIComponent(it.id)}`, build=`new.html?from=${encodeURIComponent(it.source)}&title=${encodeURIComponent(it.title.slice(0,140))}&url=${encodeURIComponent(it.read||"")}`;
   const reacts=`<div class="go" role="group" aria-label="Where you stand">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${esc(it.id)}" data-v="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>`;
-  if(!canRespond(it)&&it.level==="local")return `<div class="next ro"><p>${DIST&&!DIST.countyId&&!DIST.placeId?`Your saved address is from before local meetings were added. <a href="#me" data-gome="1" style="color:var(--koa)">Enter your address again</a> so we know your county and city.`:DIST?`This meeting is for ${esc(it.who)}, so it's here to read. Reactions are for your own county or city.`:`To respond to a local meeting, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know your county and city.`} Anyone can read the agenda or testify.</p></div>`;
+  if(!canRespond(it)&&it.level==="local")return `<div class="next ro"><p>${DIST&&!DIST.countyId&&!DIST.placeId?`Your saved address is from before local meetings were added. <a href="#me" data-gome="1" style="color:var(--koa)">Enter your address again</a> so we know your local governments.`:DIST?`This meeting is for ${esc(it.who)}, so it's here to read. Reactions are for your own county, city, town, or township.`:`To respond to a local meeting, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know your local governments.`} Anyone can read the agenda or testify.</p></div>`;
   if(!canRespond(it))return `<div class="next ro"><p>${DIST?`This is another state's bill, so it's here to read. Reactions and messages are for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To respond to a state bill, <a href="#me" data-gome="1" style="color:var(--koa)">enter your address</a> so we know it's your state.`}</p>
     ${safe(it.read)?`<div class="go"><a class="primary" data-read="${esc(it.id)}" href="${esc(it.read)}" target="_blank" rel="noopener">Read what it says</a></div>`:""}</div>`;
   if(now===0)return `<div class="next"><p>Start by reading what it actually says. It opens on the official site.</p>
