@@ -159,74 +159,50 @@
     "id": 1,
     "text": "Hire the extra agriculture specialists that Customs and Border Protection says it needs at ports of entry.",
     "a": [
-     44,
+     37,
      2,
      2
     ],
     "b": [
-     36,
-     6,
-     4
+     30,
+     5,
+     3
     ],
     "panel": [
      30,
      4,
      2
-    ],
-    "registered": {
-     "a": [
-      37,
-      2,
-      2
-     ],
-     "b": [
-      30,
-      5,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 2,
     "text": "States and territories should get steady federal grants for rapid response to new pests.",
     "a": [
-     30,
-     10,
-     6
+     24,
+     8,
+     5
     ],
     "b": [
-     40,
+     32,
      3,
-     3
+     2
     ],
     "panel": [
      26,
      7,
      3
-    ],
-    "registered": {
-     "a": [
-      24,
-      8,
-      5
-     ],
-     "b": [
-      32,
-      3,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 3,
     "text": "APHIS should publish a public national map of confirmed pest detections.",
     "a": [
-     38,
+     33,
      4,
-     4
+     3
     ],
     "b": [
-     41,
+     35,
      2,
      3
     ],
@@ -234,205 +210,121 @@
      31,
      2,
      3
-    ],
-    "registered": {
-     "a": [
-      33,
-      4,
-      3
-     ],
-     "b": [
-      35,
-      2,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 4,
     "text": "Penalties for knowingly importing banned species should go up.",
     "a": [
-     39,
-     5,
+     30,
+     4,
      2
     ],
     "b": [
-     37,
-     6,
-     3
+     29,
+     4,
+     2
     ],
     "panel": [
      29,
      5,
      2
-    ],
-    "registered": {
-     "a": [
-      30,
-      4,
-      2
-     ],
-     "b": [
-      29,
-      4,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 5,
     "text": "Invasive species work should have a dedicated trust fund instead of depending on yearly appropriations.",
     "a": [
-     24,
-     16,
-     6
+     20,
+     14,
+     5
     ],
     "b": [
-     39,
-     4,
-     3
+     32,
+     3,
+     2
     ],
     "panel": [
      21,
      11,
      4
-    ],
-    "registered": {
-     "a": [
-      20,
-      14,
-      5
-     ],
-     "b": [
-      32,
-      3,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 6,
     "text": "Fund more research on biological controls, like natural predators of pests.",
     "a": [
-     35,
-     6,
-     5
+     30,
+     5,
+     4
     ],
     "b": [
-     40,
+     34,
      2,
-     4
+     3
     ],
     "panel": [
      29,
      4,
      3
-    ],
-    "registered": {
-     "a": [
-      30,
-      5,
-      4
-     ],
-     "b": [
-      34,
-      2,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 7,
     "text": "Importers and shippers should pay more of the cost of inspections.",
     "a": [
-     15,
-     27,
-     4
+     12,
+     20,
+     3
     ],
     "b": [
-     38,
-     4,
-     4
+     30,
+     3,
+     3
     ],
     "panel": [
      17,
      16,
      3
-    ],
-    "registered": {
-     "a": [
-      12,
-      20,
-      3
-     ],
-     "b": [
-      30,
-      3,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 8,
     "text": "Farmers hit by federal pest quarantines should get prompt compensation.",
     "a": [
-     43,
+     36,
      1,
      2
     ],
     "b": [
-     33,
-     7,
-     6
+     27,
+     6,
+     5
     ],
     "panel": [
      29,
      4,
      3
-    ],
-    "registered": {
-     "a": [
-      36,
-      1,
-      2
-     ],
-     "b": [
-      27,
-      6,
-      5
-     ]
-    }
+    ]
    },
    {
     "id": 9,
     "text": "Islands and territories should get extra federal help because they face the highest risk.",
     "a": [
-     33,
-     8,
-     5
+     27,
+     7,
+     4
     ],
     "b": [
-     39,
+     32,
      3,
-     4
+     3
     ],
     "panel": [
      25,
      8,
      3
-    ],
-    "registered": {
-     "a": [
-      27,
-      7,
-      4
-     ],
-     "b": [
-      32,
-      3,
-      3
-     ]
-    }
+    ]
    }
   ],
   "costOptions": [
@@ -553,9 +445,9 @@
   ],
   "participation": {
    "open": {
-    "label": "Open participation",
-    "count": 92,
-    "how": "Verified residents who chose to join."
+    "label": "Verified voters",
+    "count": 74,
+    "how": "Registered voters in the district who chose to join, each confirmed as a real, active voter. Sample data."
    },
    "panel": {
     "label": "Citizen panel",
@@ -612,21 +504,12 @@
      }
     ],
     "columns": [
-     "Open participation",
+     "Verified voters",
      "Citizen panel",
      "District"
     ]
    },
-   "example": true,
-   "registered": {
-    "count": 74,
-    "label": "Registered voters",
-    "how": "Participants whose voter registration was confirmed during the residency check. Their votes form the official result that goes to the office."
-   },
-   "others": {
-    "label": "Other residents",
-    "how": "Residents 16 and up who aren't registered to vote, including 16- and 17-year-olds. Their views are shown separately and labeled. They aren't part of the official result."
-   }
+   "example": true
   }
  },
  "bill": {

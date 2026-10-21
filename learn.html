@@ -1,0 +1,331 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Civic Accord Learn</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
+.timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+.viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+</style><link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2f5d4a">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Civic Accord">
+<style>
+.appnav{display:none}
+@media (max-width:700px){
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  .appnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .appnav a{flex:1;display:grid;justify-items:center;gap:2px;padding:6px 2px;min-height:48px;color:var(--muted);text-decoration:none;font-size:.72rem;border-radius:10px}
+  .appnav a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .appnav svg{width:22px;height:22px}
+  .btn,button,select,input[type=text],input[type=search]{min-height:44px}
+}
+</style>
+</head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#8a5d00; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+.wrap>*,.panel>*{min-width:0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:inherit}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.chip:empty{display:none}
+.issues{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.vote button:disabled{cursor:not-allowed;opacity:.5}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.hero{display:grid;gap:14px;padding:10px 0 4px}
+.hero h1{font-size:clamp(2rem,6vw,3.1rem);line-height:1.08;margin:0}
+.hero .lede{font-size:1.1rem;max-width:44em}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.cta a{text-decoration:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:6px;background:var(--surface);align-content:start}
+.card h3{margin:0;font-size:1rem}
+.card .check{font-size:.85rem;color:var(--koa)}
+.card .where{font-size:.8rem;color:var(--muted)}
+.steps6{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.steps6 li{counter-increment:s;display:grid;grid-template-columns:2.2em 1fr;gap:10px;align-items:start}
+.steps6 li::before{content:counter(s);font-family:var(--mono);background:var(--koa);color:var(--surface);border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;font-size:.85rem}
+.big{font-size:1.15rem;line-height:1.5}
+.stat1{font-family:var(--serif,inherit);font-size:2.4rem;font-weight:700;color:var(--koa);line-height:1}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.share{display:flex;flex-wrap:wrap;gap:8px}
+.share a,.share button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.off{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;background:var(--surface)}
+.off .acts{display:flex;flex-wrap:wrap;gap:8px}
+.off .acts a,.off .acts button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;text-decoration:none}
+.off .acts .primary{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);color:var(--ink);line-height:1.5}
+.addr input[type=text],.addr2 input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.privacy{font-size:.85rem;background:var(--koa-soft);border-radius:8px;padding:10px 12px}
+</style>
+<style>
+.toc{columns:2 220px;gap:20px;font-size:.92rem}
+.toc a{color:var(--koa)}
+.doc h2{scroll-margin-top:12px}
+.doc table{border-collapse:collapse;width:100%;font-size:.9rem}
+.doc th,.doc td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.doc .k{font-family:var(--mono);font-size:.85rem}
+.tbl{overflow-x:auto}
+</style>
+<style>
+.lstep{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.lstep li{counter-increment:s;display:grid;grid-template-columns:2.2em 1fr;gap:10px;align-items:start}
+.lstep li::before{content:counter(s);font-family:var(--mono);background:var(--koa);color:var(--surface);border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;font-size:.85rem}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.path{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:6px;background:var(--surface);align-content:start}
+.path ol{margin:0;padding-left:1.2em}
+.item{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px;background:var(--surface)}
+.item h3{margin:0;font-size:1rem;line-height:1.35}
+.item .acts{display:flex;flex-wrap:wrap;gap:8px}
+.item .acts a,.item .acts button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer;text-decoration:none;min-height:40px}
+.guide{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}
+.guide textarea,.me input,.me select{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
+.me .row{display:flex;flex-wrap:wrap;gap:8px}.me input{flex:1;min-width:min(100%,240px)}
+.learnbadge{display:inline-block;background:var(--sun-soft);color:var(--ink);border-radius:999px;padding:4px 10px;font-size:.8rem;font-weight:700}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · Learn</div>
+    <h1>Civic Accord Learn</h1>
+    <p class="lede">For anyone who can't vote yet, or is just learning how government works: young people, new residents, and anyone not registered. Learn with real issues your governments are deciding right now, and take real action that's open to everyone.</p>
+    <p class="note"><span class="learnbadge">Separate from voting</span> Nothing you do here is counted in Civic Accord's deliberations, which only verified voters take part in. You need no account, and nothing you type here is sent or saved anywhere but your own device.</p>
+  </header>
+
+  <section class="panel">
+    <h2>Your voice counts before you can vote</h2>
+    <p>Here's what anyone can do, whatever their age or whether they can vote:</p>
+    <ol class="lstep">
+      <li><span><b>Comment on proposed federal rules.</b> Federal agencies must take public comments, and "absolutely anyone" can submit one, according to <a href="https://www.regulations.gov/assets/files/Public-Comment-on-Federal-Regulations_Final.pdf" target="_blank" rel="noopener" style="color:var(--koa)">Regulations.gov</a>.</span></li>
+      <li><span><b>Write to the people who represent you.</b> Officials represent everyone who lives in their district, not just voters.</span></li>
+      <li><span><b>Testify on bills.</b> Many state legislatures accept testimony from the public when a bill has a hearing. In Hawaiʻi, for example, anyone with a free account can <a href="https://lrb.hawaii.gov/par/wp-content/uploads/sites/2/2026/01/2026-How-to-Submit-testimony-A.pdf" target="_blank" rel="noopener" style="color:var(--koa)">submit testimony online</a>. Testimony is public.</span></li>
+      <li><span><b>Go to public meetings.</b> City councils, county councils, and school boards hold meetings that anyone can attend, and most set aside time for public comment.</span></li>
+      <li><span><b>Get ready to vote.</b> <span id="prereg">Many states let you preregister before you turn 18. Choose your state below to see the age where you live.</span></span></li>
+    </ol>
+    <p class="meta">If you're under 13, ask a parent, guardian, or teacher before you write to an office or submit a comment online.</p>
+  </section>
+
+  <section class="panel me" id="me">
+    <h2>Start with where you live</h2>
+    <p class="meta">Enter an address to see who represents you and what's open for public input. The address goes from your browser straight to the U.S. Census Bureau. Only your districts are kept, on this device.</p>
+    <div class="row"><label for="addr" style="position:absolute;left:-9999px">Address</label><input id="addr" type="text" autocomplete="street-address" placeholder="Street address, city, state, ZIP"><button class="btn" id="findme" type="button">Find who represents me</button></div>
+    <span class="toast" id="memsg" aria-live="polite"></span>
+    <div id="reps"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Real issues, open right now</h2>
+    <p class="meta">These come straight from official sources, the same ones on <a href="open.html" style="color:var(--koa)">Open Now</a>. Pick one and use the guide to read it like a pro.</p>
+    <div id="items" class="paths" style="grid-template-columns:1fr"><p class="meta">Loading…</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>How decisions get made</h2>
+    <div class="paths">
+      <div class="path"><h3>A bill becomes a law</h3><ol><li>A legislator introduces a bill.</li><li>A committee holds a hearing. This is often when the public can testify.</li><li>The committee votes. Many bills stop here.</li><li>The whole chamber votes.</li><li>The other chamber does the same. Nebraska has just one chamber.</li><li>The governor, or for Congress the president, signs or vetoes it.</li></ol></div>
+      <div class="path"><h3>A rule gets made</h3><ol><li>An agency proposes a rule to carry out a law.</li><li>It's published, and a comment period opens.</li><li>Anyone can comment.</li><li>The agency must consider the comments.</li><li>It publishes a final rule, which may be changed because of the comments.</li></ol></div>
+      <div class="path"><h3>A local decision</h3><ol><li>The council or board posts an agenda before the meeting.</li><li>The public can usually comment, in person or in writing.</li><li>Members discuss and vote in public.</li><li>Minutes and votes are posted afterward.</li></ol></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Practice finding common ground</h2>
+    <p>Try a sample deliberation in practice mode. You can vote on statements and see how people with different views can still agree. Practice votes use sample data, stay on your device, and are never counted.</p>
+    <div class="cta"><a class="btn" href="app.html?practice=1">Start a practice deliberation</a></div>
+  </section>
+
+  <section class="panel">
+    <h2>For teachers and groups</h2>
+    <ul class="plain">
+      <li>Pick a real item from the list above and read it together using the guide.</li>
+      <li>Run the practice deliberation as a class, then talk about where groups agreed and why.</li>
+      <li>Have each student write their own comment or letter. Sending it is each person's choice.</li>
+      <li>Nothing is collected: no accounts, no student data, no tracking.</li>
+    </ul>
+  </section>
+
+  <footer><span>Civic Accord Learn · an open, nonpartisan example · October 2026</span><span><a href="how.html" style="color:inherit">How it works</a></span></footer>
+</div>
+<script src="lib/registry.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const safe=u=>/^https:\/\//.test(u||"")?u:null;
+const DKEY="civicaccord-learn-districts";
+let D=(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){return null}})(), ITEMS=[], OPENG=null, NOTES={};
+try{NOTES=JSON.parse(localStorage.getItem("civicaccord-learn-notes")||"{}")}catch(e){}
+const QS=["What problem is this trying to solve?","Who would it affect, and how?","What would it cost, and who would pay?","Who decides, and when?","What would you want changed?"];
+async function showReps(){
+  if(!D){$("reps").innerHTML="";return}
+  let sd=null;try{sd=await (await fetch("registry/states.json")).json()}catch(e){}
+  const sx=sd&&sd.states?sd.states[D.state]:null;
+  if(sx){$("prereg").textContent=sx.preregistrationAge?`In ${sx.name}, you can preregister to vote at ${sx.preregistrationAge===17.5?"17½":sx.preregistrationAge>17&&sx.preregistrationAge<18?"about 17 and 10 months":sx.preregistrationAge}.`:`${sx.name} lets you register if you'll be 18 by the next election. Check the state election office for details.`}
+  const fed=await CA_REG.officeholders(D), st=await CA_REG.stateLegislators(D);
+  const rows=[];
+  if(fed.rep) rows.push(`<li><b>U.S. Representative:</b> ${esc(fed.rep.name)}${safe(fed.rep.contact||fed.rep.url)?` · <a href="${esc(fed.rep.contact||fed.rep.url)}" target="_blank" rel="noopener" style="color:var(--koa)">contact</a>`:""}</li>`);
+  (fed.sen||[]).forEach(p=>rows.push(`<li><b>U.S. Senator:</b> ${esc(p.name)}${safe(p.contact||p.url)?` · <a href="${esc(p.contact||p.url)}" target="_blank" rel="noopener" style="color:var(--koa)">contact</a>`:""}</li>`));
+  (st.legislators||[]).forEach(p=>rows.push(`<li><b>State ${esc(p.title)}, district ${esc(p.district)}:</b> ${esc(p.name)}${p.email?` · <a href="mailto:${esc(p.email)}" style="color:var(--koa)">email</a>`:""}</li>`));
+  $("reps").innerHTML=`<h3>Who represents you in ${esc(D.stateName||D.state)}</h3><ul class="plain">${rows.join("")||"<li>Contact details aren't available yet.</li>"}</ul>
+   ${sx&&sx.legislatureUrl?`<p class="meta">Your state legislature: <a href="${esc(sx.legislatureUrl)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(sx.legislature||"official site")}</a>. Look for "testimony" or "public comment" on bills with hearings.</p>`:""}
+   <p class="meta"><a href="#" id="chg" style="color:var(--koa)">Use a different address</a></p>`;
+  const c=$("chg");if(c)c.onclick=e=>{e.preventDefault();D=null;try{localStorage.removeItem(DKEY)}catch(x){}showReps();loadItems()};
+}
+function itemCard(it){
+  const open=OPENG===it.id, n=NOTES[it.id]||{};
+  return `<article class="item"><span class="eyebrow">${esc(it.kind)} · ${esc(it.source)}</span><h3>${esc(it.title)}</h3>
+    <span class="meta">${esc(it.who)}${it.closes?` · comments close ${esc(it.closes)}`:""}</span>
+    <div class="acts">${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text</a>`:""}
+      <button type="button" data-g="${esc(it.id)}">${open?"Hide the guide":"Read it with the guide"}</button>
+      ${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}</div>
+    ${open?`<div class="guide"><p class="meta">Answer in your own words. Your notes stay on this device.</p>
+      ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
+      <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} Copies of the same message count for little, so write your own.</p>
+      <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">Open the official comment page</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
+  </article>`;
+}
+function renderItems(){
+  $("items").innerHTML=ITEMS.length?ITEMS.map(itemCard).join(""):`<p class="meta">Nothing to show right now. Try again later.</p>`;
+  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{OPENG=OPENG===b.dataset.g?null:b.dataset.g;renderItems()});
+  document.querySelectorAll("[data-n]").forEach(t=>t.oninput=()=>{(NOTES[OPENG]=NOTES[OPENG]||{})[t.dataset.n]=t.value;try{localStorage.setItem("civicaccord-learn-notes",JSON.stringify(NOTES))}catch(e){}});
+  const cp=$("copynotes");if(cp)cp.onclick=()=>{const n=NOTES[OPENG]||{};const txt=QS.map((q,i)=>n[i]?`${q}\n${n[i]}`:"").filter(Boolean).join("\n\n");try{navigator.clipboard.writeText(txt).then(()=>$("cpmsg").textContent="Copied.")}catch(e){$("cpmsg").textContent="Select your notes to copy them."}};
+}
+async function loadItems(){
+  try{const j=await (await fetch("/api/open"+(D&&D.state?"?state="+encodeURIComponent(D.state):""))).json();
+    const it=j.items||[];const today=new Date().toISOString().slice(0,10);
+    const rules=it.filter(x=>x.closes&&x.closes>=today).sort((a,b)=>a.closes.localeCompare(b.closes)).slice(0,3);
+    const state=it.filter(x=>x.level==="state").slice(0,2), cong=it.filter(x=>x.source==="Congress.gov").slice(0,2);
+    ITEMS=[...state,...rules,...cong];renderItems();
+  }catch(e){$("items").innerHTML=`<p class="meta">Couldn't load live items right now. Check your connection.</p>`}
+}
+const go=async()=>{const a=$("addr").value.trim();if(a.length<8){$("memsg").textContent="Enter a full street address, including city and state. A school or library address works too.";return}
+  $("memsg").textContent="Looking up your districts with the Census Bureau…";
+  try{const g=await CA_REG.lookup(a);D=CA_REG.districtsOf(g);try{localStorage.setItem(DKEY,JSON.stringify(D))}catch(x){}$("memsg").textContent="";showReps();loadItems()}
+  catch(e){$("memsg").textContent=e.message==="nomatch"?"The Census Bureau couldn't match that address. Check the spelling and include the city and state.":"Couldn't reach the Census Bureau. Try again in a moment."}};
+$("findme").onclick=go;$("addr").onkeydown=e=>{if(e.key==="Enter")go()};
+showReps();loadItems();
+</script>
+<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
+</body></html>

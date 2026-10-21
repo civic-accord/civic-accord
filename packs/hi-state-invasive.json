@@ -187,280 +187,172 @@
     "id": 1,
     "text": "Every island should have a rapid-response crew that can treat a new little fire ant find within 72 hours.",
     "a": [
-     41,
-     3,
+     34,
+     2,
      2
     ],
     "b": [
-     37,
-     5,
-     4
+     31,
+     4,
+     3
     ],
     "panel": [
      31,
      3,
      2
-    ],
-    "registered": {
-     "a": [
-      34,
-      2,
-      2
-     ],
-     "b": [
-      31,
-      4,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 2,
     "text": "Plants and soil shipped between islands should be inspected the same way as shipments from the mainland.",
     "a": [
-     38,
-     6,
+     30,
+     5,
      2
     ],
     "b": [
-     29,
-     12,
-     5
+     23,
+     10,
+     4
     ],
     "panel": [
      27,
      6,
      3
-    ],
-    "registered": {
-     "a": [
-      30,
-      5,
-      2
-     ],
-     "b": [
-      23,
-      10,
-      4
-     ]
-    }
+    ]
    },
    {
     "id": 3,
     "text": "The state should publish a public map of confirmed pest sightings, updated weekly.",
     "a": [
-     40,
+     34,
      2,
-     4
+     3
     ],
     "b": [
-     39,
+     34,
      3,
-     4
+     3
     ],
     "panel": [
      32,
      2,
      2
-    ],
-    "registered": {
-     "a": [
-      34,
-      2,
-      3
-     ],
-     "b": [
-      34,
-      3,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 4,
     "text": "Fines for knowingly moving infested material should go up.",
     "a": [
-     22,
-     20,
-     4
+     17,
+     14,
+     3
     ],
     "b": [
-     36,
-     6,
-     4
+     28,
+     4,
+     3
     ],
     "panel": [
      20,
      13,
      3
-    ],
-    "registered": {
-     "a": [
-      17,
-      14,
-      3
-     ],
-     "b": [
-      28,
-      4,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 5,
     "text": "Funding for invasive species should come from a dedicated source, not compete with the general budget every year.",
     "a": [
-     35,
-     5,
-     6
+     29,
+     4,
+     5
     ],
     "b": [
-     38,
-     4,
-     4
+     31,
+     3,
+     3
     ],
     "panel": [
      27,
      5,
      4
-    ],
-    "registered": {
-     "a": [
-      29,
-      4,
-      5
-     ],
-     "b": [
-      31,
-      3,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 6,
     "text": "Homeowners should get free little fire ant treatment kits and training.",
     "a": [
-     39,
+     33,
      4,
      3
     ],
     "b": [
-     34,
-     7,
-     5
+     29,
+     6,
+     4
     ],
     "panel": [
      29,
      4,
      3
-    ],
-    "registered": {
-     "a": [
-      33,
-      4,
-      3
-     ],
-     "b": [
-      29,
-      6,
-      4
-     ]
-    }
+    ]
    },
    {
     "id": 7,
     "text": "Visitors should pay a fee that goes directly to biosecurity.",
     "a": [
+     14,
      18,
-     24,
-     4
+     3
     ],
     "b": [
-     37,
-     5,
-     4
+     29,
+     4,
+     3
     ],
     "panel": [
      19,
      14,
      3
-    ],
-    "registered": {
-     "a": [
-      14,
-      18,
-      3
-     ],
-     "b": [
-      29,
-      4,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 8,
     "text": "Farmers who report a new pest quickly should be protected from losing their whole crop without compensation.",
     "a": [
-     42,
+     35,
      1,
-     3
+     2
     ],
     "b": [
-     30,
-     9,
-     7
+     25,
+     8,
+     6
     ],
     "panel": [
      30,
      3,
      3
-    ],
-    "registered": {
-     "a": [
-      35,
-      1,
-      2
-     ],
-     "b": [
-      25,
-      8,
-      6
-     ]
-    }
+    ]
    },
    {
     "id": 9,
     "text": "Schools should teach keiki to recognize the worst invasive pests.",
     "a": [
-     37,
-     4,
-     5
+     30,
+     3,
+     4
     ],
     "b": [
-     40,
+     32,
      2,
-     4
+     3
     ],
     "panel": [
      31,
      2,
      3
-    ],
-    "registered": {
-     "a": [
-      30,
-      3,
-      4
-     ],
-     "b": [
-      32,
-      2,
-      3
-     ]
-    }
+    ]
    }
   ],
   "costOptions": [
@@ -586,9 +478,9 @@
   ],
   "participation": {
    "open": {
-    "label": "Open participation",
-    "count": 92,
-    "how": "Verified residents who chose to join."
+    "label": "Verified voters",
+    "count": 74,
+    "how": "Registered voters in the district who chose to join, each confirmed as a real, active voter. Sample data."
    },
    "panel": {
     "label": "Citizen panel",
@@ -645,21 +537,12 @@
      }
     ],
     "columns": [
-     "Open participation",
+     "Verified voters",
      "Citizen panel",
      "District"
     ]
    },
-   "example": true,
-   "registered": {
-    "count": 74,
-    "label": "Registered voters",
-    "how": "Participants whose voter registration was confirmed during the residency check. Their votes form the official result that goes to the office."
-   },
-   "others": {
-    "label": "Other residents",
-    "how": "Residents 16 and up who aren't registered to vote, including 16- and 17-year-olds. Their views are shown separately and labeled. They aren't part of the official result."
-   }
+   "example": true
   }
  },
  "bill": {

@@ -224,7 +224,7 @@ function compilePack(d,opts={}){
     participation:is.participation||null, issueKey:is.key, issueName:is.name, draft:!!opts.draft, packKey:`${j.key}/${is.key}`,
     billHead:center+"\n"+d.bill.preamble.map(l=>"     "+esc(l)).join("\n\n")+"\n",
     secWord:d.bill.sectionWord, firstSection:d.bill.firstSection, approp:d.bill.appropriation, effective:d.bill.effective,
-    handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, packId:d.id, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix
+    handoffTitle:j.handoffTitle, handoffLede:j.handoffText, timing:j.timing, packId:d.id, copyTitle:d.copyTitle, receiptPrefix:j.receiptPrefix, level:j.level||"state", jstate:j.state||null, national:!!j.national||j.level==="federal", countyId:j.countyId||null, place:j.place||null
   };
 }
 let PACKS={};
@@ -256,7 +256,7 @@ function tally(s){
   const reg=VIEW==="registered";
   const src=!s.rv?s:reg?s.rv:{a:s.a.map((x,i)=>Math.max(0,x-s.rv.a[i])),b:s.b.map((x,i)=>Math.max(0,x-s.rv.b[i]))};
   const a=[...src.a], b=[...src.b], v=st.mine[s.id];
-  if(v!==undefined&&st.submitted&&(reg===(myStatus()==="registered"))){ a[v]++; }
+  if(v!==undefined&&st.submitted&&(PRACTICE||reg===(myStatus()==="registered"))){ a[v]++; }
   const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
   const pa=pct(a), pb=pct(b);
   let kind="forming";
@@ -306,11 +306,24 @@ function makeReceipt(){
 
 // ---------- Header controls ----------
 const VER=(()=>{try{return JSON.parse(localStorage.getItem("civicaccord-verified")||"null")}catch(e){return null}})();
+const PRACTICE=/[?&]practice=1/.test(location.search);
+const ISVOTER=!!(VER&&VER.voterStatus==="registered");
+// A verified voter can respond only where they're a voter: federal items anywhere, a state's items only in that state, local items only in that county or city.
+function inMyJurisdiction(p){const d=VER&&VER.districts;if(!d||!p)return false;
+  if(p.national)return true;
+  if(p.level==="state")return !!p.jstate&&d.state===p.jstate;
+  if(p.level==="county")return !!p.countyId&&d.countyId===p.countyId;
+  if(p.level==="city")return !!p.place&&d.place===p.place&&d.state===p.jstate;
+  return false}
+let CANVOTE=false; function refreshCanVote(){CANVOTE=PRACTICE||(ISVOTER&&inMyJurisdiction(P))}
 function verChip(){const c=document.getElementById("chip-ver");if(!c)return;
-  if(VER){c.className="chip ok";c.innerHTML=`✓ Verified resident <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
+  if(VER){c.className="chip ok";c.innerHTML=`${ISVOTER?"✓ Verified voter (sample)":"Not a verified voter"} <a href="#" id="unver" style="color:inherit;margin-left:6px;font-size:.75rem">(reset demo)</a>`;
     const u=document.getElementById("unver");if(u)u.onclick=e=>{e.preventDefault();try{localStorage.removeItem("civicaccord-verified")}catch(x){}location.reload()}}
-  else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify to take part</a>`}}
-function verifyGate(what){return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. To vote, add statements, or have your choices count, confirm that you live in the district. In the live version, it takes one check, and it's designed so your votes can't be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify my residency</a></div>`}
+  else{c.className="chip";c.innerHTML=`Not verified · <a href="verify.html" style="color:var(--koa)">Verify you're a registered voter</a>`}}
+function verifyGate(what){
+  if(ISVOTER&&!inMyJurisdiction(P)) return `<div class="submitbox" id="gate"><h3>This deliberation is for voters the ${esc(P.name)} represents</h3><p>You're verified as a voter in ${esc((VER.districts&&(VER.districts.stateName||VER.districts.state))||"another place")}. You can read everything here, but only voters this government represents can vote or add statements.</p><p class="meta">Look for deliberations for your own governments at the top of the page.</p></div>`;
+  if(VER&&VER.voterStatus!=="registered") return `<div class="submitbox" id="gate"><h3>Only verified voters can ${what}</h3><p>Votes and statements here come only from registered voters in the district, each confirmed as a real, active voter. You can still read everything, see what's open for public input, and write to your representatives.</p><p class="meta">Not registered yet? <a href="https://vote.gov/" target="_blank" rel="noopener" style="color:var(--koa)">Register at Vote.gov</a>, then verify again.</p></div>`;
+  return `<div class="submitbox" id="gate"><h3>Verify to ${what}</h3><p>Anyone can read every deliberation and see the full public record. Only registered voters in the district can vote or add statements, so each voice is a real, verified voter. In the live version, it's designed so your votes can't be traced back to you.</p><a class="btn" href="verify.html" style="text-decoration:none;display:inline-block">Verify that you're a registered voter</a></div>`}
 function renderHeader(){verChip();
   const vd=VER&&VER.districts&&!VER.example?VER.districts:null;
   document.getElementById("chip-district").textContent=vd&&P.key===vd.state.toLowerCase()+"-state"&&vd.sldl?`State House district ${vd.sldl} · State Senate district ${vd.sldu}`:vd&&P.key==="federal"&&vd.cd?`${vd.state} congressional district ${vd.cd}`:P.district;
@@ -368,19 +381,19 @@ function weigh(){
       <p>${esc(s.t)}</p>
       ${costLine(s.id)}
       <div class="vote" data-id="${s.id}">
-        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted||!VER?"disabled":""}>Agree</button>
-        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted||!VER?"disabled":""}>Disagree</button>
-        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted||!VER?"disabled":""}>Pass / unsure</button>
+        <button class="agree" aria-pressed="${v===0}" data-v="0" ${st.submitted||!CANVOTE?"disabled":""}>Agree</button>
+        <button class="disagree" aria-pressed="${v===1}" data-v="1" ${st.submitted||!CANVOTE?"disabled":""}>Disagree</button>
+        <button class="pass" aria-pressed="${v===2}" data-v="2" ${st.submitted||!CANVOTE?"disabled":""}>Pass / unsure</button>
       </div>
       ${s.mine?`<span class="meta">Your statement · waiting for others to vote</span>`:""}
     </div>`}).join("");
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other residents wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
-  ${VER?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
+  ${CANVOTE?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
   <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${P.resLabel} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
-  ${VER?`<form class="add" id="addform">
+  ${CANVOTE?`<form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
     <textarea id="newstmt" rows="2" maxlength="200" placeholder="One clear idea, in your own words."></textarea>
     <button class="btn" type="submit">Add statement</button>
@@ -570,14 +583,14 @@ function followThrough(){
 function handoff(){
   const list=all().map(s=>({...s,...tally(s)}));
   const common=list.filter(s=>s.kind==="common"), split=list.filter(s=>s.kind==="split");
-  const people=(P.participation&&P.participation.registered?P.participation.registered.count+(st.submitted&&myStatus()==="registered"?1:0):92+(st.submitted?1:0)), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
+  const people=(P.participation?P.participation.open.count:0)+(st.submitted?1:0), votes=list.reduce((n,s)=>n+s.n,0), t=totals();
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 6</div><h2>${esc(P.handoffTitle)}</h2></div>
   <p class="lede">${esc(P.handoffLede)}</p>
   ${P.participation&&P.participation.registered?`<p class="meta">The official result comes from registered voters. Views from ${othersCount()} other residents travel with it, shown separately and labeled.</p>`:""}
   <div class="pkg">
     <div class="stat">
-      <div><strong>${people}</strong><span>${P.participation&&P.participation.registered?"registered voters":"verified residents"}</span></div>
+      <div><strong>${people}</strong><span>verified voters</span></div>
       ${P.participation?`<div><strong>${P.participation.panel.count}</strong><span>citizen panelists</span></div>`:""}
       <div><strong>${votes}</strong><span>votes cast</span></div>
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
@@ -601,8 +614,9 @@ function handoff(){
 function render(){
   renderHeader();
   const p=document.getElementById("panel");
+  refreshCanVote();
   if(st.step>=4) VIEW="registered";
-  p.innerHTML=(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+(!VER&&st.step===3?`<p class="note"><b>Exploring only.</b> Try any mix of options to see the cost. Your choices count once you <a href="verify.html" style="color:var(--koa)">verify your residency</a>.</p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
+  p.innerHTML=(PRACTICE?`<p class="draftbar"><b>Practice mode.</b> You're trying the sample deliberation from <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a>. Practice votes use sample data, stay on this device, and are never counted.</p>`:"")+(P.draft?`<p class="draftbar"><b>Draft preview.</b> This pack isn't live. It shows how the deliberation will look once it's reviewed and opened. <a href="new.html" style="color:var(--koa)">Keep editing</a></p>`:"")+(!CANVOTE&&st.step===3?`<p class="note"><b>Exploring only.</b> Try any mix of options to see the cost. Only verified voters' choices count. <a href="verify.html" style="color:var(--koa)">Verify that you're a registered voter</a>.</p>`:"")+[learn,weigh,ground,costs,draft,handoff][st.step]();
   const go=(id,n)=>{const b=document.getElementById(id);if(b)b.onclick=()=>{st.step=n;render();window.scrollTo({top:0})}};
   go("go1",1);go("go3",3);go("goC",4);go("go4",5);go("goNext",2);
   if(st.step===3&&Object.keys(P.OPT).length){

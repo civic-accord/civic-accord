@@ -155,320 +155,200 @@
     "id": 1,
     "text": "Residents should have a public way to talk through issues together and send proposals to their representatives.",
     "a": [
-     42,
-     3,
-     3
+     34,
+     2,
+     2
     ],
     "b": [
-     38,
-     4,
+     30,
+     3,
      2
     ],
     "panel": [
      31,
      3,
      2
-    ],
-    "registered": {
-     "a": [
-      34,
-      2,
-      2
-     ],
-     "b": [
-      30,
-      3,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 2,
     "text": "Every office that receives a proposal should answer it publicly and give its reasons.",
     "a": [
-     40,
-     4,
-     4
+     32,
+     3,
+     3
     ],
     "b": [
-     39,
-     3,
+     31,
+     2,
      2
     ],
     "panel": [
      30,
      4,
      2
-    ],
-    "registered": {
-     "a": [
-      32,
-      3,
-      3
-     ],
-     "b": [
-      31,
-      2,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 3,
     "text": "Votes in a tool like this should be counted by open-source code that anyone can check.",
     "a": [
-     41,
-     3,
-     4
+     33,
+     2,
+     3
     ],
     "b": [
-     37,
-     4,
-     3
+     30,
+     3,
+     2
     ],
     "panel": [
      29,
      4,
      3
-    ],
-    "registered": {
-     "a": [
-      33,
-      2,
-      3
-     ],
-     "b": [
-      30,
-      3,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 4,
     "text": "AI can help summarize and draft, but it should never count votes or decide anything.",
     "a": [
-     44,
+     35,
      2,
      2
     ],
     "b": [
-     38,
-     3,
-     3
+     30,
+     2,
+     2
     ],
     "panel": [
      32,
      2,
      2
-    ],
-    "registered": {
-     "a": [
-      35,
-      2,
-      2
-     ],
-     "b": [
-      30,
-      2,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 5,
     "text": "Only people confirmed to live in the district should take part, one person, one voice.",
     "a": [
-     43,
-     3,
+     34,
+     2,
      2
     ],
     "b": [
-     36,
-     6,
+     29,
+     5,
      2
     ],
     "panel": [
      31,
      3,
      2
-    ],
-    "registered": {
-     "a": [
-      34,
-      2,
-      2
-     ],
-     "b": [
-      29,
-      5,
-      2
-     ]
-    }
+    ]
    },
    {
     "id": 6,
     "text": "Results should show registered voters and all participants separately.",
     "a": [
-     33,
-     9,
-     6
+     26,
+     7,
+     5
     ],
     "b": [
-     30,
-     8,
-     6
+     24,
+     6,
+     5
     ],
     "panel": [
      24,
      7,
      5
-    ],
-    "registered": {
-     "a": [
-      26,
-      7,
-      5
-     ],
-     "b": [
-      24,
-      6,
-      5
-     ]
-    }
+    ]
    },
    {
     "id": 7,
     "text": "Government itself should run a tool like this.",
     "a": [
-     12,
-     30,
-     6
+     10,
+     24,
+     5
     ],
     "b": [
-     34,
-     6,
-     4
+     27,
+     5,
+     3
     ],
     "panel": [
      16,
      14,
      6
-    ],
-    "registered": {
-     "a": [
-      10,
-      24,
-      5
-     ],
-     "b": [
-      27,
-      5,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 8,
     "text": "A nonpartisan university or nonprofit should run it, not government.",
     "a": [
-     36,
-     6,
-     6
+     29,
+     5,
+     5
     ],
     "b": [
-     14,
-     26,
-     4
+     11,
+     21,
+     3
     ],
     "panel": [
      20,
      10,
      6
-    ],
-    "registered": {
-     "a": [
-      29,
-      5,
-      5
-     ],
-     "b": [
-      11,
-      21,
-      3
-     ]
-    }
+    ]
    },
    {
     "id": 9,
     "text": "Public money should pay for a pilot in a few states or districts.",
     "a": [
-     13,
-     31,
-     4
+     10,
+     25,
+     3
     ],
     "b": [
-     33,
-     6,
-     5
+     26,
+     5,
+     4
     ],
     "panel": [
      18,
      12,
      6
-    ],
-    "registered": {
-     "a": [
-      10,
-      25,
-      3
-     ],
-     "b": [
-      26,
-      5,
-      4
-     ]
-    }
+    ]
    },
    {
     "id": 10,
     "text": "Public hearings and comment periods already give residents enough of a voice.",
     "a": [
+     14,
      18,
-     22,
-     8
+     6
     ],
     "b": [
-     12,
-     27,
-     5
+     10,
+     22,
+     4
     ],
     "panel": [
      10,
      20,
      6
-    ],
-    "registered": {
-     "a": [
-      14,
-      18,
-      6
-     ],
-     "b": [
-      10,
-      22,
-      4
-     ]
-    }
+    ]
    }
   ],
   "costOptions": [],
   "revenue": [],
   "participation": {
    "open": {
-    "label": "Open participation",
-    "count": 92,
-    "how": "Verified residents who chose to join."
+    "label": "Verified voters",
+    "count": 74,
+    "how": "Registered voters in the district who chose to join, each confirmed as a real, active voter. Sample data."
    },
    "panel": {
     "label": "Citizen panel",
@@ -525,21 +405,12 @@
      }
     ],
     "columns": [
-     "Open participation",
+     "Verified voters",
      "Citizen panel",
      "District"
     ]
    },
-   "example": true,
-   "registered": {
-    "count": 74,
-    "label": "Registered voters",
-    "how": "Participants whose voter registration was confirmed during the residency check. Their votes form the official result that goes to the office."
-   },
-   "others": {
-    "label": "Other residents",
-    "how": "Residents 16 and up who aren't registered to vote, including 16- and 17-year-olds. Their views are shown separately and labeled. They aren't part of the official result."
-   }
+   "example": true
   }
  },
  "bill": {
