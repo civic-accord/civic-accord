@@ -43,7 +43,7 @@ function topBlock(it,stage,next,following){
   return `<section class="panel top" aria-labelledby="t-h"><h2 id="t-h" class="sr-only">At a glance</h2>
     <dl class="kv">
       <dt>The item</dt><dd>${esc(it.title)} ${LIVE}<br><span class="meta">Version: ${versionLabel(it)}</span></dd>
-      <dt>Who can act</dt><dd>${esc(whoCanAct(it))}</dd>
+      <dt>Who can act</dt><dd>${esc(whoCanAct(it))}${it.level!=="local"&&it.kind!=="Proposed rule"?`<br><a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">See who represents you, and how to reach them</a>`:""}</dd>
       <dt>Where it stands</dt><dd><b>${esc(stage.label)}</b>${stage.date?`, ${fmt(stage.date)}`:""}${stage.detail?`<br><span class="meta">${esc(stage.detail)}</span>`:""}</dd>
       <dt>What you can do next</dt><dd>${next.href&&safe(next.href)?`<a class="nextbtn" href="${esc(next.href)}" target="_blank" rel="noopener">${esc(next.text)}</a>`:next.anchor?`<a class="nextbtn" href="#${esc(next.anchor)}">${esc(next.text)}</a>`:esc(next.text)}</dd>
     </dl>
@@ -109,7 +109,7 @@ function render(it){
     ${orphans.length?`<div class="submitbox" id="review"><b>The official summary changed since your last visit.</b> ${orphans.length} of your earlier practice votes ${orphans.length===1?"was":"were"} on text that's no longer here, so ${orphans.length===1?"it isn't":"they aren't"} applied to the new text. Your votes on parts that didn't change are kept.
       <details><summary class="meta">See the earlier text and your votes</summary><ul class="plain">${orphans.map(k=>`<li><span class="meta">${esc(VOTE[MINE.parts[k].v]||"")}:</span> ${esc(MINE.parts[k].text||"")}</li>`).join("")}</ul></details>
       <button type="button" class="btn ghost" id="clearold">I've reviewed these. Clear them</button></div>`:""}
-    ${own?"":`<p class="submitbox">${local?(DIST&&!DIST.countyId&&!DIST.placeId?`Your saved address is from before local meetings were added. <a href="open.html#me" style="color:var(--koa)">Enter your address again on Open Now</a> so we know your local governments.`:DIST?`This meeting is for ${esc(J.name)}, so it's here to read. Practice voting is for your own county, city, town, or township. Anyone can read the agenda or testify.`:`To weigh in on a local meeting, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a> so we know your local governments. It stays on this device.`):DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a> so we know it's your state. It stays on this device.`}</p>`}
+    ${own?"":`<p class="submitbox">${local?(DIST&&!DIST.countyId&&!DIST.placeId?`Your saved districts are from before local meetings were added. <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">Enter your address again on My representatives</a> so we know your local governments.`:DIST?`This meeting is for ${esc(J.name)}, so it's here to read. Practice voting is for your own county, city, town, or township. Anyone can read the agenda or testify.`:`To weigh in on a local meeting, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know your local governments. It stays on this device.`):DIST?`This is another state's bill, so it's here to read. Practice voting is for bills in your own state (${esc(DIST.stateName||DIST.state)}).`:`To weigh in on a state bill, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a> so we know it's your state. It stays on this device.`}</p>`}
     <ol class="parts">${parts.map((p,i)=>`<li class="part"><span class="num">${it.parts.length?(local?"Agenda item ":"Part ")+(i+1)+(p.ref?" · "+esc(p.ref):""):"The whole "+what}</span>${p.lead?`<span class="meta">${esc(p.lead)}</span>`:""}<blockquote>${esc(p.text)}</blockquote>${p.background?`<details><summary class="meta">Background from the same summary</summary>${String(p.background).split("\n\n").map(t=>`<p class="meta">${esc(t)}</p>`).join("")}</details>`:""}${own?choose(keys[i],it.parts.length?(local?"Agenda item ":"Part ")+(i+1):"The whole "+what):""}</li>`).join("")}</ol>
     ${it.partsMore?`<p class="meta">The summary has more parts than fit here. Read the rest in the official text.</p>`:""}
     <p class="meta" id="saved">${chosen?`Practice votes saved in this browser: ${chosen} of ${keys.length}. Not counted. Not sent to anyone.`:"Practice votes are saved in this browser as you go. They aren't counted or sent to anyone."}</p>
@@ -129,7 +129,7 @@ function render(it){
 
   <section class="panel" aria-labelledby="h4"><div class="eyebrow">4 · Delivery ${YOURS} ${PLANNED}</div><h2 id="h4">What you sent</h2>
     ${sent.length?`<ul class="sentlist">${sent.map(s=>`<li><div><b>${esc(s.office.name)}</b>${s.office.holder?` <span class="meta">(${esc(s.office.holder)} at the time)</span>`:""} ${YOURS}</div>
-        <div class="meta">${s.issue.version?"Saved with the summary version you saw":"Summary version not recorded (saved from Open Now)"} · ${s.sentOn?"You said you sent it on "+fmt(s.sentOn):"No date given"} · ${esc(s.channel==="email"?"by email":s.channel==="contact-form"?"through the office's contact form":s.channel==="official-comment"?"as an official comment":s.channel==="meeting-comment"?"as a meeting comment":s.channel)}</div>
+        <div class="meta">${s.issue.version?"Saved with the summary version you saw":"Summary version not recorded (saved from the Issues list)"} · ${s.sentOn?"You said you sent it on "+fmt(s.sentOn):"No date given"} · ${esc(s.channel==="email"?"by email":s.channel==="contact-form"?"through the office's contact form":s.channel==="official-comment"?"as an official comment":s.channel==="meeting-comment"?"as a meeting comment":s.channel)}</div>
         ${s.message?`<details><summary class="meta">What you sent</summary><p class="msg">${esc(s.message)}</p></details>`:""}
         <div class="acts"><button type="button" class="btn ghost" data-copyrec="${esc(s.id)}">Copy as text</button><button type="button" class="btn ghost" data-delrec="${esc(s.id)}">Delete this record</button><span class="toast" id="cr-${esc(s.id)}" role="status" aria-live="polite"></span></div></li>`).join("")}</ul>
       <p class="meta">These records are reported by you. Civic Accord didn't deliver them and can't confirm they were received. They're kept only in this browser: they don't sync to your other devices, and clearing this browser's data deletes them. <a href="following.html#records" style="color:var(--koa)">Export a copy</a>.</p>`
@@ -148,8 +148,8 @@ function render(it){
 }
 
 function tellHTML(it,own,r){
-  if(!own&&it.level==="state")return `<p class="meta">Messages are for your own state's legislators. ${DIST?"":`<a href="open.html#me" style="color:var(--koa)">Enter your address on Open Now</a> to find them.`}</p>`;
-  if(!DIST)return `<p>To write to the people who represent you, first <a href="open.html#me" style="color:var(--koa)">enter your address on Open Now</a>. Only your districts are kept, in this browser.</p>`;
+  if(!own&&it.level==="state")return `<p class="meta">Messages are for your own state's legislators. ${DIST?"":`<a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">Enter your address on My representatives</a> to find them.`}</p>`;
+  if(!DIST)return `<p>To write to the people who represent you, first <a href="governments.html?from=${encodeURIComponent(ID)}" style="color:var(--koa)">enter your address on My representatives</a>. Only your districts are kept, in this browser.</p>`;
   const reps=CA_TELL.recipients(it,DIST,FED,STATELEG), loading=(it.level==="federal"&&!FED)||(it.level==="state"&&!STATELEG);
   return `<div class="go" role="group" aria-label="Where you stand (kept in this browser)">${["Support","Oppose","Unsure"].map(x=>`<button type="button" data-r="${x}" aria-pressed="${r===x}">${x}</button>`).join("")}</div>
     ${TELL?`<div class="compose">
@@ -220,12 +220,12 @@ async function loadReps(it){
 }
 
 (async()=>{
-  if(!ID){$("title").textContent="Pick an issue";$("main").innerHTML=`<p>Choose any bill, proposed rule, or meeting on <a href="open.html" style="color:var(--koa)">Open Now</a>, then choose "Talk it through."</p>`;return}
+  if(!ID){$("title").textContent="Pick an issue";$("main").innerHTML=`<p>Choose any bill, proposed rule, or meeting from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>`;return}
   if(ID.startsWith("sample-")){if(window.CA_SAMPLE)return CA_SAMPLE.render(ID);return}
   let d=null;try{d=await (await fetch("/api/item?id="+encodeURIComponent(ID))).json()}catch(e){}
   if(!d||!d.item){$("title").textContent="Couldn't load this issue";
     const f=CA_RECORDS.follows().find(x=>x.issue.id===ID);
-    $("main").innerHTML=`<p>${esc(d&&d.errors&&d.errors[0]||"Couldn't reach the official source. Check your connection and try again.")}</p>${f?`<p class="meta">You follow this issue. Nothing was compared this time, and what you last saw is kept.</p>`:""}<p><a href="open.html" style="color:var(--koa)">Back to Open Now</a></p>`;return}
+    $("main").innerHTML=`<p>${esc(d&&d.errors&&d.errors[0]||"Couldn't reach the official source. Check your connection and try again.")}</p>${f?`<p class="meta">You follow this issue. Nothing was compared this time, and what you last saw is kept.</p>`:""}<p><a href="open.html" style="color:var(--koa)">Back to Issues</a></p>`;return}
   IT=d.item;FETCHED=d.fetchedAt;
   // If you follow this issue, compare what you last saw with the latest official data, then mark it as seen.
   const f=CA_RECORDS.follows().find(x=>x.issue.id===ID);

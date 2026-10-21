@@ -18,6 +18,37 @@
   .btn,button,select,input[type=text],input[type=search]{min-height:44px}
 }
 </style>
+<style>
+/* Site navigation, the same on every page: four main destinations, plus a few supporting links. */
+.skip{position:absolute;left:-9999px;top:0}.skip:focus{left:16px;top:8px;z-index:100;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;outline:3px solid var(--sun)}
+.sitenav{max-width:1100px;margin:0 auto 16px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;font-size:.95rem}
+.sitenav .brandlink{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;color:var(--ink);text-decoration:none;min-height:44px;margin-right:auto}
+.sitenav .brandlink svg{width:30px;height:20px;fill:none;stroke:var(--koa);stroke-width:2}
+.sitenav .primary,.sitenav .secondary{display:flex;flex-wrap:wrap;gap:2px 4px;list-style:none;margin:0;padding:0}
+.sitenav a.nl{display:inline-flex;align-items:center;min-height:44px;padding:4px 10px;border-radius:8px;color:var(--ink);text-decoration:none}
+.sitenav a.nl[aria-current="page"]{background:var(--koa-soft);color:var(--koa);font-weight:700}
+.sitenav .secondary a.nl{color:var(--muted);font-size:.85rem}
+.tabbar{display:none}
+.morenav{display:none;position:relative;border-top:0;padding-top:0;margin:0}
+.morenav summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:4px 12px;border:1px solid var(--line);border-radius:8px;color:var(--ink)}
+.morenav summary::-webkit-details-marker{display:none}
+.morenav ul{position:absolute;right:0;top:calc(100% + 6px);z-index:60;list-style:none;margin:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:230px;display:grid}
+.morenav a.nl{display:flex;color:var(--ink)}
+#content:focus{outline:none}
+.footnav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem}.footnav a{color:inherit;display:inline-flex;align-items:center;min-height:44px}
+@media (max-width:700px){
+  .sitenav .primary,.sitenav .secondary{display:none}
+  .morenav{display:block}
+  .sitenav{flex-wrap:nowrap}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .tabbar a{flex:1 1 0;min-width:0;display:grid;justify-items:center;align-content:center;gap:2px;padding:6px 2px;min-height:52px;color:var(--muted);text-decoration:none;font-size:.72rem;line-height:1.15;text-align:center;border-radius:10px}
+  .tabbar a.wide{flex-grow:1.45}
+  .tabbar a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .tabbar svg{width:22px;height:22px}
+}
+</style>
+
 </head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
@@ -162,7 +193,9 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
 .actions{display:flex;flex-wrap:wrap;gap:10px}
 .sticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:3}
 </style>
-<div class="wrap">
+<a class="skip" href="#content">Skip to content</a>
+<nav class="sitenav" aria-label="Main"><a class="brandlink" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord</a><ul class="primary"><li><a class="nl" href="/">Home</a></li><li><a class="nl" href="/open.html">Issues</a></li><li><a class="nl" href="/governments.html">My representatives</a></li><li><a class="nl" href="/following.html">Following</a></li></ul><ul class="secondary" aria-label="More"><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul><details class="morenav"><summary>More</summary><ul><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul></details></nav>
+<div class="wrap" id="content" tabindex="-1" role="main">
 <noscript><p class="note"><b>This page needs JavaScript</b> to look up your address and load live information. Turn it on in your browser settings, or use a library computer. All the data is also open on <a href="https://github.com/civic-accord/civic-accord">GitHub</a>.</p></noscript>
 
   <header>
@@ -268,10 +301,11 @@ input[type=number],select{font:inherit;width:100%;border:1px solid var(--line);b
     <textarea id="copytext" rows="5" readonly hidden></textarea>
     <p class="meta">To send it for review, give the pack file to your local host, or open an issue on the <a href="https://github.com/civic-accord/civic-accord/issues/new" target="_blank" rel="noopener" style="color:var(--koa)">project's GitHub</a> and attach it. Before real use, a reviewer will check sources, costs, and neutral wording before it opens.</p>
   </section>
-  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Pack format: packs/SPEC.md</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
+  <footer><nav class="footnav" aria-label="More"><a href="/how.html">How it works</a><a href="/learn.html">Learn</a><a href="/ask.html">Ask offices to adopt Civic Accord</a><a href="https://github.com/civic-accord/civic-accord">Code and data</a></nav><span>Civic Accord · an open, nonpartisan example · October 2026</span><span>Pack format: packs/SPEC.md</span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
 <script src="/js/new.js"></script>
-<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<nav class="tabbar" aria-label="Main, on phones"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Issues</a><a href="/governments.html" class="wide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-5 8 5v10M9 20v-6h6v6M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>My representatives</a><a href="/following.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Following</a></nav>
+<script src="/lib/nav.js"></script>
 <script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>
 </body></html>

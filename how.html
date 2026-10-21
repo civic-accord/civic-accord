@@ -26,6 +26,37 @@
   .btn,button,select,input[type=text],input[type=search]{min-height:44px}
 }
 </style>
+<style>
+/* Site navigation, the same on every page: four main destinations, plus a few supporting links. */
+.skip{position:absolute;left:-9999px;top:0}.skip:focus{left:16px;top:8px;z-index:100;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;outline:3px solid var(--sun)}
+.sitenav{max-width:1100px;margin:0 auto 16px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;font-size:.95rem}
+.sitenav .brandlink{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;color:var(--ink);text-decoration:none;min-height:44px;margin-right:auto}
+.sitenav .brandlink svg{width:30px;height:20px;fill:none;stroke:var(--koa);stroke-width:2}
+.sitenav .primary,.sitenav .secondary{display:flex;flex-wrap:wrap;gap:2px 4px;list-style:none;margin:0;padding:0}
+.sitenav a.nl{display:inline-flex;align-items:center;min-height:44px;padding:4px 10px;border-radius:8px;color:var(--ink);text-decoration:none}
+.sitenav a.nl[aria-current="page"]{background:var(--koa-soft);color:var(--koa);font-weight:700}
+.sitenav .secondary a.nl{color:var(--muted);font-size:.85rem}
+.tabbar{display:none}
+.morenav{display:none;position:relative;border-top:0;padding-top:0;margin:0}
+.morenav summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:4px 12px;border:1px solid var(--line);border-radius:8px;color:var(--ink)}
+.morenav summary::-webkit-details-marker{display:none}
+.morenav ul{position:absolute;right:0;top:calc(100% + 6px);z-index:60;list-style:none;margin:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:230px;display:grid}
+.morenav a.nl{display:flex;color:var(--ink)}
+#content:focus{outline:none}
+.footnav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem}.footnav a{color:inherit;display:inline-flex;align-items:center;min-height:44px}
+@media (max-width:700px){
+  .sitenav .primary,.sitenav .secondary{display:none}
+  .morenav{display:block}
+  .sitenav{flex-wrap:nowrap}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .tabbar a{flex:1 1 0;min-width:0;display:grid;justify-items:center;align-content:center;gap:2px;padding:6px 2px;min-height:52px;color:var(--muted);text-decoration:none;font-size:.72rem;line-height:1.15;text-align:center;border-radius:10px}
+  .tabbar a.wide{flex-grow:1.45}
+  .tabbar a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .tabbar svg{width:22px;height:22px}
+}
+</style>
+
 </head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
@@ -190,7 +221,9 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .doc .k{font-family:var(--mono);font-size:.85rem}
 .tbl{overflow-x:auto}
 </style>
-<div class="wrap doc">
+<a class="skip" href="#content">Skip to content</a>
+<nav class="sitenav" aria-label="Main"><a class="brandlink" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord</a><ul class="primary"><li><a class="nl" href="/">Home</a></li><li><a class="nl" href="/open.html">Issues</a></li><li><a class="nl" href="/governments.html">My representatives</a></li><li><a class="nl" href="/following.html">Following</a></li></ul><ul class="secondary" aria-label="More"><li><a class="nl" href="/how.html" aria-current="page">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul><details class="morenav"><summary>More</summary><ul><li><a class="nl" href="/how.html" aria-current="page">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul></details></nav>
+<div class="wrap doc" id="content" tabindex="-1" role="main">
   <header>
     <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · documentation</div>
     <h1>How It Works</h1>
@@ -202,7 +235,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <li><a href="#what">What it is</a></li><li><a href="#steps">The six steps</a></li><li><a href="#who">Who can take part</a></li>
     <li><a href="#privacy">Your privacy</a></li><li><a href="#count">How votes are counted</a></li><li><a href="#ground">How common ground is found</a></li><li><a href="#rules">Rules for statements and reviews</a></li>
     <li><a href="#costs">How costs are shown</a></li><li><a href="#ai">What AI does and doesn't do</a></li><li><a href="#office">The office, not the person</a></li>
-    <li><a href="#open">Open Now: where items come from</a></li><li><a href="#talk">Talk through any bill or rule</a></li><li><a href="#following">Issue pages, Following, and your records</a></li><li><a href="#contact">Contacting your representatives</a></li><li><a href="#lookup">Finding your governments</a></li>
+    <li><a href="#open">Issues: where items come from</a></li><li><a href="#talk">Talk through any bill or rule</a></li><li><a href="#following">Issue pages, Following, and your records</a></li><li><a href="#contact">Contacting your representatives</a></li><li><a href="#lookup">Finding your governments</a></li>
     <li><a href="#law">Rules come from law</a></li><li><a href="#security">Security</a></li><li><a href="#app">Using it as an app</a></li><li><a href="learn.html">Civic Accord Learn</a></li><li><a href="#status">What's real today</a></li>
     <li><a href="#govern">Who runs it</a></li><li><a href="#open-code">Open code and data</a></li></ol></nav>
 
@@ -225,7 +258,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p><b>Two checks.</b> First, that an active voter record exists for you in the district. Second, that you're really that voter: a code is mailed to the home address on your voter record (not one you type), or staff at a library or election office compare your ID with the record. An instant yes-or-no check by your state election office, and state digital IDs where law allows, are planned. Each state's rules on voter records decide what may be used. In this example, no real check happens.</p>
     <p><b>Only your own governments.</b> You can respond only where you're a voter: federal items from anywhere, your state's items only if you're a voter in that state, and local items only in your own county or city. You can still read everything from everywhere.</p>
     <p class="meta">Today, this uses the address you enter, which stays on your device. Nothing checks it yet. Planned: once real voter checks exist, it will use your checked districts.</p>
-    <p><b>Not a voter yet?</b> <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a> is a separate space for young people and anyone who can't vote. It uses real issues and points to real actions anyone can take. You can tap the topics you care about or search, using the same open word lists as Open Now, and your picks stay on your device. Nothing there is counted in deliberations.</p></section>
+    <p><b>Not a voter yet?</b> <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a> is a separate space for young people and anyone who can't vote. It uses real issues and points to real actions anyone can take. You can tap the topics you care about or search, using the same open word lists as Issues, and your picks stay on your device. Nothing there is counted in deliberations.</p></section>
 
   <section class="panel" id="privacy"><h2>Your privacy</h2><ul class="plain">
     <li><b>The address you type never reaches Civic Accord's servers.</b> Your browser sends it straight to the U.S. Census Bureau's free lookup to find your districts. Only your districts are kept. (In the live version, the voter list used to mail codes is handled only by the host or the election office, and each address is deleted after printing.)</li>
@@ -314,7 +347,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <tr><th>AI may</th><th>AI never</th></tr>
     <tr><td>Draft a starting bill from the common ground</td><td>Counts votes, or touches the vote record</td></tr>
     <tr><td>Help organize and summarize</td><td>Checks residency or voter status</td></tr>
-    <tr><td>Help write issue packs, which a person then reviews</td><td>Writes or frames the items on Open Now, which come straight from official sources</td></tr>
+    <tr><td>Help write issue packs, which a person then reviews</td><td>Writes or frames the items on Issues, which come straight from official sources</td></tr>
     <tr><td>Point out possible repeats or rule problems to a human moderator</td><td>Removes, edits, or approves a statement</td></tr>
     <tr><td></td><td>Decides anything. People decide, and the office decides whether to act.</td></tr></table></div>
     <p>Every AI summary links to the votes behind it, so you don't have to take it on trust.</p></section>
@@ -332,8 +365,8 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
       <li>Civic Accord will never ask an office for a password by email or phone.</li>
     </ul></section>
 
-  <section class="panel" id="open"><h2>Open Now: where items come from</h2>
-    <p>Open Now lists what your governments have open for public input. It comes straight from these sources, with no AI involved, and refreshes every few hours:</p>
+  <section class="panel" id="open"><h2>Issues: where items come from</h2>
+    <p>Issues (once called Open Now) lists what your governments have open for public input. It comes straight from these sources, with no AI involved, and refreshes every few hours:</p>
     <div class="tbl"><table><tr><th>What</th><th>Source</th></tr>
       <tr><td>Proposed federal rules open for public comment</td><td><a href="https://www.federalregister.gov/developers/documentation/api/v1" style="color:var(--koa)">Federal Register</a> (no key needed)</td></tr>
       <tr><td>Recently active bills in Congress</td><td><a href="https://api.congress.gov/" style="color:var(--koa)">Congress.gov</a>. The 100 most recently updated bills. Bills that became law, were vetoed, or failed are left out, and so are resolutions that have been fully agreed to.</td></tr>
@@ -343,17 +376,17 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p>Each source shows when its list was fetched, and says so if a refresh just failed and an older list is being shown. Deadlines are checked against today's date every time the list is drawn, so an item never shows as open after its deadline, even from a saved copy. Official deadlines usually give only a date, so on the last day an item says "Closes today" and points to the notice for the exact time. Dates follow your device's time zone; federal comment deadlines are usually the end of the day Eastern time, so check the notice if you're farther west.</p>
     <p>Each item links to the official text and the government's own comment channel. Some proposed rules have no online comment form. For those, the button says "How to comment (in the notice)" and opens the notice, which explains how to comment, often by email or mail.</p>
     <h3>Finding what you care about</h3>
-    <p>There can be hundreds of items open at once. On your first visit, Open Now asks you to pick up to five topics, like housing, schools, or farms and food. Then it shows what's open on those topics, with the soonest deadlines at the top, ten at a time. You can switch topics, see everything, or search everything at any time. When an agency posts many near-identical rules at once (for example, dozens of aircraft safety notices), they're folded into one line you can open.</p>
+    <p>There can be hundreds of items open at once. On your first visit, Issues asks you to pick up to five topics, like housing, schools, or farms and food. Then it shows what's open on those topics, with the soonest deadlines at the top, ten at a time. You can switch topics, see everything, or search everything at any time. When an agency posts many near-identical rules at once (for example, dozens of aircraft safety notices), they're folded into one line you can open.</p>
     <h3>Your next step on each item</h3>
     <p>Every item shows a short path: read it, say where you stand, speak up, and go further. The next step is always clearly marked. For a proposed rule, speaking up means the official comment to the agency, because the agency must consider the official comments. For a bill, it means writing to the people who represent you. Going further means talking it through: weighing in on each part, copied word for word from the official summary (<a href="#talk" style="color:var(--koa)">how that works</a>). Today your votes there are practice, kept on your device. You can also build your own deliberation, which neighbors can join once a host reviews and opens it. The last step, having verified voters' views counted in a public record, is planned and marked that way. A step is marked done only when you say so, for example "Yes, I sent it," which also offers to keep a record of what you sent (<a href="#following" style="color:var(--koa)">how records work</a>). Your steps are kept only on your device, as a reminder for you. They aren't counted or sent anywhere.</p>
     <p>Items are sorted into topics by a published list of words, not by AI. For example, an item that mentions "tenant" or "landlord" goes under Housing. The title and the office are checked first. The longer summary is checked only if those match nothing. Each item shows which word put it there, so you can see why it's showing. Anyone can read the word lists (<a href="https://github.com/civic-accord/civic-accord/blob/main/lib/topics.js" style="color:var(--koa)">lib/topics.js</a>) and suggest a fix. A word list can miss things or file something in the wrong place, so "Everything" and search always show every item. Your topic picks stay on your device and are never sent anywhere.</p></section>
 
   <section class="panel" id="talk"><h2>Talk through any bill or proposed rule</h2>
-    <p>Every item listed on Open Now has its own page where you can weigh in on it: bills in Congress, bills in your state legislature during its session, proposed federal rules, and connected local council meetings. For a local meeting, the parts are the agenda items with legislation attached, by their official titles. These pages are built automatically, only from official material, so no one has to write them and nothing is reworded:</p>
+    <p>Every item listed on Issues has its own page where you can weigh in on it: bills in Congress, bills in your state legislature during its session, proposed federal rules, and connected local council meetings. For a local meeting, the parts are the agenda items with legislation attached, by their official titles. These pages are built automatically, only from official material, so no one has to write them and nothing is reworded:</p>
     <ul class="plain">
       <li><b>The parts you weigh in on</b> are copied word for word from the official summary, in order. For bills in Congress, that's the summary by the nonpartisan Congressional Research Service. For state bills, it's the summary the legislature posted, collected by Open States. Headings and very short lines are left out. Lines that introduce a list stay with each item, and background notes (like "As background" or "Existing law") are shown with the part they explain. If there's no official summary yet, you weigh in on the bill as a whole.</li>
       <li><b>Costs</b> come only from official estimates: the Congressional Budget Office for Congress, or the state's own fiscal note. If there isn't one, the page says "not yet estimated."</li>
-      <li><b>Facts</b> like status, sponsors, and the official text come from the same sources as Open Now and are refreshed about twice a day. The page shows when they were fetched. Party is never shown.</li>
+      <li><b>Facts</b> like status, sponsors, and the official text come from the same sources as Issues and are refreshed about twice a day. The page shows when they were fetched. Party is never shown.</li>
       <li>You can add your own statements. In the live version, they're checked against the <a href="#rules" style="color:var(--koa)">published rules</a> before others see them.</li>
     </ul>
     <p><b>When the official text changes.</b> Each practice vote is saved with the exact words it was cast on. If a summary is updated, your votes on unchanged parts stay, and votes on parts that changed or were removed are never moved onto the new text. The page tells you what changed so you can vote again.</p>
@@ -361,11 +394,12 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p class="meta">Today: these pages and their official content are live. Your votes and statements are practice: they stay on your device and aren't counted. Counting starts once real voter checks exist and a host runs it.</p></section>
 
   <section class="panel" id="following"><h2>Issue pages, Following, and your own records</h2>
-    <p>Each item on Open Now has one permanent issue page. At the top it says what the item is, who can act on it, where it stands in the official record, and the most useful thing you can do next. Every part of the page is labeled Live, Practice, Sample, or Planned.</p>
+    <p>Each item on Issues has one permanent issue page. At the top it says what the item is, who can act on it, where it stands in the official record, and the most useful thing you can do next. Every part of the page is labeled Live, Practice, Sample, or Planned.</p>
     <ul class="plain">
       <li><b>What this is for, today.</b> Issue pages and Following help you take part and keep track, on your own. They can't yet show what constituents want as a group, or whether an office followed its constituents' wishes. That needs counted participation from verified voters and offices answering in public, which are planned.</li>
       <li><b>Official developments.</b> The steps listed under "What happened next" come from the official record: Congress.gov and Open States action histories, Federal Register comment dates, and local agendas. They aren't responses to anyone's request, and Civic Accord never says a request caused an action.</li>
       <li><b>Responses to requests.</b> None are recorded yet, because offices haven't joined. When they can, a response will be kept apart from what the office commits to do and what the record shows it did. No response never means opposition.</li>
+      <li><b>Comparing a request with what an office did (planned).</b> Civic Accord doesn't compare live requests with official actions yet, and code never assigns these labels. A future comparison will need a specific request with its version; a specific official action with its source; a plain explanation of which parts match and which don't; a clear line between what the office says about itself and a comparison reviewed by independent reviewers; a way to correct mistakes; and the label "Not yet comparable" when the evidence isn't enough. The <a href="item.html?id=sample-civic-channel" style="color:var(--koa)">sample issue</a> shows one such label, "Partially matches the request," for a fictional office.</li>
       <li><b>Following.</b> When you follow an issue, your browser saves what you saw and when. Each time you open Following or the issue page, it compares that with the latest official data and lists what changed and why. Nothing is checked in the background. If the source doesn't answer, the page says "Couldn't check right now"; if the source has no newer data, it says so. Neither is treated as "no change."</li>
       <li><b>"I sent it" records.</b> After you write to an office or comment officially, you can keep a record of exactly what you sent, to which office, and when. Offices are recorded by their seat (for example, a state house district), with the officeholder at the time. Every record is marked "reported by you": Civic Accord didn't deliver it and can't confirm it was received.</li>
       <li><b>Where it's kept.</b> Only in this browser. Nothing is sent to Civic Accord. Records don't sync across your devices and are lost if you clear this browser's data. On the Following page you can export a copy, import it again, or delete everything. Exported files may contain private messages and your views, so keep them safe.</li>
@@ -378,7 +412,8 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p><b>About the "Ask" page.</b> It asks each office to change how it hears from residents. It doesn't ask anyone to support a particular bill or spending, and it says so in the message. It asks you to add a sentence in your own words, because offices often give more weight to messages in a person's own words, and the message says it started from a suggestion on Civic Accord. Until a host runs Civic Accord, this page is a sample that isn't being promoted. Before a host promotes it widely, the host's lawyers will check it against the rules for nonprofits, which limit how much they may try to influence legislation.</p>
     <p class="meta">Today: reactions stay on your device. In the live version, verified voters' reactions would be counted in the public record.</p></section>
 
-  <section class="panel" id="lookup"><h2>Finding your governments</h2>
+  <section class="panel" id="lookup"><h2>Finding your governments (My representatives)</h2>
+    <p>The My representatives page asks for your address only after explaining why. Your browser sends it straight to the U.S. Census Bureau; it never reaches Civic Accord. Only your districts and the names of your governments are kept, in your browser, so you don't have to enter the address again and Issues knows which items are yours. It lists members of Congress and your state legislators with the contact details they publish, and says clearly where local officeholders aren't covered yet. Opened from an issue page, it offers a link back to that issue.</p>
     <p>Google shut down its free Representatives API in 2025. Civic Accord's open replacement works like this:</p><ol>
       <li>The U.S. Census Bureau's free geocoder turns your address into districts: congressional, state house and senate, county, city or town, and school district.</li>
       <li>An open registry describes each office: its branch, how it's chosen, and whether it can receive proposals. It covers all 50 states and D.C., including special cases like Nebraska's one-chamber legislature, D.C. and territories, independent cities, and states without county governments.</li>
@@ -388,7 +423,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <h3 id="coverage">What's covered today</h3>
     <div class="tbl"><table><tr><th>Government</th><th>Districts found</th><th>Officeholder names</th><th>How to contact</th><th>Open items</th></tr>
       <tr><td>U.S. Congress</td><td>Yes</td><td>Yes</td><td>Official contact form and phone</td><td>Bills and proposed federal rules</td></tr>
-      <tr><td>State legislature</td><td>Yes</td><td>Yes, on Open Now and the Ask page (not yet on the lookup page)</td><td>Email where published, or official page</td><td>Bills during the session</td></tr>
+      <tr><td>State legislature</td><td>Yes</td><td>Yes, on My representatives, issue pages, and the Ask page</td><td>Email where published, or official page</td><td>Bills during the session</td></tr>
       <tr><td>Other statewide offices (governor and others)</td><td>Yes</td><td>Not yet</td><td>Not yet</td><td>No</td></tr>
       <tr><td>County</td><td>Yes</td><td>Not yet</td><td>Not yet</td><td>Maui County Council meetings only</td></tr>
       <tr><td>City, town, or township</td><td>Yes</td><td>Not yet</td><td>Not yet</td><td>Oakland City Council meetings only</td></tr>
@@ -410,11 +445,12 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p class="meta">Today: the site sends strict security headers, and its pages run only their own script files, never code mixed into the page. The Census Bureau's address lookup runs in a separate, sealed-off frame that can't reach the rest of the site, your saved settings, or anything you type elsewhere. The four data functions only read public data, and their keys are stored as secrets. No real votes or identities are collected.</p></section>
 
   <section class="panel" id="app"><h2>Using it as an app</h2>
-    <p>Civic Accord can be added to a phone's home screen and opens full screen, like an app. It's the same website, so it's always current, and there's no app store in between. Pages you've opened work without a signal. Live information, like Open Now and the lookup, always comes fresh from its source and is never shown from an old saved copy. App-store versions may come later, once there's a host to own those accounts.</p></section>
+    <p>Civic Accord can be added to a phone's home screen and opens full screen, like an app. It's the same website, so it's always current, and there's no app store in between. Pages you've opened work without a signal. Live information, like Issues and the lookup, always comes fresh from its source and is never shown from an old saved copy. App-store versions may come later, once there's a host to own those accounts.</p>
+    <p>Every page has the same four main places: <b>Home</b>, <b>Issues</b>, <b>My representatives</b>, and <b>Following</b>. On a phone they sit in a menu at the bottom of the screen. How it works, Learn, and the invitation to ask offices to adopt Civic Accord are at the top of each page and in its footer.</p></section>
 
   <section class="panel" id="status"><h2>What's real today</h2><div class="tbl"><table>
     <tr><th>Works now</th><th>Still to be built before real use</th></tr>
-    <tr><td>Address lookup for every U.S. government<br>Open Now with live federal rules and bills in Congress and state legislatures<br>Emailing or contacting your representatives<br>The six steps, with sample votes<br>The office inbox, with sample responses<br>Building a deliberation for any issue</td>
+    <tr><td>Address lookup for every U.S. government, with names and contact details for members of Congress and state legislators<br>Issue pages, Following, and your own records of what you sent (kept in your browser)<br>Issues with live federal rules and bills in Congress and state legislatures<br>Emailing or contacting your representatives<br>The six steps, with sample votes<br>The office inbox, with sample responses<br>Building a deliberation for any issue</td>
         <td>The real vote record and receipts<br>Mailed residency codes and library checks<br>Official voter-status matching<br>Public counts of reactions<br>A neutral host, legal review in each state, and independent security audits</td></tr></table></div></section>
 
   <section class="panel" id="govern"><h2>Who runs it</h2>
@@ -428,9 +464,10 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <li><a href="https://github.com/civic-accord/civic-accord/commits/main" style="color:var(--koa)">Every change ever made</a></li></ul>
     <p>Anyone can read, use, and change the code. If someone runs a changed copy as a public website, the license requires them to share their changed code too, so anyone can check what it does (<a href="https://github.com/civic-accord/civic-accord/blob/main/LICENSE" style="color:var(--koa)">GNU AGPL 3.0</a>). Anyone can reuse the registry and pack data if they credit Civic Accord (<a href="https://github.com/civic-accord/civic-accord/blob/main/registry/LICENSE" style="color:var(--koa)">CC BY 4.0</a>). The licenses don't cover the name: a copy shouldn't present itself as the official Civic Accord. The official site is civicaccord.org.</p></section>
 
-  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="/" style="color:inherit">Home</a></span></footer>
+  <footer><nav class="footnav" aria-label="More"><a href="/how.html">How it works</a><a href="/learn.html">Learn</a><a href="/ask.html">Ask offices to adopt Civic Accord</a><a href="https://github.com/civic-accord/civic-accord">Code and data</a></nav><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="/" style="color:inherit">Home</a></span></footer>
 </div>
-<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<nav class="tabbar" aria-label="Main, on phones"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Issues</a><a href="/governments.html" class="wide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-5 8 5v10M9 20v-6h6v6M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>My representatives</a><a href="/following.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Following</a></nav>
+<script src="/lib/nav.js"></script>
 <script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>
 </body></html>
