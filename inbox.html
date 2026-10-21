@@ -191,6 +191,17 @@ input[type=text],select{font:inherit;width:100%;border:1px solid var(--line);bor
 const words=n=>n.toLocaleString();
 const money=v=>{if(v<=0)return "$0";const t=(x,d)=>x.toFixed(d).replace(/\.0+$/,"");return v>=1e9?`$${t(v/1e9,2)}B`:v>=1e6?`$${t(v/1e6,v>=1e8?0:v>=1e7?1:2)}M`:`$${Math.round(v/1000)}K`};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// The consensus rule, the same on every page. Each group is [agree, disagree, pass] for one statement.
+// A group decides a label only once it has at least 10 votes on that statement, so a handful of people can't
+// stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
+// or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
+const MIN_GROUP_VOTES=10;
+function consensusLabel(groups){const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+  const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES).map(pct);
+  if(counted.length<2) return "forming";
+  if(counted.every(p=>p>=70)) return "common";
+  if(counted.some(p=>p>=70)&&counted.some(p=>p<50)) return "split";
+  return "forming"}
 let OFFICES=[];
 let PK={}, office=null, open=null;
 const SKEY="civicaccord-office";
@@ -221,9 +232,8 @@ const office$=()=>OFFICES.find(o=>o.key===office);
 const sign=r=>`Office of the ${office$().title}, ${office$().where}${r.approver?" · approved by "+r.approver:""}`;
 const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
 function analyze(d){
-  // Same rule as the deliberation page: still forming under 10 votes; common ground when both groups are at 70% or more;
-  // divides groups when one is at 70% or more and the other under 50%.
-  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null,n=s.a.concat(s.b).reduce((x,y)=>x+y,0);const kind=n<10?"forming":pa>=70&&pb>=70?"common":Math.min(pa,pb)<50&&Math.max(pa,pb)>=70?"split":"forming";return {...s,pa,pb,pp,kind,n}});
+  // Same rule as the deliberation page (consensusLabel).
+  const st=d.issue.statements.map(s=>{const pa=pct(s.a),pb=pct(s.b),pp=s.panel?pct(s.panel):null,n=s.a.concat(s.b).reduce((x,y)=>x+y,0);const kind=consensusLabel([s.a,s.b]);return {...s,pa,pb,pp,kind,n}});
   const opt={};d.issue.costOptions.forEach(c=>opt[c.statement]=c);
   let yearly=0,once=0;st.filter(s=>s.kind==="common"&&opt[s.id]).forEach(s=>{const c=opt[s.id];const v=c.unitCost*c.default;c.recurring?yearly+=v:once+=v});
   return {st,opt,yearly,once,votes:st.reduce((x,s)=>x+s.n,0)};
@@ -302,6 +312,7 @@ function renderDetail(){
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
       <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year</span></div>
     </div>
+    <p class="meta">${pt&&j.registeredVoters?`<b>${pt.open.count} verified voters took part, ${(v=>v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%")(pt.open.count/j.registeredVoters*100)} of ${j.registeredVoters.toLocaleString("en-US")} registered voters</b>${j.registeredVotersSource?` (<a href="${esc(j.registeredVotersSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.registeredVotersSource.label)}</a>)`:""}. Common ground means agreement among those who took part, not the whole district. The citizen panel is the check on whether it reflects the district.`:"This package doesn't list the district's number of registered voters yet, so the share who took part isn't shown."}</p>
     <h3>Who took part</h3>
     <p class="meta">Open participants and the randomly selected citizen panel, compared with the district's adult population.${pt&&pt.example?" Example figures.":""}</p>
     <div class="cmp" style="grid-template-columns:minmax(70px,100px) repeat(3,minmax(0,1fr))"><span></span>${pt?pt.makeup.columns.map(c=>`<span class="h">${esc(c)}</span>`).join(""):""}

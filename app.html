@@ -212,7 +212,7 @@ function compilePack(d,opts={}){
   const center=d.bill.centerLines.map(l=>`<span class="c">${esc(l)}</span>`).join("");
   return {
     key:j.key, name:j.name, district:j.district, session:j.session, footnote:j.drafting,
-    residents:j.residents, resLabel:j.residentLabel, resNote:j.residentNote,
+    residents:j.residents, resLabel:j.residentLabel, resNote:j.residentNote, regVoters:j.registeredVoters||null, regSource:j.registeredVotersSource||null,
     popSource:{href:j.populationSource.url,label:j.populationSource.label},
     base:{amt:j.baseline.amount,label:j.baseline.label},
     genFundName:j.generalFundName, genFundTradeoff:j.generalFundTradeoff, repTitle:j.representativeTitle,
@@ -250,6 +250,17 @@ function breakdown(o,n){const tot=o.per*n;const when=o.yr?" a year":" one time";
   return `${math} · about ${perRes(tot)} per ${P.resLabel}${when}`}
 const all=()=>[...P.S,...st.added];
 
+// The consensus rule, the same on every page. Each group is [agree, disagree, pass] for one statement.
+// A group decides a label only once it has at least 10 votes on that statement, so a handful of people can't
+// stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
+// or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
+const MIN_GROUP_VOTES=10;
+function consensusLabel(groups){const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
+  const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES).map(pct);
+  if(counted.length<2) return "forming";
+  if(counted.every(p=>p>=70)) return "common";
+  if(counted.some(p=>p>=70)&&counted.some(p=>p<50)) return "split";
+  return "forming"}
 const myStatus=()=>VER&&VER.voterStatus||null;
 // Which group your votes sit closest to. The sample compares your votes with each group's votes on the
 // statements you voted on; the live version uses the open Pol.is grouping. Ties go to Group A.
@@ -262,10 +273,7 @@ function tally(s){
   if(v!==undefined&&st.submitted&&(PRACTICE||myStatus()==="registered")){ (myGroup()==="b"?b:a)[v]++; }
   const pct=(g)=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
   const pa=pct(a), pb=pct(b);
-  let kind="forming";
-  if(a[0]+a[1]+a[2]+b[0]+b[1]+b[2]>=10){
-    if(pa>=70&&pb>=70) kind="common"; else if(Math.min(pa,pb)<50&&Math.max(pa,pb)>=70) kind="split";
-  }
+  const kind=consensusLabel([a,b]);
   const pp=s.panel?pct(s.panel):null, pn=s.panel?s.panel[0]+s.panel[1]+s.panel[2]:0;
   const pkind=pp===null?null:pp>=70?"agrees":pp>=40?"divided":"disagrees";
   return {pa,pb,kind,n:a[0]+a[1]+a[2]+b[0]+b[1]+b[2],pp,pn,pkind};
@@ -423,7 +431,7 @@ function ground(){
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 3</div><h2>Common ground</h2></div>
   ${!st.submitted&&Object.keys(st.mine).length?`<p class="pending">Your votes aren't counted yet. <a href="#" id="backsubmit">Go back and submit them</a>.</p>`:""}
-  <p class="lede">The tool sorted participants into two groups by how they voted. It shows what both groups agree on, and gives the disagreements equal space.</p>
+  <p class="lede">The tool sorted participants into groups by how they voted. It shows what every group agrees on, and gives the disagreements equal space. A group counts toward a label only once at least 10 of its members have voted on that statement.</p>
   ${participationBox()}
   <div class="groups">
     <div class="grp"><h3>Group A</h3><p class="meta">${esc(P.groups[0])}</p></div>
@@ -438,12 +446,18 @@ function ground(){
   <button class="btn" id="go3">Weigh the costs</button>
   </section>`;
 }
+// How many of the district's registered voters took part. Shown wherever results are, so a small, organized
+// group can't pass for the whole district.
+function turnoutLine(n){if(!P.regVoters)return `<p class="meta"><b>${n} verified voters took part.</b> This pack doesn't list the district's number of registered voters yet, so their share isn't shown.</p>`;
+  const share=n/P.regVoters*100, s=share<0.01?"under 0.01%":share<1?share.toFixed(2)+"%":share.toFixed(1)+"%";
+  return `<p class="meta"><b>${n} verified voters took part: ${s} of the ${P.regVoters.toLocaleString("en-US")} registered voters</b>${P.regSource&&P.regSource.url?` (<a href="${esc(P.regSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(P.regSource.label||"source")}</a>)`:""}. Common ground here means agreement among the people who took part, not the whole district.</p>`}
 function participationBox(){const pt=P.participation;if(!pt)return "";
   const dims=pt.makeup&&pt.makeup.dimensions||[];
   return `<div class="twoways">
     <div class="grp"><h3>${esc(pt.open.label)} · ${pt.open.count}</h3><p class="meta">${esc(pt.open.how)}</p></div>
     <div class="grp"><h3>${esc(pt.panel.label)} · ${pt.panel.count}</h3><p class="meta">${esc(pt.panel.how)}</p></div>
   </div>
+  ${turnoutLine(pt.open.count)}
   ${dims.length?`<details><summary>Who took part compared with the district</summary><div style="overflow-x:auto;margin-top:8px"><table class="mk"><tr><th></th>${pt.makeup.columns.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>${dims.map(dm=>`<tr><th colspan="4" class="mkh">${esc(dm.name)}</th></tr>${dm.rows.map(r=>`<tr><td>${esc(r[0])}</td>${r.slice(1).map(v=>`<td>${v}%</td>`).join("")}</tr>`).join("")}`).join("")}</table></div>${pt.example?'<p class="meta">Example figures.</p>':""}</details>`:""}
   <p class="meta">Each statement shows both. When they agree, the common ground is likely real. When they differ, the open group may not reflect the district.</p>`}
 function tagFor(s){return s?`<span class="tag ${s.kind}">${s.kind==="common"?"Common ground":s.kind==="split"?"Divides groups":"Still forming"} · A ${s.pa}% B ${s.pb}%</span>`:""}

@@ -15,6 +15,11 @@
    "url": "https://census.hawaii.gov/?p=11686",
    "label": "2025 Hawaiʻi population estimate"
   },
+  "registeredVoters": 860868,
+  "registeredVotersSource": {
+   "url": "https://elections.hawaii.gov/resources/registration-voter-turnout-statistics",
+   "label": "Hawaiʻi Office of Elections, 2024 general election"
+  },
   "baseline": {
    "amount": 4780378,
    "label": "the Invasive Species Council's current base budget of $4.78M (FY26)"

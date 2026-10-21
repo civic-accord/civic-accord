@@ -255,15 +255,23 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
       <li>Some voters can't get mail at the address on their record: people in address confidentiality programs, military and overseas voters, and people without home mail delivery. They'll use the election office or an in-person check instead.</li>
       <li>Limits stop mass requests: one code per voter record a month, and no more codes to one address than it has active voters. Every request gets the same answer, so the limits don't reveal who lives where.</li>
       <li>Public counts for each district, published weekly once they're large enough not to point to anyone: codes mailed, records claimed, claims taken back, and claims cancelled. Anyone can watch for unusual jumps.</li>
+      <li>Spot checks for fake sign-ups: verified voters can never outnumber registered voters, but that alone wouldn't catch much. So each district also shows what share of its registered voters have verified. An independent auditor writes to a random sample of verified voter records to confirm the voter really signed up, and publishes how many did. Claims on records the election office later removes are counted and published too.</li>
     </ul>
     <p class="meta">Today: the example uses sample votes, and receipts are generated on your device to show how they would work.</p></section>
 
   <section class="panel" id="ground"><h2>How common ground is found</h2>
     <p>Participants are sorted into groups by how similarly they vote. The live version will use the open method from <a href="https://www.nesta.org.uk/six-pioneers-digital-democracy/vtaiwan" style="color:var(--koa)">Pol.is</a>, which Taiwan's vTaiwan process uses. In the example, the groups come with the sample data. Each statement is then labeled with these exact rules:</p>
     <div class="tbl"><table><tr><th>Label</th><th>Rule</th></tr>
-      <tr><td>Common ground</td><td>At least 70% of <i>both</i> groups agree.</td></tr>
-      <tr><td>Divides groups</td><td>At least 70% of one group agrees, and under 50% of the other does.</td></tr>
-      <tr><td>Still forming</td><td>Anything else, or fewer than 10 votes so far.</td></tr></table></div>
+      <tr><td>Common ground</td><td>At least 70% of <i>every</i> group agrees.</td></tr>
+      <tr><td>Divides groups</td><td>At least 70% of one group agrees, and under 50% of another does.</td></tr>
+      <tr><td>Still forming</td><td>Anything else, or fewer than two groups with at least 10 votes each on that statement.</td></tr></table></div>
+    <p>A group only counts toward a label once at least 10 of its members have voted on that statement. That way, a few people can't speak for a whole group.</p>
+    <p><b>Guarding against small, organized groups.</b> Common ground means agreement among the people who took part, not the whole district. So:</p>
+    <ul class="plain">
+      <li>Results always show how many verified voters took part, and what share of the district's registered voters that is. Offices see the same numbers.</li>
+      <li>The randomly chosen citizen panel is shown beside every result. If the open results and the panel disagree, the tool says so.</li>
+      <li>Planned: a public timeline of how many votes arrived each day, so a sudden rush is easy to spot.</li>
+    </ul>
     <p><b>Citizen panels.</b> A randomly chosen panel, balanced to match the district by age and area, votes too. Its result is shown beside the open results, using these rules: the panel <i>agrees</i> at 70% or more, is <i>divided</i> at 40 to 69%, and <i>disagrees</i> under 40%. When the panel and the open group differ, the tool says so. A table shows who took part compared with the district.</p></section>
 
   <section class="panel" id="costs"><h2>How costs are shown</h2>

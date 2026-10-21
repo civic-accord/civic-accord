@@ -35,6 +35,8 @@ The core reads every pack the same way. Pack text is always shown as plain text,
 | `residents` | Population used for per-resident costs |
 | `residentLabel` | For example "Hawaiʻi resident" |
 | `residentNote` | Plain sentence naming the population figure and year |
+| `registeredVoters` | Optional: the number of registered voters for the population above, so results can show what share took part |
+| `registeredVotersSource` | `{ "url", "label" }` for that number, from the election office |
 | `populationSource` | `{ "url", "label" }` for that figure |
 | `baseline` | `{ "amount", "label" }`: current spending to compare totals against |
 | `generalFundName` | For example "the general fund" |
