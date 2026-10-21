@@ -63,3 +63,9 @@ The two-way conversation is between residents and an **office** (a seat), not an
 ## Status
 
 Early example, not yet run by a host. Live today: the address lookup (U.S. Census Bureau), Open Now (official federal, state, and some local sources), talk-it-through pages built from official text, and messages you send yourself. Deliberations, votes, verification, and office responses are samples. Civic Accord's servers collect no personal data; your browser contacts outside services as described in How it works (civicaccord.org/how.html#privacy).
+
+## License
+
+- **Code:** [GNU Affero General Public License 3.0](LICENSE). Anyone can read, use, and change it. If someone runs a changed copy as a public website, they must share their changed code too, so anyone can check what it does.
+- **Data** in `registry/` and `packs/`: [Creative Commons Attribution 4.0](registry/LICENSE). Anyone can reuse it, with credit to Civic Accord.
+- **The name:** the licenses cover code and data, not the name "Civic Accord." Please don't use the name for a copy or a changed version in a way that could make people think it's the official site.
