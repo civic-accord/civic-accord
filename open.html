@@ -420,11 +420,13 @@ function renderTopics(){
 }
 function updateTally(){const v=Object.values(PROG),rd=v.filter(x=>x.read).length,rc=Object.values(REACT).filter(Boolean).length,sp=v.filter(x=>x.spoke).length;
   const t=$("tally");if(!rd&&!rc){t.hidden=true;return}t.hidden=false;
-  t.textContent=`Your voice so far: you've read ${rd} item${rd===1?"":"s"}, said where you stand on ${rc}, and spoken up on ${sp}. This stays on your device.`}
+  const parts=[rd&&`read ${rd} item${rd===1?"":"s"}`,rc&&`said where you stand on ${rc}`,sp&&`spoken up on ${sp}`].filter(Boolean);
+  const list=parts.length>1?parts.slice(0,-1).join(", ")+", and "+parts[parts.length-1]:parts[0];
+  t.textContent=`Your voice so far: you've ${list}. This stays on your device.`}
 function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP.picked.length?mineItems():all;
   const wk=mine.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7}).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
-  $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on your topics ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
+  $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on ${TP.picked.length===1?names[0]:"your topics"} ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
   $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
