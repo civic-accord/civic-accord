@@ -147,6 +147,18 @@ test("import keeps only known baseline fields with real dates", () => {
   assert.strictEqual(b.closes, null); assert.ok(!("extra" in b)); assert.strictEqual(b.version, "v1");
 });
 
+test("import skips other settings that carry markup or a made-up state", () => {
+  const z = memStore(), Z = make(z);
+  Z.importData(JSON.stringify({ format: "civic-accord-records", version: 1, data: {
+    "civicaccord-records": JSON.stringify({ v: 1, follows: {}, sent: [] }),
+    "civicaccord-topics": JSON.stringify({ picked: ['x" style="position:fixed'], skipped: false }),
+    "civicaccord-geo": JSON.stringify({ state: "../packs/x" }),
+    "civicaccord-districts": JSON.stringify({ state: "HI", cd: "2", sldl: "13" }) } }));
+  assert.strictEqual(z.getItem("civicaccord-topics"), null);
+  assert.strictEqual(z.getItem("civicaccord-geo"), null);
+  assert.deepStrictEqual(JSON.parse(z.getItem("civicaccord-districts")), { state: "HI", cd: "2", sldl: "13" });
+});
+
 test("a failed action list is never reported as a new action; a veto is not a final decision", () => {
   const t0 = at("2026-10-21T12:00:00");
   const base = I.snapshot(bill({ actions: null }), "2026-10-21T10:00:00Z", t0);

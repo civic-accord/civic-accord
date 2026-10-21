@@ -157,7 +157,7 @@ function tellHTML(it,own,r){
       <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
       ${loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((p,i)=>`<div class="rep"><b>${esc(p.title)}</b><span class="meta">${esc(p.name)}</span><div class="acts">
         ${p.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(p.sal)}</a>`:""}
-        ${!p.email&&p.url?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(p.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
+        ${!p.email&&safe(p.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(p.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">We couldn't find contact details for these offices yet.</p>`}
       <p class="meta">Email opens in your own email app, so it comes from you. Civic Accord never sees what you send.</p>
       ${PENDING.length&&!RECORDING?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="btn" id="didsend">Yes, keep a record</button></div>`:""}

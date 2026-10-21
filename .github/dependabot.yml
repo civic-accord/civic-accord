@@ -1,0 +1,9 @@
+# Asks GitHub to propose updates when a dependency or a checks action has a known problem or a new version.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: { interval: weekly }

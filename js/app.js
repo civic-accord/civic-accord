@@ -97,7 +97,7 @@ function costInfo(id){
   if(P.revUnknown&&P.revUnknown[id]) return {kind:"unknown",text:P.revUnknown[id].text,basis:P.revUnknown[id].note};
   return {kind:"unknown",text:"Cost not yet estimated",basis:"New ideas don't have a cost estimate yet. Before real use, a reviewer would add one, with how it was made."};
 }
-function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${c.text}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
+function costLine(id){const c=costInfo(id);return `<div class="costline"><span class="cost-chip ${c.kind==="rev"?"rev":c.kind==="unknown"?"unknown":""}">${esc(c.text)}</span><details><summary>How estimated</summary><p class="meta" style="margin-top:4px">${esc(c.basis)}</p></details></div>`}
 function agreedTotals(){
   let yearly=0,once=0;
   all().forEach(s=>{if(st.mine[s.id]!==0)return;const c=costInfo(s.id);if(c.kind==="cost"){c.yr?yearly+=c.amt:once+=c.amt}});
@@ -169,14 +169,14 @@ function submitBox(){
   if(st.submitted) return `<div class="submitbox" id="submitbox" tabindex="-1">
     <h3>✓ Your sample votes are saved</h3>
     <p>${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass. They now show in the sample results on the next steps. They're saved only in this browser.</p>
-    <p class="meta">Your receipt</p><span class="receipt">${st.receipt}</span>
+    <p class="meta">Your receipt</p><span class="receipt">${esc(st.receipt)}</span>
     <p class="meta">In the live tool, this receipt would show your sealed votes are in the public record. It's designed so it can't show anyone how you voted, so it can't be used to buy or pressure your vote. You can change your votes until the deliberation closes; only your last votes count.</p>
     <div class="row"><button class="btn" id="goNext">See the common ground</button><button class="btn ghost" id="unsubmit">Change my votes</button></div>
   </div>`;
   if(!c.total) return `<div class="submitbox"><h3>Submit your votes</h3><p class="meta">Vote on at least one statement, then submit. Your votes aren't counted until you do.</p><button class="btn" disabled>Submit my votes</button></div>`;
   return `<div class="submitbox"><h3>Review and submit</h3>
     <p>You voted on ${c.total} of ${n} statements: ${c.agree} agree, ${c.disagree} disagree, ${c.pass} pass.${c.total<n?` ${n-c.total} still have no vote, and that's fine.`:""}</p>
-    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per ${P.resLabel} a year.</p>`:""}
+    ${c.agree?`<p class="meta">What you agreed with adds up to about ${money(t.yearly)} a year${t.once?` plus ${money(t.once)} one time`:""}, about ${perRes(t.yearly)} per ${esc(P.resLabel)} a year.</p>`:""}
     <p class="meta">Your votes aren't counted until you submit.</p>
     <button class="btn" id="submitvotes">Submit my votes</button></div>`;
 }
@@ -198,7 +198,7 @@ function weigh(){
   <div><div class="eyebrow">Step 2</div><h2>Weigh in</h2></div>
   <p class="lede">Vote on what other voters wrote, or add your own. There is no reply button, so nobody can pile on. The tool learns from the pattern of votes, not from who argues loudest.</p>
   ${CANVOTE?`<p class="progress">You've voted on ${voted} of ${list.length} statements.</p>`:verifyGate("vote")}
-  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${P.resLabel} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
+  <div class="running" aria-live="polite">${any?`Everything you agreed with would cost about <b>${money(t.yearly)} a year</b>${t.once?` plus <b>${money(t.once)} one time</b>`:""}, or about <b>${perRes(t.yearly)} per ${esc(P.resLabel)} a year</b>.${P.fee&&st.mine[P.fee.statement]===0?" You also backed a visitor fee, which could cover much of it.":""}`:"Each idea shows its estimated cost. Agree with ideas to see what they would add up to."}</div>
   ${items}
   ${CANVOTE?`<form class="add" id="addform">
     <label for="newstmt"><h3>Add a statement</h3></label>
@@ -341,13 +341,13 @@ function draft(){
   const stmtProv=P.S.filter(s=>s.billText&&!P.OPT[s.id]).filter(s=>{const x=statusOf(s.id);return x&&x.kind==="common"});
   const secs=picked.map(k=>P.OPT[k].bill(st.budget[k].n)).concat(stmtProv.map(s=>s.billText));
   const plainStmts=stmtProv.map(s=>`<li>${esc(s.billText)} <span class="meta">(common ground)</span></li>`).join("");
-  const plain=plainStmts+picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${breakdown(o,st.budget[k].n)}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
+  const plain=plainStmts+picked.map(k=>{const o=P.OPT[k],s=statusOf(k);return `<li>${esc(o.name)}: ${esc(breakdown(o,st.budget[k].n))}${s&&s.kind!=="common"?` <span class="warn">(not common ground: A ${s.pa}%, B ${s.pb}%)</span>`:""}${s&&s.pp!==null&&s.pkind!=="agrees"?` <span class="warn">(citizen panel ${s.pkind}: ${s.pp}%)</span>`:""}</li>`}).join("");
   const sf=P.fee?statusOf(P.fee.statement):null;
   const feeNote=P.fee&&st.fee&&sf&&sf.kind!=="common"?`<p class="warn">The ${esc(P.fee.label.toLowerCase())} divides participants (A ${sf.pa}%, B ${sf.pb}%). It goes to the ${esc(P.repTitle)} flagged as a disagreement.</p>`:"";
   const body=secs.map((s,i)=>`     (${i+1}) ${esc(s)}${i===secs.length-1?".":";"}`).join("\n");
   let n=P.firstSection; const extra=[];
-  if(P.fee&&st.fee){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}`);n++}
-  if(P.fines&&st.fines){extra.push(`     ${P.secWord} ${n}.  ${esc(P.fines.billText)}`);n++}
+  if(P.fee&&st.fee){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fee.billText.replace("{fee}","$"+st.fee.toFixed(2)))}`);n++}
+  if(P.fines&&st.fines){extra.push(`     ${esc(P.secWord)} ${n}.  ${esc(P.fines.billText)}`);n++}
   const tot=Math.round(t.yearly+t.once);
   let src;
   const A=P.approp;
@@ -356,8 +356,8 @@ function draft(){
     const so=t.gf>0&&fromFees>0?`the sum of $${words(fromFees)} out of ${A.special} and the sum of $${words(Math.round(t.gf))} out of ${A.general},`:t.gf>0?`out of ${A.general} the sum of $${words(Math.round(t.gf))}`:`out of ${A.special} the sum of $${words(tot)}`;
     src=A.text.replace("{source}",so);}
   // A policy has no numbered sections, so its closing lines are plain paragraphs.
-  const approp=P.docKind==="policy"?`     ${esc(src)}`:`     ${P.secWord} ${n}.  ${esc(src)}`;
-  const eff=P.docKind==="policy"?`     ${esc(P.effective)}`:`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
+  const approp=P.docKind==="policy"?`     ${esc(src)}`:`     ${esc(P.secWord)} ${n}.  ${esc(src)}`;
+  const eff=P.docKind==="policy"?`     ${esc(P.effective)}`:`     ${esc(P.secWord)} ${n+1}.  ${esc(P.effective)}`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
   <p class="lede">The proposal is built from your choices in Step 4, starting from what every group agreed on. Anything you added that lacks common ground is flagged.</p>
@@ -367,7 +367,7 @@ function draft(){
     <div><strong>${money(t.yearly)}</strong><span>yearly cost</span></div>
     <div><strong>${money(t.once)}</strong><span>one-time cost</span></div>
     <div><strong>${money(t.gf)}</strong><span>from general funds</span></div>
-    <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
+    <div><strong>${perRes(netYearly(t))}</strong><span>per ${esc(P.resLabel)} a year</span></div>
   </div>
   ${feeNote}
   <h3>${esc(P.docLabel)}</h3>
@@ -405,7 +405,7 @@ function handoff(){
       <div><strong>${common.length}</strong><span>points of common ground</span></div>
       <div><strong>${split.length}</strong><span>open disagreements</span></div>
       <div><strong>${money(t.yearly)}</strong><span>estimated yearly cost</span></div>
-      <div><strong>${perRes(netYearly(t))}</strong><span>per ${P.resLabel} a year</span></div>
+      <div><strong>${perRes(netYearly(t))}</strong><span>per ${esc(P.resLabel)} a year</span></div>
     </div>
     <div class="grp"><h3>What's in the package</h3>
       <ul class="plain"><li>Plain-language proposal and ${P.docKind==="policy"?"starting office policy":"starting bill text"}</li><li>Citizen panel results beside open participation, and who took part compared with the district</li><li>The cost estimate and funding plan, with how each estimate was made</li><li>Every common-ground statement with its vote breakdown</li><li>Every disagreement, with the strongest case on each side</li><li>The full anonymized vote record</li><li>How participants were verified as district residents</li></ul>

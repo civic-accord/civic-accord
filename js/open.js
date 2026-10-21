@@ -58,7 +58,7 @@ function composeBox(it){
     <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
     ${!DIST?`<p>First, find who represents you. <a href="#me" data-gome="1" style="color:var(--koa);font-weight:700">Enter your address</a> (it takes a few seconds, and only your districts are kept on this device).</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
         ${r.email?`<a class="btn" href="#" data-mail="${i}" style="text-decoration:none">Email ${esc(r.sal)}</a>`:""}
-        ${!r.email&&r.url?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
+        ${!r.email&&safe(r.url)?`<button type="button" class="btn" data-copy="${i}">Copy message</button><a href="${esc(r.url)}" target="_blank" rel="noopener" data-form="${i}">Open contact form</a>`:""}
         ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9+]/g,""))}">Call ${esc(r.phone)}</a>`:""}
         <span class="toast" id="rm-${i}" aria-live="polite"></span></div></div>`).join(""):`<p class="meta">${errs.length?esc(errs.join(" ")):"We couldn't find contact details for these offices yet."} Your legislature's website lists them.</p>`}
     <p class="meta">Email opens in your own email app, so it comes from you. Members of Congress don't publish email addresses, so for them, copy the message and paste it into their contact form. Civic Accord never sees what you send.</p>
@@ -99,7 +99,7 @@ function renderTopics(){
   box.innerHTML=`<div class="row" style="justify-content:space-between"><h2 id="th" style="font-size:1.05rem">${TP.picked.length?"Your topics":"Showing everything"}</h2>
       <button class="linkbtn" id="tedit" type="button">${TP.picked.length?"Change topics":"Pick topics to narrow this down"}</button></div>
     <div class="chips" role="group" aria-label="Show">${opts.map(([v,l])=>{const n=v==="all"?(DATA?DATA.items.length:null):v==="mine"?(DATA?mineItems().length:null):tcount(v);
-      return `<button type="button" data-v="${v}" aria-pressed="${VIEW===v}">${esc(l)}${n!==null?`<span class="n">${n}</span>`:""}</button>`}).join("")}</div>`;
+      return `<button type="button" data-v="${esc(v)}" aria-pressed="${VIEW===v}">${esc(l)}${n!==null?`<span class="n">${n}</span>`:""}</button>`}).join("")}</div>`;
   box.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;shown=10;renderTopics();render()});
   $("tedit").onclick=()=>{EDIT=true;DRAFT=[...TP.picked];renderTopics();const f=$("topics").querySelector("[data-t]");if(f)f.focus()};
 }

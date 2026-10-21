@@ -13,11 +13,15 @@ jobs:
           node-version: 22
       - name: Security policy allows the address-lookup frame's script
         run: node scripts/check-csp.js
+      - name: Main security policy keeps its key protections
+        run: node scripts/check-policy.js
       - name: Every script file is valid JavaScript
         run: for f in js/*.js lib/*.js api/*.js sw.js scripts/*.js; do node --check "$f"; done
       - name: No inline scripts in pages (except the lookup frame)
         run: |
-          if grep -l '<script>' *.html | grep -v '^geo-frame.html$'; then echo "Inline script found"; exit 1; fi
+          if grep -lP '<script(?![^>]*\bsrc=)[^>]*>' *.html | grep -v '^geo-frame.html$'; then echo "Inline script found"; exit 1; fi
+      - name: Known security problems in dependencies
+        run: npm ci --ignore-scripts && npm audit --omit=dev --audit-level=high
       - name: Data files are valid JSON
         run: for f in vercel.json manifest.webmanifest packs/*.json registry/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" || exit 1; done
       - name: Regression tests (deadlines, summary parsing, saved votes, consensus rule, topics, local governments, issue status, Following, records)

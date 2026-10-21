@@ -4,7 +4,9 @@
 const { canonical, memo, asOf, onlyRead, publicError, getJSON: get } = require("./_shared");
 // Open States' free key allows 10 calls a minute in all. With a saved-copy store connected, every copy shares one count
 // (see _shared.js and _store.js). Without one, each copy keeps its own: Open Now 8, item pages 2.
-const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20 };
+// Calls a minute from each server copy, per source. Congress.gov and the Federal Register have generous limits, but
+// capping them stops anyone from using item pages to flood those sources or use up the Congress.gov key.
+const LIMITS = { "v3.openstates.org": 2, "webapi.legistar.com": 20, "api.congress.gov": 30, "www.federalregister.gov": 30 };
 const getJSON = (url, headers, use) => get(url, headers, LIMITS, use || "items");
 const store = require("./_store");
 const { stateOutcome, congressOutcome } = require("./_final");
@@ -18,9 +20,10 @@ async function stateUse(id) {
   catch (e) { return "unlisted"; }
 }
 
-const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)(\d{1,5})-(\d{2,3})$/;
+// Recent Congresses only (the 117th on), and Federal Register document numbers in their published forms.
+const CONGRESS_ID = /^us-(hr|s|hres|sres|hjres|sjres|hconres|sconres)([1-9]\d{0,4})-(11[7-9]|12\d|13\d)$/;
 const STATE_ID = /^os-ocd-bill\/[0-9a-f-]{36}$/;
-const RULE_ID = /^fr-[0-9A-Za-z-]{4,30}$/;
+const RULE_ID = /^fr-(?:[A-Z]\d{1,2}-)?(?:\d{4}-)?\d{4,6}$/;
 const LOCAL_ID = /^lg-([a-z0-9]{2,40})-(\d{1,8})$/;
 const LOCAL = require("../registry/local-feeds.json").feeds;
 const BILL_PATH = { hr: "house-bill", s: "senate-bill", hres: "house-resolution", sres: "senate-resolution", hjres: "house-joint-resolution", sjres: "senate-joint-resolution", hconres: "house-concurrent-resolution", sconres: "senate-concurrent-resolution" };

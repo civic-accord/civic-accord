@@ -72,7 +72,7 @@ async function find(){
    ${OFFICES.map((o,i)=>`<div class="off"><b>${esc(o.title)}</b>${o.who?`<span class="meta">${esc(o.who)}</span>`:""}<div class="acts">
      ${o.email?`<a class="primary" href="#" data-mail="${i}">Email ${esc(o.salutation)}</a>`:""}
      <button type="button" class="${o.email?"":"primary"}" data-copy="${i}">Copy message</button>
-     ${o.url?`<a href="${esc(o.url)}" target="_blank" rel="noopener" data-sent="${i}">${esc(o.urlLabel||"Open contact page")}</a>`:""}
+     ${/^https:\/\//.test(o.url||"")?`<a href="${esc(o.url)}" target="_blank" rel="noopener" data-sent="${i}">${esc(o.urlLabel||"Open contact page")}</a>`:""}
      ${o.phone?`<a href="tel:${esc(o.phone.replace(/[^0-9+]/g,""))}">Call ${esc(o.phone)}</a>`:""}
      <span class="toast" id="cm-${i}" aria-live="polite"></span></div></div>`).join("")}
    <p class="meta">Civic Accord never sends anything for you and keeps no copy of your message. Offices may reply to you directly.</p>`;

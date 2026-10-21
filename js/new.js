@@ -143,7 +143,12 @@ $("copy").onclick=()=>{const txt=JSON.stringify(buildPack(),null,1);const fb=()=
   try{const idx=await (await fetch("packs/index.json")).json();for(const e of idx.packs){const d=await (await fetch(e.file)).json();if(!templates[d.jurisdiction.key])templates[d.jurisdiction.key]=d}}catch(e){}
   const qp=new URLSearchParams(location.search);
   if(qp.get("title")){const t=qp.get("title").slice(0,140),u=qp.get("url")||"",src=qp.get("from")||"official source";
+    // A draft already in progress is kept as the previous draft, so following a link never loses someone's work.
+    const had=JSON.stringify(B)!==JSON.stringify(empty());
+    if(had){try{localStorage.setItem(KEY+"-previous",JSON.stringify(B))}catch(e){}}
     B=empty();B.title=t;B.name=t.replace(/^[A-Z.]+\s*\d+:\s*/,"").split(/[;:,(]/)[0].slice(0,60);
-    B.facts=[{label:"What's open",text:`${t} (from the ${src}).`,url:/^https:\/\//.test(u)?u:""},{label:"",text:"",url:""}];save();}
+    B.facts=[{label:"What's open",text:`${t} (from the ${src}).`,url:/^https:\/\//.test(u)?u:""},{label:"",text:"",url:""}];save();
+    if(had){const m=$("amsg");if(m){m.innerHTML='Started a new draft for this item. Your earlier draft is kept. <button type="button" id="restoreprev" style="background:none;border:0;padding:0;min-height:44px;font:inherit;color:var(--koa);text-decoration:underline;cursor:pointer">Go back to it</button>';
+      $("restoreprev").onclick=()=>{try{const p=JSON.parse(localStorage.getItem(KEY+"-previous")||"null");if(p){B=p;save();renderAll();m.textContent="Your earlier draft is back."}}catch(e){}}}}}
   renderAll();
 })();
