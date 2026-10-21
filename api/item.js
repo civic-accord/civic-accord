@@ -25,7 +25,8 @@ function partsFrom(text) {
   for (const b of blocks) { if (seen.has(b)) continue; seen.add(b); parts.push(b); }
   return { parts: parts.slice(0, MAX_PARTS), more: parts.length > MAX_PARTS };
 }
-const httpsOnly = u => (/^https:\/\//.test(String(u || "")) ? u : null);
+// Official links sometimes still use http://; upgrade them, then accept only https.
+const httpsOnly = u => { const v = String(u || "").replace(/^http:\/\//i, "https://"); return /^https:\/\/[^\s"<>]+$/.test(v) ? v : null; };
 const noParty = n => String(n || "").replace(/\s*\[[^\]]*\]\s*/g, " ").replace(/\s+/g, " ").trim();
 
 async function congressItem(m, key) {
