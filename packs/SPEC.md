@@ -164,4 +164,4 @@ Templates you can use in `impact` and `billText`:
 2. Every fact and every cost has a source or a stated method.
 3. Wording is neutral. Statements are written so people on different sides can vote on them honestly.
 4. Unknowns stay unknown. If a cost or revenue figure can't be estimated reliably, use `unestimated` rather than guessing.
-5. Packs are reviewed by a second person before they go live, and every change is kept in the public history.
+5. Packs are checked by two reviewers (one from each of two partner groups), the review is published, and anyone can object for 7 days before they go live. Every change is kept in the public history.

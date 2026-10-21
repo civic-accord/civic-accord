@@ -275,31 +275,32 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p><b>Citizen panels.</b> A randomly chosen panel, balanced to match the district by age and area, votes too. Its result is shown beside the open results, using these rules: the panel <i>agrees</i> at 70% or more, is <i>divided</i> at 40 to 69%, and <i>disagrees</i> under 40%. When the panel and the open group differ, the tool says so. A table shows who took part compared with the district.</p></section>
 
   <section class="panel" id="rules"><h2>Rules for statements, and who reviews deliberations</h2>
-    <p>These rules are planned for the live version. They're about behavior, never about which side someone is on. Any view on the issue is welcome, including strong criticism of officials or of Civic Accord.</p>
+    <p>These rules are planned for the live version. They're about behavior, never about which side someone is on. Any view on the issue is welcome, including strong criticism of officials or of Civic Accord. When in doubt, a statement stays up. The final wording will be checked in the host's legal review, so it follows free-speech law.</p>
     <p><b>What a statement can't include.</b> A moderator holds back a statement that:</p>
     <ul class="plain">
       <li>shares private details about a person, like a home address or phone number</li>
       <li>threatens anyone or calls for violence</li>
-      <li>attacks people for who they are, such as their race, religion, gender, sexual orientation, or disability</li>
-      <li>advertises, asks for money, or campaigns for or against a candidate or party</li>
+      <li>uses a slur against a person or group, or harasses a person</li>
+      <li>advertises, asks for money, or campaigns for or against a candidate or party. "Senator X's bill would cost too much" is fine. "Vote Senator X out" is not.</li>
       <li>pretends to be an official or an office</li>
-      <li>is off the topic, or repeats a statement that's already there (repeats are combined, with a note)</li>
+      <li>doesn't address this deliberation's question, or repeats a statement that's already there (repeats are combined, with a note)</li>
     </ul>
     <p><b>How moderation works.</b></p>
     <ul class="plain">
-      <li>New statements are checked by a trained moderator before others see them, usually within a day. Moderators see only the statement, never who wrote it.</li>
-      <li>Every statement held back is listed publicly with the rule it broke. The text is shown too, unless it contains private details or a slur.</li>
-      <li>The author can appeal. A different moderator decides.</li>
-      <li>Each voter can add a limited number of statements per deliberation, so no one can flood it.</li>
+      <li>New statements are checked by a trained moderator before others see them, usually within a day. Moderators aren't told who wrote a statement. New statements stop two days before a deliberation closes, so every statement gets checked in time.</li>
+      <li>Every statement held back is listed publicly with the rule it broke. For ads, campaigning, repeats, and off-question statements, the text is shown too. For anything else, only the rule is shown, so harmful words aren't spread.</li>
+      <li>The author gets a private code with each statement and can use it to appeal. A different moderator decides.</li>
+      <li>Each voter can add a limited number of statements per deliberation, so no one can flood it. How to count this without linking statements to voters is still being worked out.</li>
       <li>AI may point out possible repeats or rule problems to a moderator. It never removes, edits, or approves a statement. A person decides.</li>
       <li>An independent reviewer checks a sample of moderation decisions and publishes what they find.</li>
     </ul>
     <p><b>Who reviews a deliberation before it opens.</b> Anyone can set one up with the builder, so each one is checked first:</p>
     <ul class="plain">
-      <li>Two reviewers are drawn at random from a pool the host recruits through partners with different points of view. Reviewers disclose any personal or financial stake in the issue, and anyone with a stake steps aside.</li>
+      <li>Two reviewers are drawn at random, one from each of two partner groups with different points of view. The list of partner groups is public, so anyone can see the balance. Reviewers disclose any personal or financial stake in the issue, and anyone with a stake steps aside.</li>
       <li>They check that every fact has a source, current law is stated correctly, costs say how they were made, and the starting statements cover the main views fairly, including the strongest case for each side.</li>
       <li>The review is published: the reviewers' roles, what they checked, what they asked to change, and any stakes disclosed. The pack's author discloses their own stake too.</li>
       <li>Before it opens, anyone can raise a public objection for 7 days. Each objection gets a public answer.</li>
+      <li>The convener who started Civic Accord has no role in reviews, and discloses any stake like anyone else.</li>
     </ul>
     <p class="meta">Today: the sample shows new statements right away, on your device only. None of this review exists yet. It needs a host.</p></section>
 
@@ -375,7 +376,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
         <td>The real vote record and receipts<br>Mailed residency codes and library checks<br>Official voter-status matching<br>Public counts of reactions<br>A neutral host, legal review in each state, and independent security audits</td></tr></table></div></section>
 
   <section class="panel" id="govern"><h2>Who runs it</h2>
-    <p>Civic Accord was started by a resident acting as a convener, not an owner. The goal is for a neutral university or nonpartisan nonprofit to host and run it, with the convener in an advisory role. Before real use, each deliberation pack will be reviewed by a second person before it opens. Every change to the code and data is already kept in the public history.</p></section>
+    <p>Civic Accord was started by a resident acting as a convener, not an owner. The goal is for a neutral university or nonpartisan nonprofit to host and run it, with the convener in an advisory role. Before real use, each deliberation pack will be checked by two reviewers, published, and open to public objection for 7 days before it opens (<a href="#rules" style="color:var(--koa)">how reviews work</a>). Every change to the code and data is already kept in the public history.</p></section>
 
   <section class="panel" id="open-code"><h2>Open code and data</h2><ul class="plain">
     <li><a href="https://github.com/civic-accord/civic-accord" style="color:var(--koa)">All the code</a> (GitHub)</li>
