@@ -254,6 +254,11 @@ ol.path li.planned::before{border-style:dashed}
 .filters input,.filters select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
 .filters input{flex:1;min-width:min(100%,220px)}
 .list{display:grid;gap:10px}
+.record{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;display:grid;gap:8px}
+.record textarea,.record input[type=date]{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink);min-height:44px}
+.recrow{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0}
+.recrow legend{padding:0 4px}.recrow input[type=checkbox]{width:20px;height:20px;vertical-align:middle}
+.record .acts{display:flex;flex-wrap:wrap;gap:8px}
 .compose{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;display:grid;gap:8px}
 .compose textarea,.compose input,.me input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink)}
 .compose .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px}
@@ -301,6 +306,9 @@ ol.path li.planned::before{border-style:dashed}
 <script src="lib/registry.js"></script>
 <script src="lib/topics.js"></script>
 <script src="/lib/dates.js"></script>
+<script src="/lib/offices.js"></script>
+<script src="/lib/records.js"></script>
+<script src="/lib/tell.js"></script>
 <script src="/js/open.js"></script>
 <nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
 <script src="/lib/sw-register.js"></script>

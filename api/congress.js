@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
       if (!r.ok) throw new Error(String(r.status));
       const all = await r.json();
       return all.map(p => { const t = p.terms[p.terms.length - 1];
-        return { name: p.name.official_full || [p.name.first, p.name.last].join(" "), type: t.type, state: t.state, district: t.district ?? null,
+        return { name: p.name.official_full || [p.name.first, p.name.last].join(" "), type: t.type, state: t.state, district: t.district ?? null, cls: t.class ?? null,
           url: /^https:/.test(t.url || "") ? t.url : null, contact: /^https:/.test(t.contact_form || "") ? t.contact_form : null, phone: t.phone || null }; });
     });
   } catch (e) { out.errors.push(publicError("Members of Congress", e)); }

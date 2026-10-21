@@ -1,0 +1,271 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Following</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--koa)}
+.timeline li.wait::before{background:var(--surface);border:2px solid var(--sun)}
+.viewtoggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewtoggle button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+</style><link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2f5d4a">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Civic Accord">
+<style>
+.appnav{display:none}
+@media (max-width:700px){
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  .appnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .appnav a{flex:1;display:grid;justify-items:center;gap:2px;padding:6px 2px;min-height:48px;color:var(--muted);text-decoration:none;font-size:.72rem;border-radius:10px}
+  .appnav a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .appnav svg{width:22px;height:22px}
+  .btn,button,select,input[type=text],input[type=search]{min-height:44px}
+}
+</style>
+</head><body><style>
+/* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5b6660; --line:#d9dfda;
+  --koa:#2f5d4a; --koa-soft:#e2ece6; --lehua:#b8332b; --lehua-soft:#f6e3e1; --sun:#8a5d00; --sun-soft:#f5ecd7;
+  --display:"Literata",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1d2521; --ink:#e7ece8; --muted:#9aa6a0; --line:#2f3a35;
+  --koa:#7fc2a2; --koa-soft:#22362c; --lehua:#f08a80; --lehua-soft:#3a2321; --sun:#e2b65a; --sun-soft:#3a3020; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
+.wrap>*,.panel>*{min-width:0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.note{background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.note b{color:inherit}
+header{display:grid;gap:10px}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--surface);color:var(--ink)}
+.chip.ok{border-color:var(--koa);color:var(--koa)}
+.chip:empty{display:none}
+.issues{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px}
+.issue{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left}
+.issue[aria-pressed="true"]{border-color:var(--koa);background:var(--koa-soft)}
+.issue small{display:block;color:var(--muted);font-size:.75rem}
+.issue:disabled{cursor:not-allowed;opacity:.65}
+.issue.nolive{border-style:dashed}
+a.issue.newissue{text-decoration:none;border-style:dashed;color:var(--koa)}
+.panelnote{font-size:.85rem;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.panelnote.agrees{border-color:var(--koa)}
+.panelnote.divided{border-color:var(--sun)}
+.panelnote.disagrees{border-color:var(--lehua)}
+.twoways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.mk{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.mk th,.mk td{padding:4px 10px;text-align:left;border-bottom:1px solid var(--line)}.mk .mkh{color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em}
+.draftbar{background:var(--lehua-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.gstatus{margin-top:4px;color:var(--muted)}
+.gstatus.live{color:var(--koa)!important;font-weight:700}
+nav.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px 2px 10px;border-bottom:3px solid var(--line);font-size:.85rem;text-align:left}
+.step b{display:block;font-family:var(--mono);font-size:.72rem;font-weight:500}
+.step[aria-selected="true"]{color:var(--ink);border-color:var(--koa);font-weight:700}
+.step.done{border-color:var(--koa-soft)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:16px;min-width:0}
+.lede{color:var(--muted);max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.fact{border-left:3px solid var(--koa);padding:2px 0 2px 12px;display:grid;gap:2px;min-width:0}
+.fact .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--koa)}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stmt.mine{border-style:dashed}
+.vote{display:flex;gap:8px;flex-wrap:wrap}
+.vote button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.vote button[aria-pressed="true"].agree{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.vote button[aria-pressed="true"].disagree{background:var(--lehua);border-color:var(--lehua);color:var(--surface)}
+.vote button[aria-pressed="true"].pass{background:var(--muted);border-color:var(--muted);color:var(--surface)}
+.meta{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{font-size:.85rem;color:var(--muted)}
+form.add{display:grid;gap:8px}
+textarea,input[type=text]{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--koa);color:var(--surface);cursor:pointer;font-weight:700;justify-self:start}
+.btn.ghost{background:transparent;color:var(--koa);border:1px solid var(--koa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.fill{height:100%;background:var(--koa)}
+.fill.low{background:var(--lehua)}
+.tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.common{background:var(--koa-soft);color:var(--koa)}
+.tag.split{background:var(--lehua-soft);color:var(--lehua)}
+.tag.forming{background:var(--sun-soft);color:var(--sun)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.grp{background:var(--bg);border-radius:10px;padding:12px;display:grid;gap:4px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--koa);font-size:.85rem}
+.bill{font-family:var(--mono);font-size:.82rem;line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;white-space:pre-wrap;min-width:0}
+.bill .c{text-align:center;display:block}
+.pkg{display:grid;gap:12px}
+.stat{display:flex;gap:20px;flex-wrap:wrap}
+.stat div{display:grid}
+.stat strong{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--koa)}
+nav.steps{grid-template-columns:repeat(6,minmax(0,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;min-width:0}
+.opt.off{opacity:.7}
+.opthead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.opthead label{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer;min-width:0}
+.opthead input{width:20px;height:20px;margin-top:2px;accent-color:var(--koa);flex:0 0 auto}
+.cost{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--koa)}
+.ledger{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:12px;padding:14px;display:grid;gap:10px}
+.ledger .rows{display:grid;gap:4px;font-size:.9rem}
+.ledger .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.ledger .r.total{font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;position:relative}
+.gauge .g{height:100%;background:var(--koa)}
+.gauge .g.over{background:var(--sun)}
+.warn{font-size:.85rem;color:var(--lehua)}
+.costline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cost-chip{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px}
+.cost-chip.rev{border-color:var(--koa);color:var(--koa)}
+.cost-chip.unknown{color:var(--muted);border-style:dashed}
+.costline details{border:0;padding:0}
+.submitbox{border:1px solid var(--koa);border-radius:10px;padding:16px;display:grid;gap:10px;background:var(--koa-soft)}
+.receipt{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;background:var(--surface);border:1px dashed var(--koa);border-radius:8px;padding:8px 12px;justify-self:start}
+.stmt.locked .vote button{cursor:not-allowed;opacity:.75}
+.vote button:disabled{cursor:not-allowed;opacity:.5}
+.pending{background:var(--sun-soft);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.running{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--koa);border-radius:10px;padding:10px 14px;font-size:.9rem;font-variant-numeric:tabular-nums}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+@media (max-width:520px){nav.steps .step span{display:none}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+
+<style>
+.hero{display:grid;gap:14px;padding:10px 0 4px}
+.hero h1{font-size:clamp(2rem,6vw,3.1rem);line-height:1.08;margin:0}
+.hero .lede{font-size:1.1rem;max-width:44em}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.cta a{text-decoration:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:6px;background:var(--surface);align-content:start}
+.card h3{margin:0;font-size:1rem}
+.card .check{font-size:.85rem;color:var(--koa)}
+.card .where{font-size:.8rem;color:var(--muted)}
+.steps6{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.steps6 li{counter-increment:s;display:grid;grid-template-columns:2.2em 1fr;gap:10px;align-items:start}
+.steps6 li::before{content:counter(s);font-family:var(--mono);background:var(--koa);color:var(--surface);border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;font-size:.85rem}
+.big{font-size:1.15rem;line-height:1.5}
+.stat1{font-family:var(--serif,inherit);font-size:2.4rem;font-weight:700;color:var(--koa);line-height:1}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.share{display:flex;flex-wrap:wrap;gap:8px}
+.share a,.share button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.off{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;background:var(--surface)}
+.off .acts{display:flex;flex-wrap:wrap;gap:8px}
+.off .acts a,.off .acts button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;text-decoration:none}
+.off .acts .primary{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);color:var(--ink);line-height:1.5}
+.addr input[type=text],.addr2 input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.privacy{font-size:.85rem;background:var(--koa-soft);border-radius:8px;padding:10px 12px}
+</style>
+<style>
+.toc{columns:2 220px;gap:20px;font-size:.92rem}
+.toc a{color:var(--koa)}
+.doc h2{scroll-margin-top:12px}
+.doc table{border-collapse:collapse;width:100%;font-size:.9rem}
+.doc th,.doc td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.doc .k{font-family:var(--mono);font-size:.85rem}
+.tbl{overflow-x:auto}
+</style>
+<style>
+.parts{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.part{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface);display:grid;gap:10px}
+.part .num{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.part blockquote{margin:0;padding-left:12px;border-left:3px solid var(--line)}
+.choose{display:flex;flex-wrap:wrap;gap:8px}
+.choose button{font:inherit;min-height:44px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.choose button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid var(--koa);border-radius:999px;color:var(--koa);text-decoration:none}
+.links a.primary{background:var(--koa);color:var(--surface)}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:0}
+.kv dt{font-weight:700}.kv dd{margin:0}
+@media (max-width:520px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:6px}}
+textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink)}
+</style>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lbl{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:1px 8px;vertical-align:middle;border:1px solid currentColor}
+.lbl.live{color:var(--koa)}.lbl.sample{color:var(--sun)}.lbl.planned{color:var(--muted);border-style:dashed}.lbl.practice{color:var(--muted)}.lbl.yours{color:var(--lehua)}
+.top{border-color:var(--koa)}
+.nextbtn{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:8px;background:var(--koa);color:var(--surface);text-decoration:none;font-weight:700}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.go{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.go button{font:inherit;min-height:44px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.go button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.linkbtn{font:inherit;background:none;border:0;padding:8px 0;min-height:44px;color:var(--koa);text-decoration:underline;cursor:pointer;justify-self:start;text-align:left}
+.compose{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}
+.compose input{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink);min-height:44px}
+.compose .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px}
+.rep{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px}
+.rep .acts a:not(.btn){display:inline-flex;align-items:center;min-height:44px;color:var(--koa)}
+.btn{min-height:44px}
+.record{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;display:grid;gap:8px}
+.record textarea,.record input[type=date]{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink);min-height:44px}
+.recrow{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0}
+.recrow legend{padding:0 4px}.recrow input[type=checkbox]{width:20px;height:20px;vertical-align:middle}
+.sentlist{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.sentlist>li{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:6px;min-width:0}
+.msg{white-space:pre-wrap;font-size:.9rem;overflow-wrap:anywhere}
+</style>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{min-height:44px}
+.fl{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.fl>li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px;min-width:0}
+.fl>li.changed{border-color:var(--koa)}
+.fl h2{font-size:1.1rem}.fl h2 a{color:var(--ink)}.fl h2:focus{outline:3px solid var(--sun);outline-offset:2px}
+.res{font-weight:700}.res.changed{color:var(--koa)}.res.unavailable{color:var(--lehua)}
+.end{text-align:center;color:var(--muted);padding:12px}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · <a href="open.html" style="color:inherit">Open now</a> · following</div>
+    <h1>Following</h1>
+    <p class="note"><b>How Following works.</b> When you follow an issue, this browser saves what you saw and when. Each time you open this page, it checks the latest official data and compares. Nothing is checked in the background, and nothing is sent to Civic Accord. Updates come from the official record. They aren't responses to anyone's request.</p>
+    <p class="meta" id="storage" role="status"></p>
+  </header>
+  <main id="main"><p class="meta">Loading what you follow…</p></main>
+  <section class="panel" id="records" aria-labelledby="rec-h"><h2 id="rec-h">Your records</h2>
+    <p id="rec-sum"></p>
+    <p class="meta">Your follows and records of what you sent are kept only in this browser. They don't sync to your other devices, and clearing this browser's data deletes them. Export makes a copy you keep.</p>
+    <div class="acts"><button type="button" class="btn" id="export">Export a copy</button>
+      <button type="button" class="btn ghost" id="importbtn">Import a copy</button><input type="file" id="import" accept="application/json,.json" hidden>
+      <button type="button" class="btn ghost" id="clearall">Delete all follows and records</button></div>
+    <p class="toast" id="rec-msg" role="status" aria-live="polite"></p>
+    <p class="meta">"Forget me on this device," at the bottom of every page, removes everything Civic Accord saved in this browser, including these.</p>
+  </section>
+  <footer><span>Civic Accord · an open, nonpartisan example</span><span><a href="how.html#following" style="color:inherit">How this works</a> · <a href="https://github.com/civic-accord/civic-accord/issues/new" style="color:inherit">Report a problem</a></span></footer>
+</div>
+<script src="/lib/partkey.js"></script>
+<script src="/lib/dates.js"></script>
+<script src="/lib/records.js"></script>
+<script src="/lib/issue.js"></script>
+<script src="/js/following.js"></script>
+<nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<script src="/lib/sw-register.js"></script>
+<script src="/lib/forget.js" defer></script>

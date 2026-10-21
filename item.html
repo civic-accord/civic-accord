@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Talk It Through</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Issue</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}.timeline{list-style:none;margin:0;padding:0}
 .timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px;display:grid;gap:2px}
@@ -206,17 +206,49 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 @media (max-width:520px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:6px}}
 textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink)}
 </style>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lbl{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:1px 8px;vertical-align:middle;border:1px solid currentColor}
+.lbl.live{color:var(--koa)}.lbl.sample{color:var(--sun)}.lbl.planned{color:var(--muted);border-style:dashed}.lbl.practice{color:var(--muted)}.lbl.yours{color:var(--lehua)}
+.top{border-color:var(--koa)}
+.nextbtn{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:8px;background:var(--koa);color:var(--surface);text-decoration:none;font-weight:700}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.go{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.go button{font:inherit;min-height:44px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.go button[aria-pressed="true"]{background:var(--koa);border-color:var(--koa);color:var(--surface)}
+.linkbtn{font:inherit;background:none;border:0;padding:8px 0;min-height:44px;color:var(--koa);text-decoration:underline;cursor:pointer;justify-self:start;text-align:left}
+.compose{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}
+.compose input{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink);min-height:44px}
+.compose .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px}
+.rep{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px}
+.rep .acts a:not(.btn){display:inline-flex;align-items:center;min-height:44px;color:var(--koa)}
+.btn{min-height:44px}
+.record{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;display:grid;gap:8px}
+.record textarea,.record input[type=date]{font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--bg);color:var(--ink);min-height:44px}
+.recrow{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0}
+.recrow legend{padding:0 4px}.recrow input[type=checkbox]{width:20px;height:20px;vertical-align:middle}
+.sentlist{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.sentlist>li{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:6px;min-width:0}
+.msg{white-space:pre-wrap;font-size:.9rem;overflow-wrap:anywhere}
+</style>
 <div class="wrap">
   <header>
-    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · <a href="open.html" style="color:inherit">Open now</a> · talk it through</div>
+    <div class="eyebrow"><a href="/" style="color:inherit">Civic Accord</a> · <a href="open.html" style="color:inherit">Open now</a> · issue</div>
     <h1 id="title">Loading…</h1>
     <p class="meta" id="kind"></p>
-    <p class="note"><b>Practice, from official sources only.</b> The summary, status, and costs on this page come from official sources. The parts you weigh in on are copied word for word, and no AI wrote or reworded them. Your votes here are practice: they stay on this device and aren't counted or sent anywhere. Counting starts once real voter checks exist.</p>
+    <p class="note"><b>One page for this issue, from official sources.</b> The summary, status, costs, and official actions come from official sources, word for word; no AI wrote or reworded them. What you do here (practice votes, follows, and records of what you sent) stays in this browser. Nothing is counted or sent by Civic Accord. This page helps you take part and follow what happens; it can't yet show what constituents want as a group.</p>
   </header>
   <main id="main"><p class="meta">Loading the official record…</p></main>
   <footer><span>Civic Accord · an open, nonpartisan example</span><span id="src"></span><span><a href="how.html#talk" style="color:inherit">How this works</a> · <a href="https://github.com/civic-accord/civic-accord/issues/new" style="color:inherit">Report a problem</a></span></footer>
 </div>
 <script src="/lib/partkey.js"></script>
+<script src="/lib/dates.js"></script>
+<script src="/lib/offices.js"></script>
+<script src="/lib/records.js"></script>
+<script src="/lib/issue.js"></script>
+<script src="/lib/tell.js"></script>
+<script src="/lib/registry.js"></script>
+<script src="/lib/sample.js"></script>
 <script src="/js/item.js"></script>
 <nav class="appnav" aria-label="App menu"><a href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
 <script src="/lib/sw-register.js"></script>
