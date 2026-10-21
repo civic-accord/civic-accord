@@ -15,8 +15,11 @@ const crypto = require("crypto");
 const { getJSON: get, publicError, onlyRead, openStatesCaps } = require("./_shared");
 const { STATE_NAMES, stateBills } = require("./_states");
 const store = require("./_store");
+const { localMeetings, dueLocal } = require("./_local");
+const LOCAL = require("../registry/local-feeds.json").feeds;
 
 const H = 3600e3, BASE_EVERY = 3 * H, SOON_EVERY = 6 * H, QUIET_EVERY = 20 * H, RETRY_AFTER = 30 * 60e3;
+const LOCAL_BY = 60e3;    // local feeds first; start no new local download after 1 minute
 const START_BY = 150e3;   // start no new state after 2.5 minutes
 const CALL_BY = 240e3;    // make no new call after 4 minutes; the function may run for 5
 const TARGET_PER_DAY = 8; // refreshes a day for each list in session, if the share allows
@@ -74,7 +77,23 @@ const handler = async (req, res) => {
     }
   };
 
+  const localDone = [], localFailed = [];
   try {
+    // Local meeting lists first: they need no key and count against no shared limit, so they're quick. Each feed is
+    // refreshed about every 3 hours; a failed one is tried again after 30 minutes and its last good copy stays up.
+    const savedLocal = await store.read("local/index.json");
+    const localIndex = (savedLocal && savedLocal.data) || {};
+    for (const feed of dueLocal(localIndex, Date.now(), LOCAL)) {
+      if (Date.now() - start > LOCAL_BY) break;
+      const e = localIndex[feed.id] = localIndex[feed.id] || {};
+      try {
+        const items = await localMeetings(feed, (u, h) => get(u, h, null, "refresh-local"));
+        const at = Date.now();
+        await store.write(`local/${feed.id}.json`, { at: new Date(at).toISOString(), items });
+        e.at = at; delete e.errAt; localDone.push(feed.id);
+      } catch (err) { e.errAt = Date.now(); localFailed.push(feed.id); publicError(`Scheduled download ${feed.id}`, err); }
+      await store.write("local/index.json", localIndex);
+    }
     const codes = Object.keys(STATE_NAMES);
     const saved = await store.read("states/index.json");
     const index = (saved && saved.data) || {};
@@ -108,7 +127,7 @@ const handler = async (req, res) => {
       await store.write("states/index.json", index);
       await store.write("states/ids.json", { ids });
     }
-    res.status(200).json({ ok: true, refreshed: done, failed, pages, everyHours: +(every / H).toFixed(1), stoppedBecause: stop, seconds: Math.round((Date.now() - start) / 1000) });
+    res.status(200).json({ ok: true, refreshed: done, failed, local: localDone, localFailed, pages, everyHours: +(every / H).toFixed(1), stoppedBecause: stop, seconds: Math.round((Date.now() - start) / 1000) });
   } catch (err) {
     publicError("Scheduled download", err);
     res.status(500).json({ ok: false });
