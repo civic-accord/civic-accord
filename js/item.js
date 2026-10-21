@@ -59,6 +59,32 @@ function sinceBox(s){
   if(s.c.result==="not-refreshed")return `<p class="meta" id="since">The source hasn't been refreshed since you last looked (${esc(when(s.base.seenAt))}), so there's nothing new to compare yet.</p>`;
   return ""}
 
+// Five questions a careful reader asks, each answered only with what the official record itself says, word for word,
+// with its source. Nothing here is written or reworded by people or AI; where the record doesn't answer, it says so.
+function fiveQs(it,stage){
+  const J=it.jurisdiction||{}, local=it.level==="local", rule=it.kind==="Proposed rule";
+  const by=it.summary&&it.summary.by?it.summary.by:(it.source&&it.source.label)||"the official source";
+  const first=(it.parts||[])[0];
+  const q1=first?`<blockquote class="q5quote">${first.lead?esc(first.lead)+" ":""}${esc(first.text)}</blockquote><span class="meta">From ${esc(by)}${it.parts.length>1?`. The other ${it.parts.length-1} part${it.parts.length===2?"":"s"} are under "What it is."`:"."}</span>`
+    :`<span class="meta">The official record has no summary for this ${rule?"notice":local?"meeting":"bill"} yet. Its title: </span>${esc(it.title)}`;
+  const q2=[it.topic?`Policy area, from ${esc(it.source&&it.source.label||"the source")}: ${esc(it.topic)}.`:"",
+    rule&&J.name?`Proposed by: ${esc(J.name)}.`:""].filter(Boolean).join(" ");
+  const costs=(it.costs||[]).filter(c=>safe(c.url));
+  const q3=costs.length?costs.map(c=>`<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c.title)}</a>${c.date?`, ${fmt(c.date)}`:""} · ${esc(c.by)}`).join("<br>")
+    :`${rule||local?"Not shown here.":"Not yet estimated."} <span class="meta">${esc(it.costNote||"Only official estimates are shown.")}</span>`;
+  const when=it.closes?`Official comments close ${fmt(it.closes)}.`:it.meets?`It meets ${fmt(it.meets)}${it.meetsTime?" at "+esc(it.meetsTime):""}.`:"";
+  const q4=`${esc(whoCanAct(it))} <span class="meta">Now: ${esc(stage.label)}${stage.date?`, ${fmt(stage.date)}`:""}.${when?" "+when:""}</span>`;
+  return `<section class="panel q5" aria-labelledby="q5-h"><div class="eyebrow">At a glance · from the official record ${LIVE}</div><h2 id="q5-h">Five questions, answered from the official record</h2>
+    <dl class="kv">
+      <dt>What problem is it trying to solve?</dt><dd>${q1}</dd>
+      <dt>Who would it affect?</dt><dd>${q2?q2+" ":""}<span class="meta">The official record doesn't list who would be affected. Look in the official text for words like "requires," "applies to," or "eligible."</span></dd>
+      <dt>What would it cost, and who would pay?</dt><dd>${q3}</dd>
+      <dt>Who decides, and when?</dt><dd>${q4}</dd>
+      <dt>What would you want changed?</dt><dd>That's yours to say. <a href="#h2" style="color:var(--koa)">Take part below</a>${rule&&it.links&&safe(it.links.comment)?`, or <a href="${esc(it.links.comment)}" target="_blank" rel="noopener" style="color:var(--koa)">comment officially</a>`:""}.</dd>
+    </dl>
+    <p class="meta">Official text is copied word for word, with its source. The only other words are Civic Accord's plain labels for status and who decides. Nothing is summarized or reworded by people or AI, and where the record doesn't answer a question, this says so.</p></section>`;
+}
+
 function render(it){
   const now=new Date(), stage=CA_ISSUE.stageOf(it,now), own=ownOf(it), next=CA_ISSUE.nextAction(it,stage,own&&!!DIST,now);
   $("title").textContent=it.title;
@@ -77,6 +103,7 @@ function render(it){
   const canTell=(it.level==="federal"&&(it.kind==="Bill in Congress"||it.kind==="Proposed rule"))||it.level==="state";
   const r=REACT[ID];
   $("main").innerHTML=`${topBlock(it,stage,next,following)}
+  ${fiveQs(it,stage)}
 
   <section class="panel" aria-labelledby="h1"><div class="eyebrow">1 · Understand ${LIVE}</div><h2 id="h1">What it is</h2>
     <dl class="kv">

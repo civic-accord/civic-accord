@@ -7,6 +7,8 @@ let LT=(()=>{try{return JSON.parse(localStorage.getItem(LTKEY)||"[]")}catch(e){r
 let D=(()=>{try{return JSON.parse(localStorage.getItem(DKEY)||"null")}catch(e){return null}})(), ITEMS=[], OPENG=null, NOTES={};
 try{NOTES=JSON.parse(localStorage.getItem("civicaccord-learn-notes")||"{}")}catch(e){}
 const QS=["What problem is this trying to solve?","Who would it affect, and how?","What would it cost, and who would pay?","Who decides, and when?","What would you want changed?"];
+// Where to look in the official text for each question.
+const HINTS=["Look at the first lines of the summary, or the purpose or findings section.","Look for words like \"requires,\" \"applies to,\" \"eligible,\" or \"prohibits.\"","Look for a cost estimate or fiscal note, or words like \"appropriates\" or \"fee.\" Many proposals don't have one yet.","Look at the status, the deadline for comments, or the meeting date, and who votes or decides.","This one is your own view. There's no wrong answer."];
 async function showReps(){
   if(!D){$("reps").innerHTML="";return}
   let sd=null;try{sd=await (await fetch("registry/states.json")).json()}catch(e){}
@@ -29,10 +31,10 @@ function itemCard(it){
     ${(()=>{const ms=TOP.match(it),mine=ms.filter(m=>LT.includes(m.id)),sh=mine.length?mine:ms;return sh.length?`<span class="why">${mine.length?"Your topic":"Topic"}: ${sh.map(m=>`${esc(m.label)} <span style="font-weight:400">(the word “${esc(m.word)}”)</span>`).join(", ")}</span>`:""})()}
     <span class="meta">${esc(it.who)}${it.closes?`. Comments close ${esc(new Date(it.closes+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))}.`:""}</span>
     <div class="acts">${safe(it.read)?`<a href="${esc(it.read)}" target="_blank" rel="noopener">Read the official text</a>`:""}
-      <button type="button" data-g="${esc(it.id)}">${open?"Hide the guide":"Read it with the guide"}</button>
+      <button type="button" data-g="${esc(it.id)}">${open?"Hide the questions":"Read it with 5 questions"}</button>
       ${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel)}</a>`:""}</div>
-    ${open?`<div class="guide"><p class="meta">Answer in your own words. Your notes stay on this device.</p>
-      ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
+    ${open?`<div class="guide"><p class="meta">Open the official text in another tab, then answer these as you read. They're the questions a reporter would ask. Your notes stay on this device.${/^(fr-|us-|os-|lg-)/.test(it.id)?` Stuck? <a href="item.html?id=${encodeURIComponent(it.id)}#q5-h" style="color:var(--koa)">See what the official record says for each question</a>.`:""}</p>
+      ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b><br><span style="font-weight:400">${esc(HINTS[i])}</span></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
       <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} A message in your own words is usually more useful than a copied one.</p>
       <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${it.commentForm===false?"See how to comment (in the notice)":"Open the official comment page"}</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
   </article>`;
