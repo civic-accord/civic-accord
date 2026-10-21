@@ -247,6 +247,14 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     </ul>
     <p>The plan is to use established, open methods rather than inventing new ones: sealing and receipt codes like Microsoft's open-source <a href="https://github.com/microsoft/electionguard-python" style="color:var(--koa)">ElectionGuard</a>, plus a separate, checkable shuffle.</p>
     <p>Each voter record can be claimed by only one verified person. Before a package goes to an office, voter status is checked again against the current list.</p>
+    <p><b>Protecting your voter record (planned).</b> In many states, anyone can get a copy of the voter list (<a href="https://www.ncsl.org/research/elections-and-campaigns/access-to-and-use-of-voter-registration-lists.aspx" style="color:var(--koa)">see each state's rules</a>), and people move. So the mailed code is protected in several ways:</p>
+    <ul class="plain">
+      <li>Codes go only to records the election office lists as active, at the address on that record. Civic Accord adds no addresses of its own.</li>
+      <li>The postcard tells the voter what to do if they didn't ask for it. A code works once, expires in 30 days, and locks after a few wrong tries.</li>
+      <li>If someone else claimed your record, you can take it back with an in-person check. Their claim is cancelled, and their votes are removed if the deliberation hasn't closed.</li>
+      <li>Limits stop mass requests: one code per voter record a month, and no more codes to one address than it has active voters. Addresses with many voters, like care homes and dorms, use the in-person check instead.</li>
+      <li>Public counts for each district: codes mailed, records claimed, claims taken back, and claims cancelled. Anyone can watch for unusual jumps.</li>
+    </ul>
     <p class="meta">Today: the example uses sample votes, and receipts are generated on your device to show how they would work.</p></section>
 
   <section class="panel" id="ground"><h2>How common ground is found</h2>

@@ -40,3 +40,20 @@ Goals: anyone can recount; each voter can check their ballot is included and was
 6. **Written statements.** A statement a voter writes can identify its author through its content or timing. Statements are published without any link to the author's credential, in batches.
 
 Stakes are advisory (proposals to an office, not binding elections), which lowers the incentive to buy votes, but the design treats coercion resistance as a requirement anyway.
+
+## Voter check design (planned)
+
+Goals: only the real voter can claim a voter record; a stale or shared address can't hand someone else's record to the wrong person without it being visible and reversible; no one can use the mail step to harass voters or run up costs. Each state's law decides which voter-record fields may be used; nothing here adds rules beyond that.
+
+Threats and planned controls:
+
+1. **Stale records.** People move and die; rolls lag. Codes go only to records the election office lists as **active**, at the residence address on that record, using the most recent list the host may legally obtain. Civic Accord does its own list maintenance only through the election office (it never adds or edits addresses). Status is re-checked before each hand-off.
+2. **Someone else at the address** (new tenant, roommate, family member, mail theft). The postcard names the purpose and tells the voter what to do if they didn't ask ("you don't need to do anything") and how to report it to the host. The real voter can **take back** a record with an in-person check (library or election office), which outranks a mailed code. The earlier claim is cancelled. If the deliberation hasn't closed, ballots under the cancelled credential are removed using the same checkable method as replaced ballots (see the vote record design); after close, the number of cancelled claims is published with the result.
+3. **Squatting** (claiming records first to lock real voters out). Same take-back path; a second postcard goes to the record address whenever a claim is cancelled or taken back.
+4. **Mass requests and harassment.** At most one code per voter record per 30 days. No more outstanding codes per address than active voters registered there, and a monthly cap per address. Addresses with many active records (care homes, dorms, shelters, group housing) are routed to in-person or election-office checks. Requests need a bot check and are rate-limited per device and network. A published daily mailing cap protects the budget.
+5. **Guessing codes.** Codes are random, single-use, tied to one record, expire in 30 days, and lock after 5 wrong tries (then a new code by mail or an in-person check).
+6. **Insiders.** Mail is printed by the host or the election office, not the convener. The address is used once for printing and then deleted; only districts are kept. Staff doing in-person checks compare ID to the record and copy nothing.
+7. **Public monitoring.** Per district, published daily: codes requested, mailed, claims made, taken back, and cancelled, plus the check that verified voters never outnumber registered voters. Unusual jumps are visible to anyone.
+
+To be reviewed with the host's counsel and each state's legal review (what voter-list fields and mailing are allowed) and in the independent security review.
+

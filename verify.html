@@ -227,7 +227,7 @@ async function render(){bar();const p=$("p");
      <span class="meta">${vs.verified?"✓ Checked by a reviewer":"! Not yet confirmed in this state's legal review"}${vs.citations.length?" · "+vs.citations.map(c=>`<a href="${esc(c[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(c[1])}</a>`).join(" · "):""}</span></div></div>
    ${vs.tiers?`<details><summary>How the match works</summary><div class="record" style="margin-top:8px">${vs.tiers.map(t=>`<div class="recrow"><b>${esc(t.name)} · ${esc(t.strength)}</b><span>${esc(t.how)}</span><span class="meta">Needs: ${esc(t.needs)}</span></div>`).join("")}</div></details>`:""}
    <div class="addr"><label for="vname" class="meta">Your name as it appears on your voter registration</label><input type="text" id="vname" autocomplete="name"></div>
-   <p class="privacy">In the live version, your name is used once for the match, then deleted. Each voter record can be claimed by only one person.</p>
+   <p class="privacy">In the live version, your name is used once for the match, then deleted. Each voter record can be claimed by only one person. If someone else claimed yours, you can take it back with an in-person check, and their claim is cancelled.</p>
    <p class="meta">This sample makes no real match. Choose what the check would find:</p>
    <form id="vs" style="display:grid;gap:8px">${[["registered","Active registered voter in this district"],["not registered","No active voter record here"]].map((v,i)=>`<label class="choice"><input type="radio" name="vs" value="${v[0]}" ${i===0?"checked":""}><span><b>${esc(v[1])}</b></span></label>`).join("")}</form>
    <div id="notreg"></div>
@@ -248,7 +248,7 @@ async function render(){bar();const p=$("p");
    $("send").onclick=()=>{method=document.querySelector("input[name=m]:checked").value;code=rnd(6);step=4;render()};$("back").onclick=()=>{step=2;render()};return}
  if(step===4){p.innerHTML=`<div><div class="eyebrow">Step 5</div><h2>Enter your code</h2></div>
    <p>${method==="mail"?"In the live version, the postcard goes to the address on your voter record. In this sample, here's what it would look like:":"Staff give you a slip with your code. In this sample, here's what it would look like:"}</p>
-   <div class="postcard"><span class="eyebrow">${method==="mail"?"Civic Accord · postcard":"Civic Accord · library slip"}</span><span>Your voter verification code</span><span class="code">${code}</span><span class="meta">Expires in 30 days. Works once.</span></div>
+   <div class="postcard"><span class="eyebrow">${method==="mail"?"Civic Accord · postcard":"Civic Accord · library slip"}</span><span>Your voter verification code</span><span class="code">${code}</span><span class="meta">Expires in 30 days. Works once.</span>${method==="mail"?`<span class="meta">Didn't ask for this? Someone may be trying to claim your voter record. You don't need to do anything, and no one can use this code without this card. The live card will also say how to report it.</span>`:""}</div>
    <div class="addr"><label for="code" class="meta">6-digit code</label><input type="text" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
    <span class="toast" id="msg" aria-live="polite"></span>
    <div class="actions"><button class="btn" id="check" type="button">Verify</button><button class="btn ghost" id="back" type="button">Back</button></div>`;
