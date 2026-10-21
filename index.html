@@ -38,6 +38,35 @@
 .qchips a:hover{background:var(--koa-soft)}
 .qchips a:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 </style>
+<style>
+/* Site navigation, the same on every page: four main destinations, plus a few supporting links. */
+.skip{position:absolute;left:-9999px;top:0}.skip:focus{left:16px;top:8px;z-index:100;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;outline:3px solid var(--sun)}
+.sitenav{max-width:1100px;margin:0 auto 16px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;font-size:.95rem}
+.sitenav .brandlink{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;color:var(--ink);text-decoration:none;min-height:44px;margin-right:auto}
+.sitenav .brandlink svg{width:30px;height:20px;fill:none;stroke:var(--koa);stroke-width:2}
+.sitenav .primary,.sitenav .secondary{display:flex;flex-wrap:wrap;gap:2px 4px;list-style:none;margin:0;padding:0}
+.sitenav a.nl{display:inline-flex;align-items:center;min-height:44px;padding:4px 10px;border-radius:8px;color:var(--ink);text-decoration:none}
+.sitenav a.nl[aria-current="page"]{background:var(--koa-soft);color:var(--koa);font-weight:700}
+.sitenav .secondary a.nl{color:var(--muted);font-size:.85rem}
+.tabbar{display:none}
+.morenav{display:none;position:relative;border-top:0;padding-top:0;margin:0}
+.morenav summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:4px 12px;border:1px solid var(--line);border-radius:8px;color:var(--ink)}
+.morenav summary::-webkit-details-marker{display:none}
+.morenav ul{position:absolute;right:0;top:calc(100% + 6px);z-index:60;list-style:none;margin:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:230px;display:grid}
+.morenav a.nl{display:flex;color:var(--ink)}
+.footnav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem}.footnav a{color:inherit;display:inline-flex;align-items:center;min-height:44px}
+@media (max-width:700px){
+  .sitenav .primary,.sitenav .secondary{display:none}
+  .morenav{display:block}
+  .sitenav{flex-wrap:nowrap}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .tabbar a{flex:1 1 0;min-width:0;display:grid;justify-items:center;align-content:center;gap:2px;padding:6px 2px;min-height:52px;color:var(--muted);text-decoration:none;font-size:.72rem;line-height:1.15;text-align:center;border-radius:10px}
+  .tabbar a.wide{flex-grow:1.45}
+  .tabbar a[aria-current="page"]{color:var(--koa);background:var(--koa-soft);font-weight:700}
+  .tabbar svg{width:22px;height:22px}
+}
+</style>
 </head><body><style>
 /* Layout: a civic workbench — one issue at a time, five stages as a stepper, summary before detail */
 :root{
@@ -193,9 +222,11 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .addr input[type=text],.addr2 input{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
 .privacy{font-size:.85rem;background:var(--koa-soft);border-radius:8px;padding:10px 12px}
 </style>
-<div class="wrap">
+<a class="skip" href="#content">Skip to content</a>
+<nav class="sitenav" aria-label="Main"><a class="brandlink" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord</a><ul class="primary"><li><a class="nl" href="/" aria-current="page">Home</a></li><li><a class="nl" href="/open.html">Issues</a></li><li><a class="nl" href="/governments.html">My representatives</a></li><li><a class="nl" href="/following.html">Following</a></li></ul><ul class="secondary" aria-label="More"><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul><details class="morenav"><summary>More</summary><ul><li><a class="nl" href="/how.html">How it works</a></li><li><a class="nl" href="/learn.html">Learn</a></li><li><a class="nl" href="/ask.html">Ask offices to adopt Civic Accord</a></li></ul></details></nav>
+<div class="wrap" id="content" tabindex="-1">
   <header class="hero">
-    <a class="brand" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord, a citizen-led, open example</a>
+    <div class="eyebrow">A citizen-led, open example</div>
     <h1>A new relationship with your government</h1>
     <p class="lede">Imagine talking an issue through with your neighbors. You see where you actually agree and what each choice would cost. Then you send it to your representatives, who are asked to answer you in public. Civic Accord is a free, open example of how that could work, using tools that already exist.</p>
 
@@ -204,16 +235,25 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
       <p class="meta">Tap one to see what's open on it right now. You can add more topics on the next page.</p>
       <div class="qchips" role="group" aria-labelledby="qph"></div>
     </div>
-    <p class="heroLinks"><a href="open.html">See everything that's open</a><a href="ask.html">Ask your representatives for this</a><a href="app.html">Try the sample deliberation</a><a href="governments.html">Find everyone who represents you</a></p>
-    <p class="note"><b>What's live and what's a sample.</b> The lookup, Open Now, issue pages, Following, and writing to your representatives use live, official information. Follows and your records of what you sent stay in your browser. The deliberation tools use sample votes to show how they would work. Before real deliberations, Civic Accord needs a neutral host, legal review in each state, and independent security audits.</p>
+    <p class="heroLinks"><a href="open.html">Browse issues</a><a href="governments.html">Find my representatives</a><a href="following.html">Following</a><a href="app.html">Try the sample deliberation</a></p>
+    <p class="note"><b>What's live and what's a sample.</b> My representatives (the lookup), Issues, issue pages, Following, and writing to your representatives use live, official information. Follows and your records of what you sent stay in your browser. The deliberation tools use sample votes to show how they would work. Before real deliberations, Civic Accord needs a neutral host, legal review in each state, and independent security audits.</p>
   </header>
+  <section class="panel" id="start" aria-labelledby="start-h">
+    <h2 id="start-h">Start here</h2>
+    <ol class="plain">
+      <li><a href="open.html" style="color:var(--koa)"><b>Browse issues</b></a> open for public input now: federal rules, bills in Congress and your state legislature, and some local meetings.</li>
+      <li><a href="governments.html" style="color:var(--koa)"><b>Find your representatives</b></a> and how to reach them.</li>
+      <li><b>Follow an issue</b> from its page, then check <a href="following.html" style="color:var(--koa)">Following</a> to see what changed in the official record.</li>
+    </ol>
+    <p class="meta">What you do here stays in your browser. Nothing is counted or sent by Civic Accord.</p>
+  </section>
 
   <section class="panel">
     <h2>What you can do today</h2>
     <p class="meta">Everything in this list works right now, for any U.S. address.</p>
     <ol class="steps6">
       <li><span><b>Find the governments that represent you,</b> from Congress to your school district, with the names of your members of Congress. <a href="governments.html" style="color:var(--koa)">Look up an address</a></span></li>
-      <li><span><b>See what's open for public input:</b> proposed federal rules, bills in Congress, and bills moving in your state legislature, straight from official sources. <a href="open.html" style="color:var(--koa)">Open now</a></span></li>
+      <li><span><b>See what's open for public input:</b> proposed federal rules, bills in Congress, and bills moving in your state legislature, straight from official sources. <a href="open.html" style="color:var(--koa)">Issues</a></span></li>
       <li><span><b>Comment officially</b> on a proposed federal rule, through the government's own comment page.</span></li>
       <li><span><b>Write to your representatives</b> about any item, from your own email or their contact form. You send it; Civic Accord never sees it.</span></li>
       <li><span><b>Follow an issue and keep your own record.</b> See what changed in the official record since you last looked, and keep a note of what you sent and to whom. It all stays in your browser. <a href="following.html" style="color:var(--koa)">Following</a></span></li>
@@ -252,7 +292,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
       <li><b>Android:</b> open this page in Chrome, tap the menu (three dots), then <b>Install app</b> or <b>Add to Home screen</b>.</li>
       <li><b>Computer:</b> in Chrome or Edge, click the install icon at the right end of the address bar.</li>
     </ul>
-    <p class="meta">The front page and How it works open even without a signal. Live items like Open Now always load fresh, so you never see old information as if it were current.</p>
+    <p class="meta">The front page and How it works open even without a signal. Live items like Issues always load fresh, so you never see old information as if it were current.</p>
   </section>
 
   <section class="panel">
@@ -264,7 +304,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <h2>What it's designed to do</h2>
     <p class="meta">Each of these methods already exists and is used elsewhere. Each card says whether it works in Civic Accord today or is planned, and how you'll be able to check it.</p>
     <div class="cards">
-      <div class="card"><span class="tag common" style="justify-self:start">Works now</span><h3>Find the governments that represent you</h3><p>Type an address and see the governments that serve it, from Congress to your school district. Names are shown for members of Congress; your state legislators' names show on Open Now and the Ask page. Local offices are described, but their officeholders aren't listed yet, and special districts (water, fire, transit) aren't included. <a href="how.html#coverage" style="color:var(--koa)">What's covered</a>.</p><span class="check">How you can check: the districts come from the U.S. Census Bureau's free, public lookup.</span></div>
+      <div class="card"><span class="tag common" style="justify-self:start">Works now</span><h3>Find the governments that represent you</h3><p>Type an address and see the governments that serve it, from Congress to your school district. Names and published contact details are shown for members of Congress and state legislators. Local offices are described, but their officeholders aren't listed yet, and special districts (water, fire, transit) aren't included. <a href="how.html#coverage" style="color:var(--koa)">What's covered</a>.</p><span class="check">How you can check: the districts come from the U.S. Census Bureau's free, public lookup.</span></div>
       <div class="card"><span class="tag forming" style="justify-self:start">Planned</span><h3>Prove you're a registered voter, privately</h3><p>Your voter record would be matched, then a code mailed to the address on that record, or a quick check at a library, would confirm you're that voter. Your identity would then be kept apart from your votes, and you'd respond only to your own governments.</p><span class="check">How you'll be able to check: your verification receipt will prove you were confirmed, without showing how you voted.</span></div>
       <div class="card"><span class="tag forming" style="justify-self:start">Planned</span><h3>Count votes in the open</h3><p>Votes would go into a public record that can be added to but never quietly changed. Simple code that anyone can read would do the counting.</p><span class="check">How you'll be able to check: anyone will be able to download the record and recount. Your receipt will show your sealed votes are included, and is designed so it can't show anyone how you voted. You'll be able to change your votes until it closes.</span></div>
       <div class="card"><span class="tag forming" style="justify-self:start">Works with sample votes</span><h3>Find common ground, not just a majority</h3><p>The tool groups people by how they vote and highlights ideas that people on different sides support.</p><span class="where">Already used in Taiwan's <a href="https://www.nesta.org.uk/six-pioneers-digital-democracy/vtaiwan" target="_blank" rel="noopener" style="color:var(--koa)">vTaiwan</a> process, with Pol.is, a free tool whose code anyone can read.</span></div>
@@ -305,12 +345,14 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <div class="share" id="share"></div>
   </section>
 
-  <footer><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Source code</a></span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
+  <footer><nav class="footnav" aria-label="More"><a href="/how.html">How it works</a><a href="/learn.html">Learn</a><a href="/ask.html">Ask offices to adopt Civic Accord</a><a href="https://github.com/civic-accord/civic-accord">Code and data</a></nav><span>Civic Accord · an open, nonpartisan example · October 2026</span><span><a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Source code</a></span><span><a href="how.html" style="color:inherit">How it works</a> · <a href="https://github.com/civic-accord/civic-accord" style="color:inherit">Code</a></span></footer>
 </div>
+<script src="/lib/records.js"></script>
+<script src="/js/home.js"></script>
 <script src="/js/index.js"></script>
 <script src="lib/topics.js"></script>
 <script src="/js/index-2.js"></script>
-<nav class="appnav" aria-label="App menu"><a href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Open now</a><a href="/ask.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v10H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Ask</a><a href="/governments.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Lookup</a><a href="/how.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>How it works</a></nav>
+<nav class="tabbar" aria-label="Main, on phones"><a href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</a><a href="/open.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Issues</a><a href="/governments.html" class="wide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-5 8 5v10M9 20v-6h6v6M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>My representatives</a><a href="/following.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Following</a></nav>
 <script src="/js/index-3.js"></script>
 <script src="/lib/sw-register.js"></script>
 <script src="/lib/forget.js" defer></script>

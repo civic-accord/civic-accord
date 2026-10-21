@@ -16,7 +16,10 @@ async function fetchItem(id){
 function draw(){
   const list=CA_RECORDS.follows(), sent=CA_RECORDS.allSent();
   $("rec-sum").textContent=`${list.length} issue${list.length===1?"":"s"} followed · ${sent.length} record${sent.length===1?"":"s"} of what you sent, all reported by you.`;
-  if(!list.length){$("main").innerHTML=`<p>You aren't following any issues yet. Open any issue from <a href="open.html" style="color:var(--koa)">Open Now</a> and choose "Follow this issue."</p>`;return}
+  if(!list.length){$("main").innerHTML=`<section class="panel empty" aria-labelledby="empty-h"><h2 id="empty-h">You aren't following any issues yet</h2>
+    <ol class="plain"><li>Browse <b>Issues</b> and open one that matters to you.</li><li>On its page, choose <b>Follow this issue</b>.</li><li>Come back here. You'll see what changed in the official record since you last looked.</li></ol>
+    <p class="meta">Following is kept in this browser only. Changes are checked when you open this page, not in the background.</p>
+    <p><a class="btn" href="open.html" style="display:inline-flex;align-items:center;text-decoration:none">Browse issues</a></p></section>`;return}
   if(CHECKING){$("main").innerHTML=`<p class="meta" id="progress" role="status">Checking 0 of ${list.length} against the latest official data…</p>`;return}
   const order=f=>{const c=CHECKS[f.issue.id];if(!c)return 3;if(c.cmp&&c.cmp.result==="changed"&&!c.seenNow)return 0;if(c.cmp&&c.cmp.soon.length)return 1;return 2};
   const rows=list.slice().sort((a,b)=>order(a)-order(b));
