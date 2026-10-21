@@ -174,7 +174,7 @@ input[type=text],select{font:inherit;width:100%;border:1px solid var(--line);bor
     <div class="eyebrow">Civic Accord · office inbox · sample demo</div>
     <h1>Office Inbox</h1>
     <p class="lede">What an elected office receives: verified voters' common ground, their disagreements, who took part, and what it would cost. The office answers in public, reports what happens next, and can ask its district to weigh in.</p>
-    <p class="note"><b>The inbox belongs to the seat, not the person.</b> In the live version, responses will be signed by the office and say who approved them. When a new officeholder takes the seat, every open package, request, and past response passes to them, so the record carries over to the next officeholder.</p>
+    <p class="note"><b>The inbox belongs to the seat, not the person.</b> In the live version, responses will be signed by the office and give the role of the person who approved them, such as chief of staff, not their name. When a new officeholder takes the seat, every open package, request, and past response passes to them, so the record carries over to the next officeholder.</p>
     <p class="note"><b>Example data.</b> The office, participants, and votes are invented to show how the inbox works. Responses here are not sent anywhere. In this sample, anyone can act as any office. In the live version, only a confirmed office account can post, and every response shows how the office was confirmed. <a href="how.html#office" style="color:inherit">How offices are confirmed</a>.</p>
     <div>
       <div class="eyebrow" style="margin-bottom:6px">Viewing as the office of</div>
@@ -269,7 +269,7 @@ function renderSeat(){
         <span class="meta">Residents can still deliberate, and the office can still answer packages and report what happened to them.${q.election?` Election dates: <a href="${esc(j.electionsSource?j.electionsSource.url:"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.electionsSource?j.electionsSource.label:"election office")}</a>.`:""}</span></div>`
     :`<form id="request" class="choices">
       <div class="grid2"><div><label for="rq-bill" class="meta">Bill or topic</label><input type="text" id="rq-bill" maxlength="120" placeholder="HB 1234, or a budget choice"></div>
-      <div><label for="rq-by" class="meta">Approved by (name and role)</label><input type="text" id="rq-by" maxlength="80" placeholder="Chief of staff"></div></div>
+      <div><label for="rq-by" class="meta">Approver's role</label><input type="text" id="rq-by" maxlength="80" placeholder="Chief of staff"></div></div>
       <label for="rq-q" class="meta">The question for constituents</label>
       <textarea id="rq-q" rows="2" maxlength="400" placeholder="Should the bill fund more inspectors or more rapid-response crews?"></textarea>
       ${q.none?`<p class="meta">No law limits this office's communications before elections, so requests stay open year-round.</p>`:q.notCandidate?`<p class="meta">The pre-election limit applies only when the officeholder is a candidate, and this one isn't on the ballot.</p>`:q.nextStart?`<p class="meta">Requests pause on ${fmt(q.nextStart)}${q.next?`, ${q.days} days before the ${esc(q.next.name.toLowerCase())}`:""}.</p>`:`<p class="meta">The next election dates haven't been added for this office yet. A reviewer adds them each cycle.</p>`}
@@ -279,7 +279,7 @@ function renderSeat(){
     <div class="record">${reqs.length?reqs.map(r=>`<div class="recrow"><b>${esc(r.bill)}</b><span>${esc(r.q)}</span><span class="meta">${esc(r.date)} · ${esc(sign(r))} · Sample request (no host yet)</span></div>`).join(""):`<div class="recrow silent"><span class="meta">No requests from this office yet</span></div>`}</div>`;
   const f=document.getElementById("request");
   if(f) f.onsubmit=e=>{e.preventDefault();const bill=document.getElementById("rq-bill").value.trim(),qq=document.getElementById("rq-q").value.trim(),by=document.getElementById("rq-by").value.trim();
-    if(!bill||qq.length<15||!by){document.getElementById("rqmsg").textContent="Add the bill or topic, a question of at least 15 characters, and who approved it.";return}
+    if(!bill||qq.length<15||!by){document.getElementById("rqmsg").textContent="Add the bill or topic, a question of at least 15 characters, and the approver's role.";return}
     (DB.requests[office]=DB.requests[office]||[]).unshift({bill,q:qq,approver:by,date:today()});persist();render()};
 }
 function renderList(){
@@ -338,7 +338,7 @@ function renderDetail(){
       <textarea id="changes" rows="2" maxlength="600" placeholder="For example: phase in the inspectors over two years and drop the visitor fee."></textarea></div>
       <label for="reason" class="meta">The office's reason, shown publicly</label>
       <textarea id="reason" rows="3" maxlength="600" placeholder="For example: I'll introduce the common-ground items and hold a hearing on the visitor fee."></textarea>
-      <label for="approver" class="meta">Approved by (name and role)</label>
+      <label for="approver" class="meta">Approver's role</label>
       <input type="text" id="approver" maxlength="80" placeholder="The representative, or chief of staff">
       <span class="toast" id="rmsg" aria-live="polite"></span>
       <button class="btn" type="submit">Record the office's response</button>
@@ -355,7 +355,7 @@ function renderDetail(){
       <div><label for="up-bill" class="meta">Bill number (optional)</label><input type="text" id="up-bill" maxlength="40"></div></div>
       <label for="up-note" class="meta">What happened, and why (for a vote, the office's reasoning)</label>
       <textarea id="up-note" rows="2" maxlength="600"></textarea>
-      <label for="up-by" class="meta">Approved by (name and role)</label><input type="text" id="up-by" maxlength="80">
+      <label for="up-by" class="meta">Approver's role</label><input type="text" id="up-by" maxlength="80">
       <span class="toast" id="upmsg" aria-live="polite"></span>
       <button class="btn ghost" type="submit">Add to the public record</button></form>`:""}
   </section>`;
@@ -364,14 +364,14 @@ function renderDetail(){
     if(reason.length<10){document.getElementById("rmsg").textContent="Add a short reason. Residents see it with your response.";return}
     const v=f.querySelector("input[name=resp]:checked");const label=v.parentElement.textContent.trim();
     const approver=document.getElementById("approver").value.trim(), changes=v.value==="amend"?document.getElementById("changes").value.trim():"";
-    if(!approver){document.getElementById("rmsg").textContent="Add who approved this response. It's signed by the office and names the approver.";return}
+    if(!approver){document.getElementById("rmsg").textContent="Add the approver's role. It's signed by the office and shows the role, not a name.";return}
     if(v.value==="amend"&&changes.length<10){document.getElementById("rmsg").textContent="Describe the changes the office needs.";return}
     responses[rk(d.id)]={office:office$().title+", "+office$().where,value:v.value,label,reason,changes,approver,date:today()};persist();render()};
   if(f) f.onchange=()=>{document.getElementById("changesbox").hidden=f.querySelector("input[name=resp]:checked").value!=="amend"};
   const c=document.getElementById("change");if(c)c.onclick=()=>{delete responses[rk(d.id)];persist();render()};
   const u=document.getElementById("update");
   if(u) u.onsubmit=e=>{e.preventDefault();const note=document.getElementById("up-note").value.trim(),by=document.getElementById("up-by").value.trim();
-    if(note.length<10||!by){document.getElementById("upmsg").textContent="Add what happened and who approved it.";return}
+    if(note.length<10||!by){document.getElementById("upmsg").textContent="Add what happened and the approver's role.";return}
     (DB.updates[rk(d.id)]=DB.updates[rk(d.id)]||[]).push({stage:document.getElementById("up-stage").value,bill:document.getElementById("up-bill").value.trim(),note,approver:by,date:today()});persist();render()};
 }
 function render(){renderOffices();renderSeat();renderList();renderDetail()}

@@ -43,7 +43,7 @@ Every statement can also carry citizen panel results (`panel: [agree, disagree, 
 
 ## The office, not the person
 
-The two-way conversation is between residents and an **office** (a seat), not an individual politician. The office inbox (`inbox.html`) belongs to the seat: responses are signed by the office and name who approved them, and when the officeholder changes, every open package, request, and past response passes to the next one.
+The two-way conversation is between residents and an **office** (a seat), not an individual politician. The office inbox (`inbox.html`) belongs to the seat: responses are signed by the office and give the approver's role (not their name), and when the officeholder changes, every open package, request, and past response passes to the next one.
 
 - **Offices can ask.** An office can request a deliberation on a pending bill or a trade-off. A neutral host reviews it before it opens, and the request is public.
 - **Counter-drafts.** An office can answer "I will introduce it with changes" and say what would need to change. Residents weigh in on the revised version.
