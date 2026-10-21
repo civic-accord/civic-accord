@@ -27,7 +27,11 @@
 }
 </style>
 <style>
-.quickpick{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.quickpick{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--koa);border-radius:12px;padding:16px 18px}
+.brand{display:inline-flex;align-items:center;gap:8px;color:var(--koa);text-decoration:none;font-weight:700;font-size:.95rem;min-height:44px;justify-self:start}
+.brand svg{width:30px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2}
+.heroLinks{display:flex;flex-wrap:wrap;gap:4px 18px;margin:0}
+.heroLinks a{color:var(--koa);padding:8px 0;min-height:44px;display:inline-flex;align-items:center}
 .quickpick h2{font-size:1.2rem;margin:0}
 .qchips{display:flex;flex-wrap:wrap;gap:8px}
 .qchips a{font-size:.95rem;border:1px solid var(--koa);color:var(--koa);background:var(--surface);border-radius:999px;padding:9px 16px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;font-weight:700}
@@ -191,15 +195,16 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 </style>
 <div class="wrap">
   <header class="hero">
-    <div class="eyebrow">Civic Accord · a citizen-led, open example</div>
+    <a class="brand" href="/"><svg viewBox="0 0 32 20" aria-hidden="true"><circle cx="11" cy="10" r="8"/><circle cx="21" cy="10" r="8"/></svg>Civic Accord, a citizen-led, open example</a>
     <h1>A new relationship with your government</h1>
     <p class="lede">Imagine talking an issue through with your neighbors. You see where you actually agree and what each choice would cost. Then you send it to your representatives, who are asked to answer you in public. Civic Accord is a free, open example of how that could work, using tools that already exist.</p>
-    <div class="cta"><a class="btn" href="open.html">See what's open for public input now</a><a class="btn ghost" href="ask.html">Ask your representatives for this</a><a class="btn ghost" href="app.html">Try the example</a><a class="btn ghost" href="governments.html">Find everyone who represents you</a></div>
+
     <div class="quickpick" id="quickpick" hidden>
       <h2 id="qph">What do you care about?</h2>
       <p class="meta">Tap one to see what's open on it right now. You can add more topics on the next page.</p>
       <div class="qchips" role="group" aria-labelledby="qph"></div>
     </div>
+    <p class="heroLinks"><a href="open.html">See everything that's open</a><a href="ask.html">Ask your representatives for this</a><a href="app.html">Try the sample deliberation</a><a href="governments.html">Find everyone who represents you</a></p>
     <p class="note"><b>What's live and what's a sample.</b> The lookup, Open Now, and writing to your representatives use live, official information. The deliberation tools use sample votes to show how they would work. Before real deliberations, Civic Accord needs a neutral host, legal review in each state, and independent security audits.</p>
   </header>
 
