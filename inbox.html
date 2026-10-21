@@ -196,12 +196,16 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 // stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
 // or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
 const MIN_GROUP_VOTES=10;
-function consensusLabel(groups){const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
-  const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES).map(pct);
+// Compared on exact counts (agree × 100 ≥ 70 × votes), so 69.5% never rounds up to 70%. A pass counts as not agreeing.
+function consensusLabel(groups){const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES);
   if(counted.length<2) return "forming";
-  if(counted.every(p=>p>=70)) return "common";
-  if(counted.some(p=>p>=70)&&counted.some(p=>p<50)) return "split";
+  const atLeast=(g,p)=>g[0]*100>=p*(g[0]+g[1]+g[2]);
+  if(counted.every(g=>atLeast(g,70))) return "common";
+  if(counted.some(g=>atLeast(g,70))&&counted.some(g=>!atLeast(g,50))) return "split";
   return "forming"}
+// Share of registered voters who took part, as plain text.
+function shareText(n,total){if(!total)return "";if(!n)return "0%";const v=n/total*100;return v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%"}
+const httpsOnly=u=>/^https:\/\//.test(String(u||""))?u:null;
 let OFFICES=[];
 let PK={}, office=null, open=null;
 const SKEY="civicaccord-office";
@@ -312,7 +316,7 @@ function renderDetail(){
       <div><strong>${money(a.yearly)}</strong><span>yearly cost of common ground</span></div>
       <div><strong>${per(a.yearly)}</strong><span>per ${esc(j.residentLabel)} a year</span></div>
     </div>
-    <p class="meta">${pt&&j.registeredVoters?`<b>${pt.open.count} verified voters took part, ${(v=>v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%")(pt.open.count/j.registeredVoters*100)} of ${j.registeredVoters.toLocaleString("en-US")} registered voters</b>${j.registeredVotersSource?` (<a href="${esc(j.registeredVotersSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.registeredVotersSource.label)}</a>)`:""}. Common ground means agreement among those who took part, not the whole district. The citizen panel is the check on whether it reflects the district.`:"This package doesn't list the district's number of registered voters yet, so the share who took part isn't shown."}</p>
+    <p class="meta">${!pt?"":j.registeredVoters?`<b>${pt.open.count} verified voters took part, ${shareText(pt.open.count,j.registeredVoters)} of ${j.registeredVoters.toLocaleString("en-US")} ${esc(j.registeredVotersLabel||"registered voters")}</b>${j.registeredVotersSource&&httpsOnly(j.registeredVotersSource.url)?` (<a href="${esc(j.registeredVotersSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(j.registeredVotersSource.label||"source")}</a>)`:""}. Common ground means agreement among those who took part, not everyone you represent. The citizen panel is the check on whether it reflects the district.`:"This package doesn't list the number of registered voters yet, so the share who took part isn't shown."}</p>
     <h3>Who took part</h3>
     <p class="meta">Open participants and the randomly selected citizen panel, compared with the district's adult population.${pt&&pt.example?" Example figures.":""}</p>
     <div class="cmp" style="grid-template-columns:minmax(70px,100px) repeat(3,minmax(0,1fr))"><span></span>${pt?pt.makeup.columns.map(c=>`<span class="h">${esc(c)}</span>`).join(""):""}

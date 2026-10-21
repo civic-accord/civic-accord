@@ -212,7 +212,7 @@ function compilePack(d,opts={}){
   const center=d.bill.centerLines.map(l=>`<span class="c">${esc(l)}</span>`).join("");
   return {
     key:j.key, name:j.name, district:j.district, session:j.session, footnote:j.drafting,
-    residents:j.residents, resLabel:j.residentLabel, resNote:j.residentNote, regVoters:j.registeredVoters||null, regSource:j.registeredVotersSource||null,
+    residents:j.residents, resLabel:j.residentLabel, resNote:j.residentNote, regVoters:j.registeredVoters||null, regSource:j.registeredVotersSource||null, regLabel:j.registeredVotersLabel||"registered voters",
     popSource:{href:j.populationSource.url,label:j.populationSource.label},
     base:{amt:j.baseline.amount,label:j.baseline.label},
     genFundName:j.generalFundName, genFundTradeoff:j.generalFundTradeoff, repTitle:j.representativeTitle,
@@ -255,12 +255,16 @@ const all=()=>[...P.S,...st.added];
 // stand in for a whole group. Labels need at least two such groups. Common ground: every counted group is at 70%
 // or more. Divides groups: at least one counted group is at 70% or more and at least one is under 50%.
 const MIN_GROUP_VOTES=10;
-function consensusLabel(groups){const pct=g=>{const n=g[0]+g[1]+g[2];return n?Math.round(g[0]/n*100):0};
-  const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES).map(pct);
+// Compared on exact counts (agree × 100 ≥ 70 × votes), so 69.5% never rounds up to 70%. A pass counts as not agreeing.
+function consensusLabel(groups){const counted=groups.filter(g=>g[0]+g[1]+g[2]>=MIN_GROUP_VOTES);
   if(counted.length<2) return "forming";
-  if(counted.every(p=>p>=70)) return "common";
-  if(counted.some(p=>p>=70)&&counted.some(p=>p<50)) return "split";
+  const atLeast=(g,p)=>g[0]*100>=p*(g[0]+g[1]+g[2]);
+  if(counted.every(g=>atLeast(g,70))) return "common";
+  if(counted.some(g=>atLeast(g,70))&&counted.some(g=>!atLeast(g,50))) return "split";
   return "forming"}
+// Share of registered voters who took part, as plain text.
+function shareText(n,total){if(!total)return "";if(!n)return "0%";const v=n/total*100;return v<0.01?"under 0.01%":v<1?v.toFixed(2)+"%":v.toFixed(1)+"%"}
+const httpsOnly=u=>/^https:\/\//.test(String(u||""))?u:null;
 const myStatus=()=>VER&&VER.voterStatus||null;
 // Which group your votes sit closest to. The sample compares your votes with each group's votes on the
 // statements you voted on; the live version uses the open Pol.is grouping. Ties go to Group A.
@@ -448,9 +452,9 @@ function ground(){
 }
 // How many of the district's registered voters took part. Shown wherever results are, so a small, organized
 // group can't pass for the whole district.
-function turnoutLine(n){if(!P.regVoters)return `<p class="meta"><b>${n} verified voters took part.</b> This pack doesn't list the district's number of registered voters yet, so their share isn't shown.</p>`;
-  const share=n/P.regVoters*100, s=share<0.01?"under 0.01%":share<1?share.toFixed(2)+"%":share.toFixed(1)+"%";
-  return `<p class="meta"><b>${n} verified voters took part: ${s} of the ${P.regVoters.toLocaleString("en-US")} registered voters</b>${P.regSource&&P.regSource.url?` (<a href="${esc(P.regSource.url)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(P.regSource.label||"source")}</a>)`:""}. Common ground here means agreement among the people who took part, not the whole district.</p>`}
+function turnoutLine(n){if(!P.regVoters)return `<p class="meta"><b>${n} verified voters took part.</b> This pack doesn't list the number of registered voters yet, so their share isn't shown.</p>`;
+  const src=P.regSource&&httpsOnly(P.regSource.url);
+  return `<p class="meta"><b>${n} verified voters took part: ${shareText(n,P.regVoters)} of ${P.regVoters.toLocaleString("en-US")} ${esc(P.regLabel)}</b>${src?` (<a href="${esc(src)}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(P.regSource.label||"source")}</a>)`:""}. Common ground here means agreement among the people who took part, not everyone this government represents.</p>`}
 function participationBox(){const pt=P.participation;if(!pt)return "";
   const dims=pt.makeup&&pt.makeup.dimensions||[];
   return `<div class="twoways">
@@ -559,7 +563,7 @@ function draft(){
   const eff=`     ${P.secWord} ${n+1}.  ${esc(P.effective)}`;
   return `<section class="panel" role="tabpanel">
   <div><div class="eyebrow">Step 5</div><h2>Draft</h2></div>
-  <p class="lede">The proposal is built from your choices in Step 4, starting from what both groups agreed on. Anything you added that lacks common ground is flagged.</p>
+  <p class="lede">The proposal is built from your choices in Step 4, starting from what every group agreed on. Anything you added that lacks common ground is flagged.</p>
   <h3>Plain-language proposal</h3>
   ${plain?`<ul class="plain">${plain}</ul>`:'<p class="meta">Nothing is selected yet. Choose options in Step 4.</p>'}
   <div class="stat">

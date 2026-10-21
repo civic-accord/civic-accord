@@ -16,6 +16,7 @@
    "label": "2025 Hawaiʻi population estimate"
   },
   "registeredVoters": 860868,
+  "registeredVotersLabel": "registered voters in Hawaiʻi (statewide)",
   "registeredVotersSource": {
    "url": "https://elections.hawaii.gov/resources/registration-voter-turnout-statistics",
    "label": "Hawaiʻi Office of Elections, 2024 general election"
