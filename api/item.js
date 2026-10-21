@@ -36,7 +36,7 @@ function decode(s) {
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)));
 }
 // Each part keeps its official lead-in (for example "This bill:") when it's an item in a list, so it reads in context.
-// Headings and very short lines (under 25 characters) and exact repeats are left out; the page says so.
+// Headings and exact repeats are left out; the page says how many headings.
 // What gets left out, and why (the page says how many):
 //  - headings: lines in all capitals ("TITLE I--AGRICULTURE"), or blocks marked up as headings or set entirely in bold
 //    ("<p><strong>Invasive Species Act</strong></p>"). Length or missing punctuation never removes a line:
