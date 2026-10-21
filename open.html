@@ -213,6 +213,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 .item .sum{font-size:.92rem;color:var(--muted);max-width:68ch}
 .item .sum summary{display:inline;font-size:.85rem}
 .item details.sum{border:0;padding:0}
+.item details.sum summary{color:var(--muted);font-size:.92rem;cursor:pointer}
 ol.path{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
 ol.path li{position:relative;display:grid;justify-items:center;gap:4px;font-size:.74rem;color:var(--muted);text-align:center;line-height:1.2;padding:0 2px}
 ol.path li::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--surface);position:relative;z-index:1;box-sizing:border-box}
@@ -424,7 +425,7 @@ function updateHeadline(){if(!DATA)return;const all=DATA.items||[];const mine=TP
   const wk=mine.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7}).length;
   const names=TP.picked.map(tlabel).map(x=>x.toLowerCase());const list=names.length<=2?names.join(" and "):names.slice(0,-1).join(", ")+", and "+names[names.length-1];
   $("headline").textContent=TP.picked.length?`${mine.length} decision${mine.length===1?"":"s"} on your topics ${mine.length===1?"is":"are"} open for your input.`:`${all.length} decisions are open for your input right now.`;
-  $("subline").textContent=(wk?`${wk} close${wk===1?"s":""} within a week. `:"")+(TP.picked.length?"Start with the one at the top.":"Pick what you care about, and we'll start there.")}
+  $("subline").textContent=TP.picked.length?(wk?`${wk} close${wk===1?"s":""} within a week. Start with the one at the top, and each item shows your next step.`:"Start with the one at the top. Each item shows your next step."):"Pick what you care about, and we'll start there.";}
 function mineItems(){return (DATA.items||[]).filter(it=>topicsOf(it).some(m=>TP.picked.includes(m.id)))}
 // Respond only to items from governments that represent you: federal items anywhere, state items only in your own state.
 function canRespond(it){if(it.level==="federal")return true;return !!(DIST&&DIST.state&&DIST.state===$("st").value)}
@@ -480,7 +481,7 @@ function render(){
   const items=base.filter(it=>(!lvl||it.level===lvl)&&(!kd||it.kind===kd)&&(!q||(it.title+" "+it.who+" "+it.summary).toLowerCase().includes(q)))
     .sort((a,b)=>(a.closes||"9999").localeCompare(b.closes||"9999"));
   const scope=q?` matching "${qraw}" (searching everything)`:VIEW==="mine"&&TP.picked.length?" on your topics":VIEW!=="all"&&VIEW!=="mine"?` on ${tlabel(VIEW)}`:"";
-  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}. ${items.some(i=>i.closes)?"Soonest comment deadlines first, then bills.":""}`;
+  $("count").textContent=`${items.length} item${items.length===1?"":"s"} open${scope}. ${items.some(i=>i.closes)?"Soonest deadlines first.":""}`;
   const wk=items.filter(i=>{const d=daysLeft(i.closes);return d!==null&&d<=7});
   $("soon").hidden=!wk.length;$("soon").textContent=wk.length?`${wk.length} of these close${wk.length===1?"s":""} within a week. They're at the top.`:"";
   const empty=VIEW!=="all"&&!q?`<p class="meta">Nothing is open on ${VIEW==="mine"?"your topics":esc(tlabel(VIEW))} right now${lvl||kd?" with these filters":""}. <button class="linkbtn" type="button" id="seeall">See everything that's open</button></p>`:`<p class="meta">Nothing matches. Try another word.</p>`;
@@ -537,7 +538,7 @@ async function load(){
 renderMe();loadReps();
 $("st").innerHTML=STATES.map(s=>`<option value="${s}">${s?s:"Choose your state"}</option>`).join("");
 const vs=DIST&&DIST.state; if(vs&&STATES.includes(vs)) $("st").value=vs;
-$("where").innerHTML=vs?`Showing federal items and items for your state. Your reactions and steps stay on this device.`:`Showing federal items. Choose your state, or <a href="verify.html" style="color:var(--koa)">verify</a> to see your own governments. Your reactions and steps stay on this device.`;
+$("where").innerHTML=vs?`Showing federal items and items for your state. Your reactions and steps stay on this device.`:`Showing federal items. Choose your state to add your state legislature's bills. Your reactions and steps stay on this device.`;
 $("q").oninput=()=>{shown=10;render()};$("lvl").onchange=()=>{shown=10;render()};$("kind").onchange=()=>{shown=10;render()};$("st").onchange=load;$("more").onclick=()=>{const n=shown;shown+=10;render();const c=$("list").children[n];if(c){c.setAttribute("tabindex","-1");c.focus({preventScroll:true})}};
 renderTopics();
 load();
