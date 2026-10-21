@@ -21,23 +21,22 @@ async function show(geo,fromSaved){
   const cong=[people.rep&&{...people.rep,title:houseTitle},...(people.sen||[]).map(p=>({...p,title:"U.S. Senator"}))].filter(Boolean);
   // Nebraska's one-chamber legislature calls its members senators; D.C. has a council, not a state legislature.
   const legTitle=p=>geo.state==="DC"?"D.C. Council member":geo.state==="NE"?"State Senator":geo.state==="PR"?p.title:"State "+p.title;
+  // One list: each office card carries its current officeholder(s) and contacts.
+  const one=geo.state==="NE"||geo.state==="DC";
+  const holders={};
+  if(people.rep)holders["us-house"]=[{title:houseTitle,name:people.rep.name,contactsHtml:contacts(people.rep)}];
+  if(people.sen&&people.sen.length)holders["us-senate"]=people.sen.map(p=>({title:"U.S. Senator",name:p.name,contactsHtml:contacts(p)}));
+  leg.legislators.forEach(p=>{const key=one?"st-upper":(p.chamber==="lower"?"st-lower":"st-upper");(holders[key]=holders[key]||[]).push({title:`${legTitle(p)}${p.district?`, ${geo.state==="DC"?"":"district "}${p.district}`:""}`,name:p.name,contactsHtml:contacts(p)})});
   o.innerHTML=`<div><div class="eyebrow">${geo.example?"Example address":fromSaved?"Your saved districts":"Your districts"}</div>
       <h2>${esc([geo.stateName||geo.state,geo.cdName].filter(Boolean).join(" · "))}</h2>
       <p class="meta">${[geo.sldl?"State House district "+geo.sldl:"",geo.sldu?(geo.state==="DC"?(/ward/i.test(geo.sldu)?geo.sldu:"Ward "+geo.sldu):geo.state==="NE"?"Legislative district "+geo.sldu:"State Senate district "+geo.sldu):"",geo.county?geo.county.name:"",geo.place?geo.place.name:"",geo.township?geo.township.name:""].filter(Boolean).map(esc).join(" · ")}</p></div>
 
-    <h3>Who holds these seats, and how to reach them</h3>
-    <div class="tbl"><table class="cov"><tr><th>Level</th><th>Officeholders</th><th>Contact</th></tr>
-      <tr><td>U.S. Congress</td><td>${cong.length?"Shown below":"Not found"}</td><td>${cong.length?"Websites, contact forms, phone":"Not found"}</td></tr>
-      <tr><td>${geo.state==="DC"?"D.C. Council":"State legislature"}</td><td>${leg.legislators.length?"Shown below":geo.partial?"Add your address":leg.notConnected?"Not connected yet":leg.errors.length?"Couldn't load right now":"Not found"}</td><td>${leg.legislators.length?"Email, phone, and websites where published":"—"}</td></tr>
-      <tr><td>County, city or town, school board</td><td>Officeholders not listed yet</td><td>Each government's own website lists its officials and meetings.</td></tr></table></div>
-    ${cong.length?`<ul class="people">${cong.map(p=>`<li><b>${esc(p.title)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:""}
-    ${leg.legislators.length?`<ul class="people">${leg.legislators.map(p=>`<li><b>${esc(legTitle(p))}, ${geo.state==="DC"?"":"district "}${esc(p.district)}</b> · ${esc(p.name)}<br><span class="meta">${contacts(p)||"No contact details published in the data."}</span></li>`).join("")}</ul>`:leg.notConnected?`<p class="meta">This territory's legislature isn't in the open data Civic Accord uses yet, so its members aren't listed here.</p>`:leg.errors.length?`<p class="meta">${esc(leg.errors.join(" "))}</p>`:""}
-    <p class="meta">Members of Congress come from the public-domain congress-legislators data; state legislators from Open States, published nightly. Party is never shown. To write about a specific issue, open it from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>
-
-    <h3>Every government that represents you</h3>
-    ${map.covered?"":`<p class="note">We don't have full details for this state's state and local offices yet, so they show general descriptions. Names and contact details for members of Congress and state legislators come from current public data.</p>`}
+    <h3>Every government that represents you, and who holds the seats</h3>
+    ${map.covered?"":`<p class="meta">We don't have full details for this state's state and local offices yet, so they show general descriptions.</p>`}
     ${map.notes.map(n=>`<p class="meta">${esc(n)}</p>`).join("")}
-    ${CA_REG.render(map,people)}
+    ${leg.notConnected?`<p class="meta">This territory's legislature isn't in the open data Civic Accord uses yet, so its members aren't listed.</p>`:leg.errors.length?`<p class="meta">${esc(leg.errors.join(" "))}</p>`:""}
+    ${CA_REG.render(map,people,holders)}
+    <p class="meta">Members of Congress come from the public-domain congress-legislators data; state legislators from Open States, published nightly. Party is never shown. Local officeholders aren't listed yet; each government's own website lists its officials and meetings. To write about a specific issue, open it from <a href="open.html" style="color:var(--koa)">Issues</a>.</p>
     <h3>Sources</h3><ul class="plain">${map.sources.map(s=>`<li><a href="${esc(s[0])}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s[1])}</a></li>`).join("")}</ul>`;
 }
 
