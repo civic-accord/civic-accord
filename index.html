@@ -33,6 +33,11 @@
 .heroLinks{display:flex;flex-wrap:wrap;gap:4px 18px;margin:0}
 .heroLinks a{color:var(--koa);padding:8px 0;min-height:44px;display:inline-flex;align-items:center}
 .quickpick h2{font-size:1.2rem;margin:0}
+#where select,#where input{min-height:44px;font-size:1rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+#where input{flex:1 1 240px}
+#where .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#where .row label{flex-basis:100%}
+#where .toast:empty{display:none}
 .qchips{display:flex;flex-wrap:wrap;gap:8px}
 .qchips a{font-size:.95rem;border:1px solid var(--koa);color:var(--koa);background:var(--surface);border-radius:999px;padding:9px 16px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;font-weight:700}
 .qchips a:hover{background:var(--koa-soft)}
@@ -240,16 +245,18 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <header class="hero">
     <div class="eyebrow">Free, nonpartisan, and open for anyone to check</div>
     <h1>A new relationship with your government</h1>
-    <p class="lede">See what your governments have open for public input right now, find who represents you, write to them, and follow what happens, all from official sources. Next, a planned way to talk issues through with your neighbors, see where you actually agree and what each choice would cost, and send it to the office that represents you, which is asked to answer in public.</p>
-    <p class="note"><b>What's live and what's a sample.</b> My representatives (the lookup), Issues, issue pages, Following, and writing to your representatives use live, official information. Follows and your records of what you sent stay in your browser. The deliberation tools use sample votes to show how they would work. Before real deliberations, Civic Accord needs a neutral host, legal review in each state, and independent security audits.</p>
+    <p class="lede">See what your governments have open for public input right now, find who represents you, write to them, and follow what happens. All from official sources, for any U.S. address.</p>
+    <p class="note">Lookup, Issues, writing to your representatives, and Following are live. Deliberations and votes are samples until a neutral host runs this. <a href="how.html#status" style="color:var(--koa)">What's real today</a></p>
 
+
+    <div class="quickpick" id="where" aria-labelledby="where-h"></div>
 
     <div class="quickpick" id="quickpick" hidden>
       <h2 id="qph">What do you care about?</h2>
       <p class="meta">Tap one to see what's open on it right now. You can add more topics on the next page.</p>
       <div class="qchips" role="group" aria-labelledby="qph"></div>
     </div>
-    <p class="heroLinks"><a href="open.html">Browse issues</a><a href="governments.html">Find my representatives</a><a href="following.html">Following</a><a href="app.html">Try the sample deliberation</a><a href="learn.html">Not a voter yet? Learn</a></p>
+    <p class="heroLinks"><a href="open.html">Browse issues</a><a href="governments.html">Find my representatives</a><a href="following.html">Following</a><a href="learn.html">Not a voter yet? Learn</a><a href="app.html">See a sample deliberation</a></p>
   </header>
   <section class="panel" id="start" aria-labelledby="start-h">
     <h2 id="start-h">Start here</h2>
@@ -357,6 +364,8 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
   <footer><nav class="footnav" aria-label="More"><a href="/how.html">How it works</a><a href="/learn.html">Learn</a><a href="https://github.com/civic-accord/civic-accord">Code and data</a></nav><span>Civic Accord · an open, nonpartisan example</span></footer>
 </div>
 <script src="/lib/records.js"></script>
+<script src="/lib/registry.js"></script>
+<script src="/js/home-where.js"></script>
 <script src="/js/home.js"></script>
 <script src="/js/index.js"></script>
 <script src="lib/topics.js"></script>
