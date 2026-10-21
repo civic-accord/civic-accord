@@ -320,7 +320,7 @@ function itemCard(it){
     ${open?`<div class="guide"><p class="meta">Answer in your own words. Your notes stay on this device.</p>
       ${QS.map((q,i)=>`<label for="q${i}" class="meta"><b>${esc(q)}</b></label><textarea id="q${i}" rows="2" data-n="${i}">${esc(n[i]||"")}</textarea>`).join("")}
       <p class="meta">Ready to speak up? ${it.kind==="Proposed rule"?"Turn your answers into a comment, in your own words, and submit it on the official comment page.":"Write to the people who represent you, in your own words. A real story about how it affects you is the most useful thing you can share."} A message in your own words is usually more useful than a copied one.</p>
-      <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">Open the official comment page</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
+      <div class="acts"><button type="button" id="copynotes">Copy my notes</button>${safe(it.act)&&it.actLabel?`<a href="${esc(it.act)}" target="_blank" rel="noopener">${it.commentForm===false?"See how to comment (in the notice)":"Open the official comment page"}</a>`:""}<span class="toast" id="cpmsg" aria-live="polite"></span></div></div>`:""}
   </article>`;
 }
 function renderItems(){

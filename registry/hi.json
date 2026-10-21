@@ -185,14 +185,11 @@
  },
  "noLocal": true,
  "eligibility": {
-  "minimumAge": 16,
-  "ageBasis": "host policy",
-  "ageNote": "Taking part is advisory, not voting, so no law sets a minimum age. The host set it at 16, the age Hawaiʻi allows people to preregister to vote.",
+  "participants": "Only active registered voters in the district can vote or add statements. Everyone else, including people who are preregistered, can read everything, use Civic Accord Learn, comment through official channels, and write to their representatives.",
   "voterStatus": {
    "method": "Match your name and the address you confirmed against the official voter list, so each voter record can be claimed by only one verified resident.",
    "statuses": [
     "Registered voter",
-    "Preregistered (16 or 17)",
     "Not registered"
    ],
    "basis": "law",

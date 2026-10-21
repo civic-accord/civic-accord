@@ -19,9 +19,9 @@ Please report security problems privately at https://github.com/civic-accord/civ
 ## Current attack surface (prototype)
 
 - Static pages served by Vercel, with security headers (HSTS, CSP, no framing) set in `vercel.json`.
-- Two read-only serverless functions (`api/open.js`, `api/people.js`) that fetch public data with API keys stored as Vercel secrets. They accept no personal data.
+- Three read-only serverless functions (`api/open.js`, `api/people.js`, `api/congress.js`) that fetch public data, with API keys stored as Vercel secrets. They accept no personal data.
 - Browser storage on the visitor's own device (districts, reactions, demo verification). Nothing is sent back.
 
-## Verification plan
+## Verification plan (not in place yet)
 
-See the Security section of the National Blueprint. In short: automated checks on every change, an independent code review and penetration test against OWASP ASVS before launch, a public bug bounty, cryptographic end-to-end verifiability for the vote record, and recurring audits with public reports.
+See the Security section of the National Blueprint. In short, planned: automated checks on every change, an independent code review and penetration test against OWASP ASVS before launch, a public bug bounty, cryptographic end-to-end verifiability for the vote record, and recurring audits with public reports.

@@ -28,27 +28,39 @@ async function federalRules() {
     const q = new URLSearchParams({ "conditions[type][]": "PRORULE", "conditions[comment_date][gte]": today, per_page: "200", order: "newest", page: String(page) });
     fields.forEach(f => q.append("fields[]", f));
     const j = await getJSON(`${FR}?${q}`);
-    (j.results || []).forEach(d => items.push({
-      id: "fr-" + d.document_number, level: "federal", kind: "Proposed rule", title: d.title,
-      who: (d.agencies || []).map(a => a.name).filter(Boolean).join(", "),
-      summary: d.abstract || "", opened: d.publication_date, closes: d.comments_close_on,
-      read: d.html_url, act: d.comment_url || d.regulations_dot_gov_url || d.html_url,
-      actLabel: "Comment officially", source: "Federal Register"
-    }));
+    (j.results || []).forEach(d => {
+      // An online comment form exists only when the Federal Register links one. Otherwise the notice itself explains
+      // how to comment (often by email or mail), and the button says so instead of promising a form.
+      const form = d.comment_url || d.regulations_dot_gov_url || null;
+      items.push({
+        id: "fr-" + d.document_number, level: "federal", kind: "Proposed rule", title: d.title,
+        who: (d.agencies || []).map(a => a.name).filter(Boolean).join(", "),
+        summary: d.abstract || "", opened: d.publication_date, closes: d.comments_close_on,
+        read: d.html_url, act: form || d.html_url, commentForm: !!form,
+        actLabel: form ? "Comment officially" : "How to comment (in the notice)", source: "Federal Register"
+      });
+    });
     if (!j.next_page_url) break;
   }
-  return items;
+  // A correction (document number "C1-…") repeats a rule that's already listed. Keep one card per rule.
+  const have = new Set(items.map(i => i.id));
+  return items.filter(i => { const m = /^fr-C\d+-(.+)$/.exec(i.id); return !(m && have.has("fr-" + m[1])); });
 }
 
 const BILL_PATH = { HR: "house-bill", S: "senate-bill", HRES: "house-resolution", SRES: "senate-resolution", HJRES: "house-joint-resolution", SJRES: "senate-joint-resolution", HCONRES: "house-concurrent-resolution", SCONRES: "senate-concurrent-resolution" };
+const ordinal = n => { n = Number(n); const t = n % 100, o = n % 10; return n + (t >= 11 && t <= 13 ? "th" : o === 1 ? "st" : o === 2 ? "nd" : o === 3 ? "rd" : "th"); };
 async function congressBills(key) {
   const j = await getJSON(`https://api.congress.gov/v3/bill?format=json&sort=updateDate+desc&limit=100&api_key=${encodeURIComponent(key)}`);
-  return (j.bills || []).map(b => ({
+  // Leave out bills that are finished: law, vetoed, failed, or a one-chamber resolution already agreed to.
+  const ENDED = /became (public|private) law|signed by (the )?president|vetoed by (the )?president|pocket vetoed|failed of passage|failed to pass/i;
+  const AGREED = /agreed to/i, SIMPLE = /^(HRES|SRES)$/i;
+  return (j.bills || []).filter(b => { const t = (b.latestAction && b.latestAction.text) || "";
+    return !(ENDED.test(t) || (SIMPLE.test(String(b.type)) && AGREED.test(t))); }).map(b => ({
     id: `us-${b.type}${b.number}-${b.congress}`.toLowerCase(), level: "federal", kind: "Bill in Congress",
     title: `${b.type} ${b.number}: ${b.title}`, who: b.originChamber ? `${b.originChamber}` : "Congress",
     summary: b.latestAction ? `Latest action (${b.latestAction.actionDate}): ${b.latestAction.text}` : "",
     opened: b.introducedDate || null, closes: null,
-    read: `https://www.congress.gov/bill/${b.congress}th-congress/${BILL_PATH[String(b.type).toUpperCase()] || "house-bill"}/${b.number}`,
+    read: `https://www.congress.gov/bill/${ordinal(b.congress)}-congress/${BILL_PATH[String(b.type).toUpperCase()] || "house-bill"}/${b.number}`,
     act: null, actLabel: null, source: "Congress.gov"
   }));
 }
@@ -68,10 +80,28 @@ async function stateBills(key, st, out) {
     return [];
   }
   // 2. Bills from the current session that are still moving.
-  const DONE = /signed by (the )?governor|became law|became effective|chaptered|session law|enacted|act no\.|vetoed|veto sustained|failed|died|dead|withdrawn|tabled|indefinitely postponed|filed with(out)? governor|\beffective\b|sine die|^adopted\b|resolution adopted/i;
-  const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20" });
-  const j = await getJSON(`https://v3.openstates.org/bills?${q}`, H);
-  const results = (j.results || []).filter(b => !DONE.test(b.latest_action_description || ""));
+  // A bill is finished only when its latest action says the bill itself ended. Words like "failed" or "tabled" alone
+  // aren't enough: "Amendment failed" or "Motion tabled" happen on bills that are still moving.
+  const DONE = [
+    /^(signed|approved) by (the )?governor/i, /^became law/i, /^became effective/i, /^chaptered/i, /^enacted/i,
+    /^act( no\.)? ?\d+/i, /^session law/i, /^(vetoed|veto sustained)/i, /^filed with(out)? (the )?governor'?s signature/i,
+    /^(bill )?(failed|died|dead|withdrawn)\b/i, /^indefinitely postponed/i, /^(resolution )?adopted\b/i,
+    /\b(bill|measure) (failed|died|withdrawn|indefinitely postponed)\b/i, /\bdied in committee\b/i
+  ];
+  const done = t => DONE.some(re => re.test(String(t || "").trim()));
+  const PAGES = 3; // Up to 60 most recently active bills. The free tier allows 10 requests a minute; results are cached 6 hours.
+  let results = [], total = null;
+  for (let page = 1; page <= PAGES; page++) {
+    const q = new URLSearchParams({ jurisdiction: name, session: active[0].identifier, sort: "latest_action_desc", per_page: "20", page: String(page) });
+    const j = await getJSON(`https://v3.openstates.org/bills?${q}`, H);
+    results.push(...(j.results || []));
+    const pg = j.pagination || {};
+    if (total === null && typeof pg.total_items === "number") total = pg.total_items;
+    if (!pg.max_page || page >= pg.max_page) break;
+  }
+  const checked = results.length;
+  results = results.filter(b => !done(b.latest_action_description));
+  if (total !== null && total > checked) out.partial = `Showing bills from the ${checked} most recently active of ${total.toLocaleString("en-US")} in this session, leaving out ones that are finished. See every bill on the ${name} legislature's website.`;
   if (!results.length) out.quiet = `No bills are moving in the ${name} legislature right now. New bills appear here as soon as they're filed.`;
   return results.map(b => ({
     id: "os-" + b.id, level: "state", kind: "Bill in the " + name + " legislature",
@@ -86,10 +116,10 @@ module.exports = async (req, res) => {
   const out = { fetchedAt: new Date().toISOString(), items: [], sources: [], notConnected: [], errors: [] };
   const run = async (label, url, fn) => { try { const it = await fn(); out.items.push(...it); out.sources.push({ label, url, count: it.length }); } catch (e) { out.errors.push(`${label}: ${e.message}`); } };
   await run("Federal Register: proposed rules open for public comment", "https://www.federalregister.gov/developers/documentation/api/v1", () => memo("fr", 3 * 3600e3, federalRules));
-  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: recently active bills", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)));
+  if (process.env.CONGRESS_API_KEY) await run("Congress.gov: the 100 most recently updated bills, leaving out finished ones", "https://api.congress.gov/", () => memo("congress", 3 * 3600e3, () => congressBills(process.env.CONGRESS_API_KEY)));
   else out.notConnected.push({ label: "Bills in Congress", how: "Needs a free Congress.gov API key", url: "https://api.congress.gov/sign-up/" });
   if (st) {
-    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet }; }); if (r.quiet) out.quiet = r.quiet; return r.items; });
+    if (process.env.OPENSTATES_API_KEY) await run(`Open States: bills still moving in the ${STATE_NAMES[st] || st} legislature`, "https://docs.openstates.org/api-v3/", async () => { const r = await memo("st-" + st, 6 * 3600e3, async () => { const o = {}; const items = await stateBills(process.env.OPENSTATES_API_KEY, st, o); return { items, quiet: o.quiet, partial: o.partial }; }); if (r.quiet) out.quiet = r.quiet; if (r.partial) out.partial = r.partial; return r.items; });
     else out.notConnected.push({ label: `Bills in the ${STATE_NAMES[st] || st} legislature`, how: "Needs a free Open States API key", url: "https://open.pluralpolicy.com/accounts/profile/" });
   }
   res.setHeader("Content-Type", "application/json; charset=utf-8");

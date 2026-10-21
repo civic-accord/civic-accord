@@ -222,6 +222,7 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p><b>Verified voters only.</b> Only registered voters can vote or add statements in a deliberation, so every voice is a real, verified voter. Anyone can read everything, see what's open for public input, comment through official channels, and write to their representatives.</p>
     <p><b>Two checks.</b> First, that an active voter record exists for you in the district. Second, that you're really that voter: a code is mailed to the home address on your voter record (not one you type), or staff at a library or election office compare your ID with the record. An instant yes-or-no check by your state election office, and state digital IDs where law allows, are planned. Each state's rules on voter records decide what may be used. In this example, no real check happens.</p>
     <p><b>Only your own governments.</b> You can respond only where you're a voter: federal items from anywhere, your state's items only if you're a voter in that state, and local items only in your own county or city. You can still read everything from everywhere.</p>
+    <p class="meta">Today, this is based on the address you enter on your own device, so it works on trust. Writing to an office you don't live in is something anyone can already do, so nothing is lost. Once real verification exists, the check uses your verified districts, and only verified voters are counted.</p>
     <p><b>Not a voter yet?</b> <a href="learn.html" style="color:var(--koa)">Civic Accord Learn</a> is a separate space for young people and anyone who can't vote. It uses real issues and points to real actions anyone can take. You can tap the topics you care about or search, using the same open word lists as Open Now, and your picks stay on your device. Nothing there is counted in deliberations.</p></section>
 
   <section class="panel" id="privacy"><h2>Your privacy</h2><ul class="plain">
@@ -263,10 +264,10 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
     <p>Open Now lists what your governments have open for public input. It comes straight from these sources, with no AI involved, and refreshes every few hours:</p>
     <div class="tbl"><table><tr><th>What</th><th>Source</th></tr>
       <tr><td>Proposed federal rules open for public comment</td><td><a href="https://www.federalregister.gov/developers/documentation/api/v1" style="color:var(--koa)">Federal Register</a> (no key needed)</td></tr>
-      <tr><td>Recently active bills in Congress</td><td><a href="https://api.congress.gov/" style="color:var(--koa)">Congress.gov</a></td></tr>
-      <tr><td>Bills still moving in your state legislature</td><td><a href="https://open.pluralpolicy.com/" style="color:var(--koa)">Open States</a>. Shown only while the legislature is in session. Bills already signed, vetoed, or finished are left out.</td></tr>
+      <tr><td>Recently active bills in Congress</td><td><a href="https://api.congress.gov/" style="color:var(--koa)">Congress.gov</a>. The 100 most recently updated bills. Bills that became law, were vetoed, or failed are left out.</td></tr>
+      <tr><td>Bills still moving in your state legislature</td><td><a href="https://open.pluralpolicy.com/" style="color:var(--koa)">Open States</a>. Shown only while the legislature is in session. Up to the 60 most recently active bills, not every bill; the page says how many there are in all. Bills that were signed, vetoed, failed, or withdrawn are left out. A bill isn't left out just because an amendment or motion on it failed.</td></tr>
       <tr><td>City, county, and school board agendas</td><td>Coming as local hosts connect their governments' public feeds</td></tr></table></div>
-    <p>Each item shows its source and when it was fetched, and links to the official text and the government's own comment channel.</p>
+    <p>Each item shows its source and when it was fetched, and links to the official text and the government's own comment channel. Some proposed rules have no online comment form. For those, the button says "How to comment (in the notice)" and opens the notice, which explains how to comment, often by email or mail.</p>
     <h3>Finding what you care about</h3>
     <p>There can be hundreds of items open at once. On your first visit, Open Now asks you to pick up to five topics, like housing, schools, or farms and food. Then it shows what's open on those topics, with the soonest deadlines at the top, ten at a time. You can switch topics, see everything, or search everything at any time. When an agency posts many near-identical rules at once (for example, dozens of aircraft safety notices), they're folded into one line you can open.</p>
     <h3>Your next step on each item</h3>
@@ -289,13 +290,13 @@ textarea.letter{font:inherit;width:100%;border:1px solid var(--line);border-radi
 
   <section class="panel" id="security"><h2>Security</h2>
     <p>No single test proves a system secure. Civic Accord is checked in layers, and the most important is a design where the public can check results even if part of the system is attacked.</p><ul class="plain">
-      <li><b>Checkable by design:</b> a public record anyone can recount, private receipts, identity kept apart from votes, and AI that never counts.</li>
-      <li><b>Open code</b> that anyone can inspect.</li>
-      <li><b>Automatic checks</b> on every change.</li>
+      <li><b>Checkable by design</b> (planned)<b>:</b> a public record anyone can recount, private receipts, identity kept apart from votes, and AI that never counts.</li>
+      <li><b>Open code</b> that anyone can inspect (works now).</li>
+      <li><b>Automatic checks</b> on every change (planned; not set up yet).</li>
       <li><b>Independent review before launch:</b> a security review and break-in test against the <a href="https://owasp.org/www-project-ASVS/" style="color:var(--koa)">OWASP ASVS</a> standard, by experts with no stake in the project. Code written with AI help gets the same scrutiny.</li>
       <li><b>Private problem reporting</b> through GitHub (<a href="https://github.com/civic-accord/civic-accord/blob/main/SECURITY.md" style="color:var(--koa)">security policy</a>), and later a bug bounty.</li>
-      <li><b>Recurring audits</b> with public reports.</li></ul>
-    <p class="meta">Today: the site sends strict security headers, its two data functions only read public data, and their keys are stored as secrets. No real votes or identities are collected.</p></section>
+      <li><b>Recurring audits</b> with public reports (planned).</li></ul>
+    <p class="meta">Today: the site sends strict security headers, its three data functions only read public data, and their keys are stored as secrets. No real votes or identities are collected.</p></section>
 
   <section class="panel" id="app"><h2>Using it as an app</h2>
     <p>Civic Accord can be added to a phone's home screen and opens full screen, like an app. It's the same website, so it's always current, and there's no app store in between. Pages you've opened work without a signal. Live information, like Open Now and the lookup, always comes fresh from its source and is never shown from an old saved copy. App-store versions may come later, once there's a host to own those accounts.</p></section>

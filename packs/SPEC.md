@@ -95,8 +95,8 @@ A pack can't go live until its legal review is `done`.
 | `sources`, `costSources` | List of `[url, label]` |
 | `groups` | Two plain descriptions of the opinion groups (written after voting, from the votes) |
 | `exampleVotes` | `true` while the votes shown are invented examples |
-| `statements` | Seed statements: `{ "id", "text", "a": [agree, disagree, pass], "b": [...], "panel": [...] }`. `panel` is optional: citizen panel results. `registered` is optional: `{ "a", "b" }`, the same counts from confirmed registered voters only |
-| `participation` | Optional: `{ "open", "panel", "makeup": { "columns", "rows" } }` comparing who took part with the district. `registered: { "count", "label", "how" }` adds the registered-voters view |
+| `statements` | Seed statements: `{ "id", "text", "a": [agree, disagree, pass], "b": [...], "panel": [...] }`. `panel` is optional: citizen panel results. Every count comes from verified voters only; there is no separate view for anyone else |
+| `participation` | Optional: `{ "open", "panel", "makeup": { "columns", "rows" } }` comparing who took part with the district. |
 | `costOptions` | What could be funded (below) |
 | `revenue` | How it could be paid for (below) |
 

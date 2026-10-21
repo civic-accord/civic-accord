@@ -84,9 +84,7 @@
   }
  ],
  "eligibilityDefault": {
-  "minimumAge": 16,
-  "ageBasis": "host policy",
-  "ageNote": "Taking part is advisory, not voting, so no law sets a minimum age. The host set it at 16.",
+  "participants": "Only active registered voters in the district can vote or add statements. Everyone else, including people who are preregistered, can read everything, use Civic Accord Learn, comment through official channels, and write to their representatives.",
   "voterStatus": {
    "method": "Not yet researched for this state. Until a reviewer confirms what the state's law allows, status is self-reported and labeled that way.",
    "statuses": [

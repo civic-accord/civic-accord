@@ -372,7 +372,7 @@ function composeBox(it){
   const errs=it.level==="state"&&STATELEG&&STATELEG.errors.length?STATELEG.errors:[];
   return `<div class="compose">
     <b>Tell your representatives you ${v==="Support"?"support":v==="Oppose"?"oppose":"have questions about"} this</b>
-    ${it.kind==="Proposed rule"?`<p class="meta">For a proposed rule, the agency decides. Your official comment goes through <b>Comment officially</b> above. You can also let your members of Congress know.</p>`:""}
+    ${it.kind==="Proposed rule"?`<p class="meta">For a proposed rule, the agency decides. Your official comment goes through <b>${esc(it.actLabel||"Comment officially")}</b> above. You can also let your members of Congress know.</p>`:""}
     <label for="cm" class="meta">Add your own words (optional)</label><textarea id="cm" rows="3" maxlength="1200" placeholder="Why it matters to you, in a sentence or two.">${esc(COMMENT[it.id]||"")}</textarea>
     <div class="two"><div><label for="sn" class="meta">Your name</label><input id="sn" autocomplete="name" value="${esc(SIGNER.name)}"></div><div><label for="stw" class="meta">Your town (optional)</label><input id="stw" autocomplete="address-level2" value="${esc(SIGNER.town)}"></div></div>
     ${!DIST?`<p>First, find who represents you. <a href="#me" data-gome="1" style="color:var(--koa);font-weight:700">Enter your address</a> (it takes a few seconds, and only your districts are kept on this device).</p>`:loading?`<p class="meta">Finding your representatives…</p>`:reps.length?reps.map((r,i)=>`<div class="rep"><b>${esc(r.title)}</b><span class="meta">${esc(r.name)}</span><div class="acts">
@@ -453,10 +453,10 @@ function nextHTML(it){
   if(now===1)return `<div class="next"><p>Where do you stand? You can change this anytime.</p>${reacts}</div>`;
   if(now===2){
     const rule=it.kind==="Proposed rule"&&!!safe(it.act);
-    return `<div class="next"><p>${rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
+    return `<div class="next"><p>${rule?`The agency decides this one, and it must consider the official comments. That's the comment that counts most.${it.commentForm===false?" This notice has no online comment form. It explains how to comment, often by email or mail.":""}`:`You picked ${esc(r)}. Now tell the people who represent you, in your own words.`}</p>
       ${p.started?`<div class="go" role="group" aria-label="Did you send it?"><span>Did you send it?</span><button type="button" class="primary" data-sent="${esc(it.id)}">Yes, I sent it</button></div>`:""}
       ${reacts}
-      ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">Comment officially</a><button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button></div>`:""}
+      ${rule?`<div class="go"><a class="primary" data-spoke="${esc(it.id)}" href="${esc(it.act)}" target="_blank" rel="noopener">${esc(it.actLabel||"Comment officially")}</a><button type="button" data-tell="${esc(it.id)}">${OPENID===it.id?"Hide the message":"Also tell your members of Congress"}</button></div>`:""}
       ${!rule&&OPENID!==it.id?`<div class="go"><button type="button" class="primary" data-tell="${esc(it.id)}">Write to your representatives</button></div>`:""}
       ${OPENID===it.id?composeBox(it):""}
       ${rule||p.started?"":`<button type="button" class="linkbtn" data-sk2="${esc(it.id)}" style="justify-self:start">I've already spoken up</button>`}</div>`}
@@ -534,6 +534,7 @@ async function load(){
   try{DATA=await (await fetch("/api/open"+(st?"?state="+st:""))).json()}catch(e){$("count").textContent="Couldn't load the feed. Check your connection and try again.";return}
   $("sources").innerHTML=DATA.sources.map(s=>`<li><a href="${esc(safe(s.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">${esc(s.label)}</a> · ${s.count} items</li>`).join("")+DATA.errors.map(e=>`<li class="meta">Couldn't reach a source just now: ${esc(e)}</li>`).join("");
   if(DATA.quiet) $("sources").innerHTML+=`<li class="meta">${esc(DATA.quiet)}</li>`;
+  if(DATA.partial) $("sources").innerHTML+=`<li class="meta">${esc(DATA.partial)}</li>`;
   $("notconn").innerHTML=DATA.notConnected.length?`<h3>Not connected yet</h3><ul class="plain">${DATA.notConnected.map(n=>`<li>${esc(n.label)}. ${esc(n.how)} (<a href="${esc(safe(n.url)||"#")}" target="_blank" rel="noopener" style="color:var(--koa)">get one</a>), added by the site's host.</li>`).join("")}</ul>`:"";
   $("fetched").textContent="Fetched "+new Date(DATA.fetchedAt).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"});
   const kinds=[...new Set(DATA.items.map(i=>i.kind))], cur=$("kind").value;
