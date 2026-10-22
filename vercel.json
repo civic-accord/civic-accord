@@ -94,6 +94,9 @@
   "functions": {
     "api/refresh.js": {
       "maxDuration": 300
+    },
+    "api/plain.js": {
+      "maxDuration": 40
     }
   }
 }

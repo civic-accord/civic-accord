@@ -222,37 +222,45 @@ async function localItem(m) {
   };
 }
 
+// Load one item by id: { item, errors, fetchedAt }. Shared with the plain-language function (api/plain.js).
+const isValidId = id => { const lm = id.match(LOCAL_ID); return CONGRESS_ID.test(id) || STATE_ID.test(id) || RULE_ID.test(id) || !!(lm && LOCAL.some(f => f.client === lm[1])); };
+async function loadItem(id) {
+  const lm = id.match(LOCAL_ID), valid = isValidId(id);
+  const out = { fetchedAt: new Date().toISOString(), id, item: null, errors: [], valid };
+  if (!valid) { out.errors.push("This item address isn't one Civic Accord recognizes."); return out; }
+  try {
+    let label = "This item", fn;
+    if (CONGRESS_ID.test(id)) {
+      label = "Bills in Congress";
+      if (!process.env.CONGRESS_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
+      fn = () => congressItem(id.match(CONGRESS_ID), process.env.CONGRESS_API_KEY);
+    } else if (STATE_ID.test(id)) {
+      label = "State bills";
+      if (!process.env.OPENSTATES_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
+      fn = async () => stateItem(id, process.env.OPENSTATES_API_KEY, await stateUse(id));
+    } else if (lm) { label = "Local meetings"; fn = () => localItem(lm); }
+    else { label = "Federal rules"; fn = () => ruleItem(id); }
+    // An address that doesn't exist at the source is remembered for 12 hours, so made-up addresses can't keep spending the free limits.
+    const guarded = async () => { try { return await fn(); } catch (e) { if (e.status === 404) return { notFound: true }; throw e; } };
+    try { out.item = await memo("item-" + id, 12 * 3600e3, guarded); if (out.item && out.item.notFound) { out.item = null; out.errors.push("This item wasn't found at the official source."); } const at = asOf("item-" + id); if (at) out.fetchedAt = new Date(at).toISOString(); }
+    catch (e) { out.errors.push(publicError(label, e)); }
+  } catch (e) { out.errors.push("This source isn't connected yet."); }
+  return out;
+}
+const normalizeId = raw => CONGRESS_ID.test(String(raw).toLowerCase()) ? String(raw).toLowerCase() : String(raw);
+
 const handler = async (req, res) => {
   if (onlyRead(req, res)) return;
-  const raw = String((req.query && req.query.id) || "").trim();
-  const id = CONGRESS_ID.test(raw.toLowerCase()) ? raw.toLowerCase() : raw;
-  const lm = id.match(LOCAL_ID);
-  const valid = CONGRESS_ID.test(id) || STATE_ID.test(id) || RULE_ID.test(id) || !!(lm && LOCAL.some(f => f.client === lm[1]));
-  if (canonical(req, res, "/api/item", { id: valid ? id : "" })) return;
-  const out = { fetchedAt: new Date().toISOString(), id, item: null, errors: [] };
-  if (!valid) out.errors.push("This item address isn't one Civic Accord recognizes.");
-  else {
-    try {
-      let label = "This item", fn;
-      if (CONGRESS_ID.test(id)) {
-        label = "Bills in Congress";
-        if (!process.env.CONGRESS_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
-        fn = () => congressItem(id.match(CONGRESS_ID), process.env.CONGRESS_API_KEY);
-      } else if (STATE_ID.test(id)) {
-        label = "State bills";
-        if (!process.env.OPENSTATES_API_KEY) throw Object.assign(new Error("no key"), { nokey: true });
-        fn = async () => stateItem(id, process.env.OPENSTATES_API_KEY, await stateUse(id));
-      } else if (lm) { label = "Local meetings"; fn = () => localItem(lm); }
-      else { label = "Federal rules"; fn = () => ruleItem(id); }
-      // An address that doesn't exist at the source is remembered for 12 hours, so made-up addresses can't keep spending the free limits.
-      const guarded = async () => { try { return await fn(); } catch (e) { if (e.status === 404) return { notFound: true }; throw e; } };
-      try { out.item = await memo("item-" + id, 12 * 3600e3, guarded); if (out.item && out.item.notFound) { out.item = null; out.errors.push("This item wasn't found at the official source."); } const at = asOf("item-" + id); if (at) out.fetchedAt = new Date(at).toISOString(); }
-      catch (e) { out.errors.push(publicError(label, e)); }
-    } catch (e) { out.errors.push("This source isn't connected yet."); }
-  }
+  const id = normalizeId(String((req.query && req.query.id) || "").trim());
+  if (canonical(req, res, "/api/item", { id: isValidId(id) ? id : "" })) return;
+  const loaded = await loadItem(id);
+  const out = { fetchedAt: loaded.fetchedAt, id, item: loaded.item, errors: loaded.errors };
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", out.errors.length ? "public, s-maxage=120" : "public, s-maxage=21600, stale-while-revalidate=86400");
   res.status(200).send(JSON.stringify(out));
 };
 module.exports = handler;
 module.exports.partsFrom = partsFrom;
+module.exports.loadItem = loadItem;
+module.exports.normalizeId = normalizeId;
+module.exports.isValidId = isValidId;

@@ -60,6 +60,46 @@ function sinceBox(s){
   if(s.c.result==="not-refreshed")return `<p class="meta" id="since">The source hasn't been refreshed since you last looked (${esc(when(s.base.seenAt))}), so there's nothing new to compare yet.</p>`;
   return ""}
 
+// A plain-language version, written by AI, on request. Opt-in: the box is closed until the reader opens it, and a
+// device setting can open it automatically. It is an aid for reading, never the item.
+const PLKEY="civicaccord-plain", PLFB="civicaccord-plain-feedback";
+let PLAIN_AUTO=(()=>{try{return localStorage.getItem(PLKEY)==="1"}catch(e){return false}})();
+let PLAIN_FB=load(PLFB,{});
+let PLAIN={state:"closed",data:null,why:""}; // closed | loading | ready | none | off | error
+let RERENDER=null;
+function plainBox(){
+  const open=PLAIN.state!=="closed";
+  return `<details id="plain" class="plainbox"${open?" open":""}><summary>Read a plain-language version <span class="meta">(written by AI; optional)</span></summary>
+    <div class="plainin">
+      <p class="note"><b>This is an aid for reading, not the item.</b> It was written by an AI program from the official text on this page, once, and everyone sees the same version. It can be wrong or leave things out. What you weigh in on, and anything sent to an office, comes only from the official text above. <a href="how.html#ai" style="color:var(--koa)">How this works</a> · <a href="https://github.com/civic-accord/civic-accord/blob/main/api/_plain.js" style="color:var(--koa)">The exact instructions given to the AI</a></p>
+      ${PLAIN.state==="loading"?`<p class="meta">Writing a plain-language version…</p>`
+       :PLAIN.state==="ready"?`<p class="plaintext">${esc(PLAIN.data.text)}</p><p class="meta">Written by ${esc(PLAIN.data.model)} on ${esc(fmt(String(PLAIN.data.at).slice(0,10)))} from the official summary shown on this page. If the official text changes, a new version is written.</p>
+         <div class="go" role="group" aria-label="Was this accurate?"><span>Was this accurate?</span><button type="button" data-plfb="yes" aria-pressed="${PLAIN_FB[ID]==="yes"}">Yes</button><button type="button" data-plfb="no" aria-pressed="${PLAIN_FB[ID]==="no"}">No</button><span class="meta">${PLAIN_FB[ID]?"Kept on this device only; nothing is sent. If it's wrong, the official text above is what counts.":""}</span></div>`
+       :PLAIN.state==="none"?`<p class="meta">${esc(PLAIN.why)}</p>`
+       :PLAIN.state==="off"?`<p class="meta">${esc(PLAIN.why)}</p>`
+       :PLAIN.state==="error"?`<p class="meta">${esc(PLAIN.why)} <button type="button" class="linkbtn" id="plretry">Try again</button></p>`:""}
+      <label class="meta" style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="plauto"${PLAIN_AUTO?" checked":""}> Open the plain-language version automatically on this device</label>
+    </div></details>`;
+}
+async function loadPlain(){
+  if(PLAIN.state==="loading"||PLAIN.state==="ready")return;
+  PLAIN={state:"loading",data:null,why:""};if(RERENDER)RERENDER("plain");
+  try{const r=await fetch("/api/plain?id="+encodeURIComponent(ID));const j=await r.json().catch(()=>({}));
+    if(j.ok&&j.text)PLAIN={state:"ready",data:j,why:""};
+    else if(j.tooShort)PLAIN={state:"none",data:null,why:j.why||"The official text is short enough to read as it is."};
+    else if(j.notConfigured)PLAIN={state:"off",data:null,why:"Plain-language versions aren't turned on yet."};
+    else PLAIN={state:"error",data:null,why:j.why||"Couldn't write a plain-language version right now."}}
+  catch(e){PLAIN={state:"error",data:null,why:"Couldn't reach Civic Accord's data service right now."}}
+  if(RERENDER)RERENDER("plain");
+}
+function bindPlain(){
+  const d=$("plain");if(!d)return;
+  d.addEventListener("toggle",()=>{if(d.open&&PLAIN.state==="closed")loadPlain()});
+  if(PLAIN_AUTO&&PLAIN.state==="closed"){d.open=true;loadPlain()}
+  const a=$("plauto");if(a)a.onchange=()=>{PLAIN_AUTO=a.checked;try{PLAIN_AUTO?localStorage.setItem(PLKEY,"1"):localStorage.removeItem(PLKEY)}catch(e){}};
+  const rt=$("plretry");if(rt)rt.onclick=()=>{PLAIN={state:"closed",data:null,why:""};loadPlain()};
+  document.querySelectorAll("[data-plfb]").forEach(b=>b.onclick=()=>{PLAIN_FB[ID]=b.dataset.plfb;try{localStorage.setItem(PLFB,JSON.stringify(PLAIN_FB))}catch(e){}if(RERENDER)RERENDER("plain")});
+}
 function render(it){
   const now=new Date(), stage=CA_ISSUE.stageOf(it,now), own=ownOf(it), next=CA_ISSUE.nextAction(it,stage,own&&!!DIST,now);
   $("title").textContent=it.title;
@@ -116,6 +156,7 @@ function render(it){
       ${safe(L.text)?`<a class="primary" href="${esc(L.text)}" target="_blank" rel="noopener">Read the official text</a>`:""}
       ${safe(L.official)&&L.official!==L.text?`<a href="${esc(L.official)}" target="_blank" rel="noopener">Official page</a>`:""}
     </div>
+    ${plainBox()}
   </section>
 
   <section class="panel" aria-labelledby="h2"><div class="eyebrow">2 · Participate ${LIVE} ${PRACTICE}</div><h2 id="h2">Take part</h2>
@@ -181,6 +222,7 @@ function bind(it,keys,parts,version,orphans){
   // After the page is redrawn, focus goes back to the control that was used (or to a named field), so keyboard and
   // screen-reader users don't land at the top of the page.
   const rerender=(focus)=>{const y=window.scrollY,back=focusKey();render(it);window.scrollTo({top:y});const f=(focus&&$(focus))||(back&&document.querySelector(back));if(f)f.focus({preventScroll:true})};
+  RERENDER=rerender;bindPlain();
   $("follow").onclick=()=>{
     if(CA_RECORDS.isFollowing(ID)){CA_RECORDS.unfollow(ID);SINCE=null;rerender("follow");$("follow-msg").textContent="Stopped following. Nothing about this issue is kept for Following now.";return}
     if(!CA_RECORDS.available()){$("follow-msg").textContent="This browser isn't saving data (it may be a private window), so Follow can't be kept.";return}
