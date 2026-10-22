@@ -54,7 +54,7 @@ The two-way conversation is between residents and an **office** (a seat), not an
 
 ## Trust rules
 
-- AI never touches the vote count, voter checks, or the official items on Issues.
+- AI never touches the vote count, voter checks, or the official items on Issues. A plain-language version of an item, written by AI on request and labeled, is an aid for reading only; what people weigh in on and what goes to an office come only from the official text (api/_plain.js holds the public instructions).
 - Planned: a public, append-only, tamper-evident vote record; anyone can recount.
 - Planned: every AI summary links to the votes behind it.
 - Disagreements travel with the proposal.

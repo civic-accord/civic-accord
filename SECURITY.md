@@ -11,7 +11,7 @@ Please report security problems privately at https://github.com/civic-accord/civ
 - **Votes can be recounted by anyone (design goal).** Votes go into a public, append-only record; counting is done by simple code anyone can read.
 - **Each person can check their vote is included, and no one else can learn how they voted (design goal).** A receipt (tracking code) shows a voter's sealed ballot is in the record but not its choices, so it is designed so it can't be used to sell a vote or prove it to someone applying pressure.
 - **Votes can be changed until close (design goal).** Only a voter's last ballot counts, which makes pressure much harder. This depends on new ballots not being visibly linked to earlier ones; see the design below.
-- **AI never counts.** AI may summarize and draft, never touch the vote count or voter checks.
+- **AI never counts.** AI may summarize and draft, never touch the vote count or voter checks. The opt-in plain-language version of an item (api/plain.js) is written once per version of the official text, saved, and served to everyone the same; it never enters the parts people vote on or the package an office receives. Its instructions are public (api/_plain.js); new versions are capped per day (PLAIN_PER_DAY).
 - **Identity is separated from votes (design goal).** The voter check never sees votes; the vote record never sees names or addresses.
 - **Addresses stay out of Civic Accord's servers.** Address lookups go from the browser straight to the U.S. Census Bureau. Legislator lookups send only the state; the browser picks its own districts.
 
